@@ -21,6 +21,12 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    server: {
+        host: 'anbgraphics',
+        port: 5173,
+        cors: true,
+        allowedHosts: ['anbgraphics', 'localhost'],
+    },
     esbuild: {
         jsx: 'automatic',
     },
