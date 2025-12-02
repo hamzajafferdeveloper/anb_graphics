@@ -5,26 +5,26 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\FileHelper;
 use App\Helpers\SlugHelper;
 use App\Http\Controllers\Controller;
-use App\Models\ProductCategory;
+use App\Models\ProductBrand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
-class ProductCategoryController extends Controller
+class ProductBrandController extends Controller
 {
     /**
      * Display a index page.
      */
     public function index()
     {
-        return Inertia::render('admin/product/category/index');
+        return Inertia::render('admin/product/brand/index');
     }
 
     /**
      * Send listing of the resource.
      */
-    public function getCategories(Request $request)
+    public function getBrands(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -36,7 +36,7 @@ class ProductCategoryController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $query = ProductCategory::query();
+            $query = ProductBrand::query();
 
             if ($request->filled('search')) {
                 $query->where('name', 'like', '%' . $request->input('search') . '%');
@@ -52,7 +52,7 @@ class ProductCategoryController extends Controller
                 'last_page' => $categories->lastPage(),
             ], 200);
         } catch (\Throwable $e) {
-            Log::error('Error getting categories: ' . $e->getMessage());
+            Log::error('Error getting brands: ' . $e->getMessage());
             return response()->json(['error' => 'Something went wrong'], 500);
         }
     }
@@ -75,18 +75,18 @@ class ProductCategoryController extends Controller
             ]);
 
             if ($request->hasFile('image')) {
-                $validated['image'] = FileHelper::store($request->file('image'), 'categories');
+                $validated['image'] = FileHelper::store($request->file('image'), 'brands');
             }
 
-            $slug = SlugHelper::generate($validated['name'], 'product_categories', 'slug');
+            $slug = SlugHelper::generate($validated['name'], 'product_brands', 'slug');
 
-            ProductCategory::create([
+            ProductBrand::create([
                 'name' => $validated['name'],
                 'slug' => $slug,
                 'image' => $validated['image'] ?? null,
             ]);
 
-            return back()->with('success', 'Category created!');
+            return back()->with('success', 'Brand created!');
 
         } catch (\Throwable $e) {
 
@@ -105,7 +105,7 @@ class ProductCategoryController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $category = ProductCategory::findOrFail($id);
+            $brand = ProductBrand::findOrFail($id);
 
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
@@ -120,27 +120,27 @@ class ProductCategoryController extends Controller
 
             if ($request->hasFile('image')) {
                 // Delete old image if exists
-                FileHelper::delete($category->image);
+                FileHelper::delete($brand->image);
 
                 // Store new image
-                $validated['image'] = FileHelper::store($request->file('image'), 'categories');
+                $validated['image'] = FileHelper::store($request->file('image'), 'brands');
             }
 
-            if (!request('name') || $category->name !== $validated['name']) {
+            if (!request('name') || $brand->name !== $validated['name']) {
                 // Name has changed, regenerate slug
                 $slug = SlugHelper::generate($validated['name'], 'product_brands', 'slug');
             } else {
                 // Name hasn't changed, keep existing slug
-                $slug = $category->slug;
+                $slug = $brand->slug;
             }
 
-            $category->update([
+            $brand->update([
                 'name' => $validated['name'],
                 'slug' => $slug,
-                'image' => $validated['image'] ?? $category->image,
+                'image' => $validated['image'] ?? $brand->image,
             ]);
 
-            return back()->with('success', 'Category updated!');
+            return back()->with('success', 'Brand updated!');
 
         } catch (\Throwable $e) {
 
@@ -159,17 +159,17 @@ class ProductCategoryController extends Controller
     public function destroy(string $id)
     {
         try {
-            $category = ProductCategory::findOrFail($id);
+            $brand = ProductBrand::findOrFail($id);
 
             // Delete associated image if exists
-            FileHelper::delete($category->image);
+            FileHelper::delete($brand->image);
 
-            $category->delete();
+            $brand->delete();
 
-            return back()->with('success', 'Category deleted!');
+            return back()->with('success', 'Brand deleted!');
 
         } catch (\Throwable $e) {
-            Log::error('Error deleting category: ' . $e->getMessage());
+            Log::error('Error deleting brand: ' . $e->getMessage());
             return back()->with('error', 'Something went wrong');
         }
     }

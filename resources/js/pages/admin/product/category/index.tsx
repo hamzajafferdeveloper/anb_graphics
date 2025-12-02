@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
+        title: 'Product Category',
         href: admin.product.category.index().url,
     },
 ];

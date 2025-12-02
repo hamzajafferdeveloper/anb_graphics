@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -16,6 +17,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/', [ProductCategoryController::class, 'store'])->name('store');
             Route::put('/{id}', [ProductCategoryController::class, 'update'])->name('update');
             Route::delete('/{id}', [ProductCategoryController::class, 'destroy'])->name('destroy');
+        });
+
+        // Product Brand Routes
+        Route::prefix('brand')->name('brand.')->group(function () {
+            Route::get('/', [ProductBrandController::class, 'index'])->name('index');
+            Route::get('/get-categories', [ProductBrandController::class, 'getBrands'])->name('get-brands');
+            Route::post('/', [ProductBrandController::class, 'store'])->name('store');
+            Route::put('/{id}', [ProductBrandController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ProductBrandController::class, 'destroy'])->name('destroy');
         });
     });
 });
