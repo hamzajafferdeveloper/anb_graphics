@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class FileHelper
@@ -24,8 +25,21 @@ class FileHelper
         $filename = Str::random(20) . '.' . $file->getClientOriginalExtension();
 
         // Store in storage/app/public/<folder>/
-        $file->storeAs('public/' . $folder, $filename);
+        Storage::putFileAs("public/$folder", $file, $filename);
 
         return $folder . '/' . $filename; // Return only file name
+    }
+
+    /**
+     * Delete file from storage.
+     *
+     * @param string|null $filePath
+     * @return void
+     */
+    public static function delete(string $filePath = null)
+    {
+        if ($filePath && Storage::exists("public/$filePath")) {
+            Storage::delete("public/$filePath");
+        }
     }
 }

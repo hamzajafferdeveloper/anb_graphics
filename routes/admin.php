@@ -11,11 +11,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Product Category Routes
         Route::prefix('category')->name('category.')->group(function () {
-
             Route::get('/', [ProductCategoryController::class, 'index'])->name('index');
+            Route::get('/get-categories', [ProductCategoryController::class, 'getCategories'])->name('get-categories');
             Route::post('/', [ProductCategoryController::class, 'store'])->name('store');
-
-
+            Route::put('/{id}', [ProductCategoryController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ProductCategoryController::class, 'destroy'])->name('destroy');
         });
     });
 });
