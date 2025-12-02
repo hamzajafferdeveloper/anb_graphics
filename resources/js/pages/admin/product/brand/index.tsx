@@ -363,3 +363,4 @@ const BrandIndex = () => {
 };
 
 export default BrandIndex;
+
