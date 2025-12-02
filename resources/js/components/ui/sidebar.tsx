@@ -512,7 +512,11 @@ function SidebarMenuButton({
       data-sidebar="menu-button"
       data-size={size}
       data-active={isActive}
-      className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+      className={cn(
+        sidebarMenuButtonVariants({ variant, size }),
+        className,
+        isActive && '!bg-(--primary)/20 text-sidebar-accent-foreground'
+      )}
       {...props}
     />
   )

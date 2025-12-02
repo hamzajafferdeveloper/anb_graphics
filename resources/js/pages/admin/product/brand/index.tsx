@@ -17,13 +17,12 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
-import { BreadcrumbItem, SharedData } from '@/types';
+import { BreadcrumbItem } from '@/types';
 import { ProductCategory } from '@/types/data';
-import { Form, Head, router, usePage } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { debounce } from 'lodash';
 import { Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,25 +32,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const BrandIndex = () => {
-    const { flash } = usePage<SharedData>().props;
-
-    useEffect(() => {
-        if (flash?.success) {
-            toast.success(flash.success);
-        }
-        if (flash?.error) {
-            toast.error(flash.error);
-        }
-    }, [flash]);
-
     const [brands, setBrands] = useState<ProductCategory[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
     const [searchValue, setSearchValue] = useState<string>('');
     const [formType, setFormType] = useState<'create' | 'edit'>('create');
-    const [selectedBrand, setSelectedBrand] = useState<number | null>(
-        null,
-    );
+    const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
     const [page, setPage] = useState<number>(1);
     const [lastPage, setLastPage] = useState<number>(1);
 
@@ -73,8 +59,7 @@ const BrandIndex = () => {
         fetch(url.toString())
             .then((response) => response.json())
             .then((data) => {
-                if (append)
-                    setBrands((prev) => [...prev, ...data.bradns]);
+                if (append) setBrands((prev) => [...prev, ...data.bradns]);
                 else setBrands(data.categories);
 
                 setPage(data.current_page);
@@ -163,9 +148,7 @@ const BrandIndex = () => {
                                         formType === 'create' ? 'POST' : 'PUT'
                                     }
                                     resetOnSuccess={true}
-                                    onSuccess={() =>
-                                        loadBrands(searchValue)
-                                    }
+                                    onSuccess={() => loadBrands(searchValue)}
                                     className="space-y-6"
                                 >
                                     {({ errors, processing }) => (
@@ -182,9 +165,7 @@ const BrandIndex = () => {
                                                         defaultValue={
                                                             formType === 'edit'
                                                                 ? brands.find(
-                                                                      (
-                                                                          brand,
-                                                                      ) =>
+                                                                      (brand) =>
                                                                           brand.id ===
                                                                           selectedBrand,
                                                                   )?.name
@@ -363,4 +344,3 @@ const BrandIndex = () => {
 };
 
 export default BrandIndex;
-

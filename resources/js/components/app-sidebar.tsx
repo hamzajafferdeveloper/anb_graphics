@@ -11,11 +11,11 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import admin from '@/routes/admin';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Archive, BookOpen, Folder, LayoutGrid, Tag } from 'lucide-react';
+import { Archive, BookOpen, Folder, LayoutGrid, Settings, Tag } from 'lucide-react';
 import AppLogo from './app-logo';
-import admin from '@/routes/admin';
 
 const mainNavItems: NavItem[] = [
     {
@@ -24,15 +24,18 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Products Category',
-        href: admin.product.category.index(),
+        title: 'Products',
         icon: Archive,
+        children: [
+            { title: 'Category', href: admin.product.category.index(), icon: Archive },
+            { title: 'Brand', href: admin.product.brand.index(), icon: Tag },
+        ],
     },
     {
-        title: 'Products Brand',
-        href: admin.product.brand.index(),
-        icon: Tag,
-    }
+        title: 'App Settings',
+        href: admin.settings.index(),
+        icon: Settings,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
