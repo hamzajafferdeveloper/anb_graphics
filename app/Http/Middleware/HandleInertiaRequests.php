@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AppSetting;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -38,6 +39,8 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $appSettings = AppSetting::all();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -50,6 +53,13 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'appSettings' => [
+                'site_name' => $appSettings->where('key', 'site_name')->first()->value ?? '',
+                'site_currency' => $appSettings->where('key', 'site_currency')->first()->value ?? '',
+                'site_currency_symbol' => $appSettings->where('key', 'site_currency_symbol')->first()->value ?? '',
+                'site_logo' => $appSettings->where('key', 'site_logo')->first()->value ?? '',
+                'site_favicon' => $appSettings->where('key', 'site_favicon')->first()->value ?? '',
+            ]
         ];
     }
 }

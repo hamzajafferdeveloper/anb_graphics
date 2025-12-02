@@ -20,7 +20,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         items.forEach((item) => {
             if (item.children && item.children.length > 0) {
                 const match = item.children.some((child) =>
-                    page.url.startsWith(resolveUrl(child.href || '')),
+                    page.url.startsWith(resolveUrl(child.href || ''))
                 );
                 if (match) setOpenItem(item.title);
             }
@@ -56,9 +56,7 @@ function NavItemComponent({
     openItem: string | null;
     setOpenItem: (title: string | null) => void;
 }) {
-    const isActive = item.href
-        ? pageUrl.startsWith(resolveUrl(item.href))
-        : false;
+    const isActive = item.href ? pageUrl.startsWith(resolveUrl(item.href)) : false;
     const isOpen = openItem === item.title;
 
     const toggleOpen = () => {
@@ -68,47 +66,42 @@ function NavItemComponent({
     if (item.children && item.children.length > 0) {
         return (
             <SidebarMenuItem>
-                <SidebarMenuButton
-                    asChild
-                    onClick={toggleOpen}
-                    tooltip={{ children: item.title }}
-                >
+                <SidebarMenuButton asChild onClick={toggleOpen} tooltip={{ children: item.title }}>
                     <button className="flex w-full items-center justify-between">
                         <div className="flex items-center gap-2">
                             {item.icon && <item.icon className="h-4 w-4" />}
                             <span>{item.title}</span>
                         </div>
-                        {isOpen ? (
-                            <ChevronDown size={16} />
-                        ) : (
-                            <ChevronRight size={16} />
-                        )}
+                        {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     </button>
                 </SidebarMenuButton>
 
                 {isOpen && (
-                    <div className="mt-1 ml-4 space-y-1">
+                    <ul className="mt-1 ml-4 space-y-1">
                         {item.children.map((child) => (
                             <SidebarMenuItem key={child.title}>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={
-                                        child.href
-                                            ? pageUrl.startsWith(
-                                                  resolveUrl(child.href),
-                                              )
-                                            : false
-                                    }
-                                    tooltip={{ children: child.title }}
-                                >
-                                    <Link href={child.href || '#'}>
-                                        {child.icon && <child.icon />}
-                                        <span>{child.title}</span>
-                                    </Link>
-                                </SidebarMenuButton>
+                                {child.children && child.children.length > 0 ? (
+                                    <NavItemComponent
+                                        item={child}
+                                        pageUrl={pageUrl}
+                                        openItem={openItem}
+                                        setOpenItem={setOpenItem}
+                                    />
+                                ) : (
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={child.href ? pageUrl.startsWith(resolveUrl(child.href)) : false}
+                                        tooltip={{ children: child.title }}
+                                    >
+                                        <Link href={child.href || '#'}>
+                                            {child.icon && <child.icon />}
+                                            <span>{child.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                )}
                             </SidebarMenuItem>
                         ))}
-                    </div>
+                    </ul>
                 )}
             </SidebarMenuItem>
         );
@@ -116,11 +109,7 @@ function NavItemComponent({
 
     return (
         <SidebarMenuItem>
-            <SidebarMenuButton
-                asChild
-                isActive={isActive}
-                tooltip={{ children: item.title }}
-            >
+            <SidebarMenuButton asChild isActive={isActive} tooltip={{ children: item.title }}>
                 <Link href={item.href || '#'}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>

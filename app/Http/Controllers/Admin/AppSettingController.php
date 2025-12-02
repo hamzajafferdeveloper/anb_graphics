@@ -6,6 +6,7 @@ use App\Helpers\FileHelper;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
@@ -19,7 +20,7 @@ class AppSettingController extends Controller
         $appSettings = AppSetting::all();
 
         return Inertia::render('admin/app-settings/index', [
-            'appSettings' => $appSettings,
+            'app_settings' => $appSettings,
         ]);
     }
 
@@ -62,6 +63,16 @@ class AppSettingController extends Controller
                     ['value' => $value]
                 );
             }
+
+            Cache::forget('app_settings');
+
+            $settings = Cache::rememberForever('app_settings', function () {
+                return AppSetting::pluck('value', 'key')->toArray();
+            });
+
+            // Share with Inertia
+            Inertia::share('appSettings', $settings);
+            ;
 
             return back()->with('success', 'Settings updated!');
 

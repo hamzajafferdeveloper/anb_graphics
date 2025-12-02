@@ -8,6 +8,7 @@ import admin from '@/routes/admin';
 import { AppSetting, BreadcrumbItem } from '@/types';
 import { Form, Head } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,7 +17,34 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
+const AppSettings = ({ app_settings }: { app_settings: AppSetting[] }) => {
+    // Get saved values
+    const savedLogo =
+        app_settings.find((s) => s.key === 'site_logo')?.value || '';
+    const savedFavicon =
+        app_settings.find((s) => s.key === 'site_favicon')?.value || '';
+
+    // Refs
+    const logoInput = useRef<HTMLInputElement>(null);
+    const faviconInput = useRef<HTMLInputElement>(null);
+
+    // Preview states
+    const [logoPreview, setLogoPreview] = useState<string>(
+        savedLogo ? `/storage/${savedLogo}` : '',
+    );
+    const [faviconPreview, setFaviconPreview] = useState<string>(
+        savedFavicon ? `/storage/${savedFavicon}` : '',
+    );
+
+    // Handle preview
+    const handlePreview = (
+        file: File | null,
+        setter: (url: string) => void,
+    ) => {
+        if (!file) return;
+        setter(URL.createObjectURL(file));
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="App Settings" />
@@ -32,27 +60,38 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
                                 <div className="flex flex-col gap-6">
                                     {/* Site Logo */}
                                     <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
-                                        <label
-                                            htmlFor="site_logo"
-                                            className="w-32"
-                                        >
+                                        <label className="w-32">
                                             Logo (174 x 40)
                                         </label>
 
+                                        {/* Hidden Input */}
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            className=""
                                             name="site_logo"
+                                            ref={logoInput}
                                             hidden
+                                            onChange={(e) =>
+                                                handlePreview(
+                                                    e.target.files?.[0] || null,
+                                                    setLogoPreview,
+                                                )
+                                            }
                                         />
 
                                         <div>
                                             <div className="flex items-center gap-4">
-                                                <img className="h-[40px] w-[174px] border" />
+                                                <img
+                                                    src={logoPreview}
+                                                    className="h-[40px] w-[174px] border bg-white object-contain"
+                                                />
+
                                                 <Button
                                                     variant="outline"
-                                                    className="cursor-pointer"
+                                                    type="button"
+                                                    onClick={() =>
+                                                        logoInput.current?.click()
+                                                    }
                                                 >
                                                     <Upload className="mr-2 h-4 w-4" />
                                                     Upload File
@@ -66,26 +105,37 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
 
                                     {/* Site Favicon */}
                                     <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
-                                        <label
-                                            htmlFor="site_favicon"
-                                            className="w-32"
-                                        >
+                                        <label className="w-32">
                                             Favicon (32 x 32)
                                         </label>
+
                                         <input
                                             type="file"
                                             accept="image/*"
                                             name="site_favicon"
-                                            className=""
+                                            ref={faviconInput}
                                             hidden
+                                            onChange={(e) =>
+                                                handlePreview(
+                                                    e.target.files?.[0] || null,
+                                                    setFaviconPreview,
+                                                )
+                                            }
                                         />
 
                                         <div>
                                             <div className="flex items-center gap-4">
-                                                <img className="h-[32px] w-[32px] border" />
+                                                <img
+                                                    src={faviconPreview}
+                                                    className="h-[32px] w-[32px] border bg-white object-contain"
+                                                />
+
                                                 <Button
                                                     variant="outline"
-                                                    className="cursor-pointer"
+                                                    type="button"
+                                                    onClick={() =>
+                                                        faviconInput.current?.click()
+                                                    }
                                                 >
                                                     <Upload className="mr-2 h-4 w-4" />
                                                     Upload File
@@ -99,12 +149,7 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
 
                                     {/* Site Name */}
                                     <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
-                                        <label
-                                            htmlFor="site_name"
-                                            className="w-32"
-                                        >
-                                            Name
-                                        </label>
+                                        <label className="w-32">Name</label>
                                         <div>
                                             <Input
                                                 id="site_name"
@@ -113,7 +158,7 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
                                                 placeholder="Enter site name"
                                                 className="flex-1"
                                                 defaultValue={
-                                                    appSettings.find(
+                                                    app_settings.find(
                                                         (setting) =>
                                                             setting.key ===
                                                             'site_name',
@@ -128,12 +173,7 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
 
                                     {/* Site Currency */}
                                     <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
-                                        <label
-                                            htmlFor="site_currency"
-                                            className="w-32 "
-                                        >
-                                            Currency
-                                        </label>
+                                        <label className="w-32">Currency</label>
                                         <div>
                                             <Input
                                                 id="site_currency"
@@ -142,9 +182,9 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
                                                 placeholder="Enter site currency"
                                                 className="flex-1"
                                                 defaultValue={
-                                                    appSettings.find(
-                                                        (setting) =>
-                                                            setting.key ===
+                                                    app_settings.find(
+                                                        (s) =>
+                                                            s.key ===
                                                             'site_currency',
                                                     )?.value || ''
                                                 }
@@ -155,12 +195,9 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
                                         </div>
                                     </div>
 
-                                    {/* Site Currency Icon */}
+                                    {/* Site Currency Symbol */}
                                     <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
-                                        <label
-                                            htmlFor="site_currency_symbol"
-                                            className="w-32"
-                                        >
+                                        <label className="w-32">
                                             Currency Symbol
                                         </label>
                                         <div>
@@ -171,9 +208,9 @@ const AppSettings = ({ appSettings }: { appSettings: AppSetting[] }) => {
                                                 placeholder="Enter site currency icon"
                                                 className="flex-1"
                                                 defaultValue={
-                                                    appSettings.find(
-                                                        (setting) =>
-                                                            setting.key ===
+                                                    app_settings.find(
+                                                        (s) =>
+                                                            s.key ===
                                                             'site_currency_symbol',
                                                     )?.value || ''
                                                 }

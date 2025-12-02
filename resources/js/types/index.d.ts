@@ -30,8 +30,15 @@ export interface SharedData {
     flash: {
         success?: string;
         error?: string;
-    }
+    };
     sidebarOpen: boolean;
+    appSettings: {
+        site_name: string;
+        site_currency: string;
+        site_currency_symbol: string;
+        site_logo: string;
+        site_favicon: string;
+    };
     [key: string]: unknown;
 }
 

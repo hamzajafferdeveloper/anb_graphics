@@ -13,7 +13,9 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', default: 'ANB Graphics'),
+    'currency' => env('APP_CURRENCY', 'USD'),
+    'currency_symbol' => env('APP_CURRENCY_SYMBOL', '$'),
 
     /*
     |--------------------------------------------------------------------------
