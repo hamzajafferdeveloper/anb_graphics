@@ -2,24 +2,24 @@ import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import ProductTypeDataTable from './data-table';
+import ColorsDataTable from './data-table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Product Type',
-        href: admin.product.type.index().url,
+        title: 'Colors',
+        href: admin.color.index().url,
     },
 ];
 
-const BrandIndex = () => {
+const ColorIndex = () => {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Product Type" />
+            <Head title="Colors" />
             <section className="flex flex-col gap-4 p-4">
-                <ProductTypeDataTable />
+                <ColorsDataTable />
             </section>
         </AppLayout>
     );
 };
 
-export default BrandIndex;
+export default ColorIndex;

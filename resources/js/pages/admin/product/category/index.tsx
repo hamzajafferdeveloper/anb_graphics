@@ -23,6 +23,7 @@ import { Form, Head, router } from '@inertiajs/react';
 import { debounce } from 'lodash';
 import { Pencil, RotateCcw, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useMediaQuery } from 'usehooks-ts';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -42,6 +43,7 @@ const CategoryIndex = () => {
     );
     const [page, setPage] = useState<number>(1);
     const [lastPage, setLastPage] = useState<number>(1);
+    const isMediumOrBelow = useMediaQuery('(max-width: 768px)');
 
     const loadCategories = (
         search: string = '',
@@ -102,11 +104,11 @@ const CategoryIndex = () => {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Product Category" />
             <ResizablePanelGroup
-                direction="horizontal"
+                direction={isMediumOrBelow ? "vertical" : "horizontal"}
                 className="h-[calc(100vh-48px)] w-full"
             >
                 {/* Form Panel */}
-                <ResizablePanel defaultSize={25} minSize={0} maxSize={25}>
+                <ResizablePanel defaultSize={25} minSize={0} maxSize={isMediumOrBelow ? 90 : 40}>
                     <div className="flex h-full justify-center overflow-hidden p-6">
                         <Card className="h-fit w-full max-w-sm">
                             <CardHeader className="!flex flex-row items-start justify-between pb-4">

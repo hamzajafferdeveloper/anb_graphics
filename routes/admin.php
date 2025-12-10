@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\AppSettingController;
 use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
+use App\Http\Controllers\Admin\ProductColorController;
+use App\Http\Controllers\Admin\ProductTypeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -13,7 +15,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AppSettingController::class, 'index'])->name('index');
         Route::post('/store', [AppSettingController::class, 'store'])->name('store');
     });
-
 
     // Product Related Routes
     Route::prefix('product')->name('product.')->group(function () {
@@ -36,6 +37,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/{id}', [ProductBrandController::class, 'destroy'])->name('destroy');
         });
 
+        // Product Type Routes
+        Route::prefix('type')->name('type.')->group(function () {
+            Route::get('/', [ProductTypeController::class, 'index'])->name('index');
+            Route::get('/get-types', [ProductTypeController::class, 'getTypes'])->name('get-types');
+            Route::post('/', [ProductTypeController::class, 'store'])->name('store');
+            Route::put('/{id}', [ProductTypeController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ProductTypeController::class, 'destroy'])->name('destroy');
+        });
 
+    });
+
+    // Color Routes
+    Route::prefix('color')->name('color.')->group(function () {
+        Route::get('/', [ProductColorController::class, 'index'])->name('index');
+        Route::get('/get-colors', [ProductColorController::class, 'getColors'])->name('get-colors');
+        Route::post('/', [ProductColorController::class, 'store'])->name('store');
+        Route::put('/{id}', [ProductColorController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ProductColorController::class, 'destroy'])->name('destroy');
     });
 });

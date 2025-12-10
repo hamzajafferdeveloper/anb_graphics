@@ -14,7 +14,7 @@ import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Archive, BookOpen, Folder, LayoutGrid, Settings, Tag } from 'lucide-react';
+import { Archive, BookOpen, Folder, LayoutGrid, List, Palette, Settings, Tag } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -29,7 +29,13 @@ const mainNavItems: NavItem[] = [
         children: [
             { title: 'Category', href: admin.product.category.index(), icon: Archive },
             { title: 'Brand', href: admin.product.brand.index(), icon: Tag },
+            { title: 'Tpye', href: admin.product.type.index(), icon: List },
         ],
+    },
+    {
+        title: 'Colors',
+        href: admin.color.index(),
+        icon: Palette,
     },
     {
         title: 'App Settings',
