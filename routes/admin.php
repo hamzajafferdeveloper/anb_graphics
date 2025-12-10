@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AppSettingController;
 use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductColorController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductTypeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -18,6 +19,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Product Related Routes
     Route::prefix('product')->name('product.')->group(function () {
+
+        Route::get('/create', [ProductController::class, 'create'])->name('create');
 
         // Product Category Routes
         Route::prefix('category')->name('category.')->group(function () {

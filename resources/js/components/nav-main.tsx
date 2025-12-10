@@ -77,9 +77,9 @@ function NavItemComponent({
                 </SidebarMenuButton>
 
                 {isOpen && (
-                    <ul className="mt-1 ml-4 space-y-1">
+                    <ul className="mt-1 ml-1 border-l space-y-1">
                         {item.children.map((child) => (
-                            <SidebarMenuItem key={child.title}>
+                            <SidebarMenuItem key={child.title} className='pl-1'>
                                 {child.children && child.children.length > 0 ? (
                                     <NavItemComponent
                                         item={child}
