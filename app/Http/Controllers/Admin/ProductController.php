@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Color;
+use App\Models\ProductBrand;
+use App\Models\ProductCategory;
+use App\Models\ProductType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -21,7 +26,22 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return Inertia::render('admin/product/create');
+        try {
+            $categories = ProductCategory::all();
+            $types = ProductType::all();
+            $brands = ProductBrand::all();
+            $colors = Color::all();
+
+            return Inertia::render('admin/product/create', [
+                'categories' => $categories,
+                'types' => $types,
+                'brands' => $brands,
+                'all_colors' => $colors
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Fail to get Create Product Page ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -29,7 +49,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request->all());
     }
 
     /**

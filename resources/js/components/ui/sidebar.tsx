@@ -515,7 +515,7 @@ function SidebarMenuButton({
       className={cn(
         sidebarMenuButtonVariants({ variant, size }),
         className,
-        isActive && '!bg-(--primary)/20 text-sidebar-accent-foreground'
+        isActive && '!bg-(--primary) !text-white'
       )}
       {...props}
     />

@@ -30,7 +30,7 @@ const mainNavItems: NavItem[] = [
             { title: 'Create New', href: admin.product.create(), icon: CirclePlus },
             { title: 'Category', href: admin.product.category.index(), icon: Archive },
             { title: 'Brand', href: admin.product.brand.index(), icon: Tag },
-            { title: 'Tpye', href: admin.product.type.index(), icon: List },
+            { title: 'Type', href: admin.product.type.index(), icon: List },
         ],
     },
     {
