@@ -54,6 +54,11 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface MetaData {
+  title: string
+  description: string
+}
+
 export interface AppSetting {
     id: number;
     key: string;

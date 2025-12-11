@@ -44,7 +44,7 @@ import FileUploaderSection from './components/file-uploader-section';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Create New Product',
-        href: admin.product.type.index().url,
+        href: admin.product.create().url,
     },
 ];
 
