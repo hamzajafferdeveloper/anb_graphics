@@ -2,6 +2,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -46,11 +55,14 @@ import {
 import { Head, Link, router } from '@inertiajs/react';
 import { format } from 'date-fns';
 import {
+    FilePlus,
+    GitBranch,
     Hourglass,
     LockKeyhole,
     LockKeyholeOpen,
     Pencil,
     PlusIcon,
+    SlidersHorizontal,
     Trash2,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -86,6 +98,8 @@ const ProductIndex = ({
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
     const [selectedProductSlug, setSelectedProductSlug] = useState<string>('');
     const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
+    const [openSelectionPopup, setOpenSelectionPopup] =
+        useState<boolean>(false);
     const [loadingStatusChange, setLoadingStatusChange] =
         useState<boolean>(false);
 
@@ -166,7 +180,7 @@ const ProductIndex = ({
                 <h1 className="text-2xl font-bold">All Products</h1>
 
                 {/* Filters */}
-                <div className="flex flex-col justify-between gap-2 md:flex-row">
+                <div className="flex flex-col justify-between gap-2 rounded-lg border p-2 hover:translate-y-[-2px] hover:shadow-lg md:flex-row">
                     <div className="flex flex-col items-start gap-2 md:flex-row md:items-center">
                         <Input
                             type="text"
@@ -250,6 +264,7 @@ const ProductIndex = ({
                                 <SelectItem value="unpublished">
                                     Unpublished
                                 </SelectItem>
+                                <SelectItem value="draft">Draft</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -302,14 +317,21 @@ const ProductIndex = ({
                                         {sortField === 'created_at' &&
                                             (sortOrder === 'asc' ? '↑' : '↓')}
                                     </TableHead>
-                                    <TableHead>Actions</TableHead>
+                                    <TableHead className="text-right">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {loading && (
-                                    <TableRow className="w-full">
-                                        <TableCell className="w-full">
-                                            <Spinner className="mx-auto" />
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={999}
+                                            className="p-10"
+                                        >
+                                            <div className="flex w-full items-center justify-center">
+                                                <Spinner className="h-6 w-6" />
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -365,7 +387,7 @@ const ProductIndex = ({
                                                                   ? 'outline'
                                                                   : 'destructive'
                                                         }
-                                                        className="flex items-center gap-1"
+                                                        className="flex items-center gap-1 cursor-pointer"
                                                     >
                                                         {loadingStatusChange ? (
                                                             <Spinner className="h-4 w-4" />
@@ -422,9 +444,9 @@ const ProductIndex = ({
                                                 'dd MMM yyyy',
                                             )}
                                         </TableCell>
-                                        <TableCell className="flex gap-2">
+                                        <TableCell className="flex justify-end gap-2">
                                             <Button
-                                                size="sm"
+                                                size="icon"
                                                 className="cursor-pointer"
                                             >
                                                 <Link
@@ -436,7 +458,7 @@ const ProductIndex = ({
                                                 </Link>
                                             </Button>
                                             <Button
-                                                size="sm"
+                                                size="icon"
                                                 className="cursor-pointer"
                                                 variant="destructive"
                                                 onClick={() => {
@@ -447,6 +469,19 @@ const ProductIndex = ({
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="icon"
+                                                className="cursor-pointer"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setSelectedProductSlug(
+                                                        product.slug,
+                                                    );
+                                                    setOpenSelectionPopup(true);
+                                                }}
+                                            >
+                                                <GitBranch />
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -537,6 +572,49 @@ const ProductIndex = ({
                 cancelText="Cancel"
                 onConfirm={handleDelete}
             />
+            <Dialog
+                open={openSelectionPopup}
+                onOpenChange={setOpenSelectionPopup}
+            >
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle>Select Section</DialogTitle>
+                        <DialogDescription>
+                            Please select what you want to add to this product.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col gap-3">
+                        <Button
+                            // variant="outline"
+                            className="flex w-full cursor-pointer items-center justify-between"
+                            onClick={() => router.get(admin.product.svgTemplate.create(selectedProductSlug).url)}
+                        >
+                            <div className="flex items-center gap-2">
+                                <SlidersHorizontal className="h-4 w-4" />
+                                Add Customizer
+                            </div>
+                        </Button>
+
+                        <Button
+                            // variant="outline"
+                            className="flex w-full cursor-pointer items-center justify-between"
+                            // onClick={handleAddFiles}
+                        >
+                            <div className="flex items-center gap-2">
+                                <FilePlus className="h-4 w-4" />
+                                Add Files
+                            </div>
+                        </Button>
+                    </div>
+
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 };

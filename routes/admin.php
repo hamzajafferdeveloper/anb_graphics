@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductColorController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductSvgTemplate;
+use App\Http\Controllers\Admin\ProductSvgTemplateController;
 use App\Http\Controllers\Admin\ProductTypeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,6 +22,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Product Related Routes
     Route::prefix('product')->name('product.')->group(function () {
 
+        // Product Cruds Routes
         Route::get('/index', [ProductController::class, 'index'])->name('index');
         Route::get('/create', [ProductController::class, 'create'])->name('create');
         Route::post('/store', [ProductController::class, 'store'])->name('store');
@@ -27,6 +30,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/update/{slug}', [ProductController::class, 'update'])->name('update');
         Route::delete('/destroy/{slug}', [ProductController::class, 'destroy'])->name('destroy');
         Route::post('/update-status/{slug}/{status}', [ProductController::class, 'updateStatus'])->name('update-status');
+
+        Route::prefix('svg-template')->name('svgTemplate.')->group(function () {
+            Route::get('/product={slug}', [ProductSvgTemplateController::class, 'create'])->name('create');
+        });
 
         // Product Category Routes
         Route::prefix('category')->name('category.')->group(function () {

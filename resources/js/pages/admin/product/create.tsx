@@ -41,6 +41,7 @@ import { CalendarIcon, ChevronsUpDownIcon, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ChromePicker } from 'react-color';
 import FileUploaderSection from './components/file-uploader-section';
+import MaterialColors from './components/material-colors';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -55,8 +56,6 @@ type Props = {
     brands: ProductBrand[];
     all_colors: ProductColor[];
 };
-
-const materials = ['Leather', 'Cotton', 'Nylon', 'Other'];
 
 const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
     const [hasSalePrice, setHaSalePrice] = useState<boolean>(false);
@@ -619,172 +618,18 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                             />
                                         </div>
 
-                                        <div className="flex flex-col gap-6">
-                                            {/* ======================= MATERIAL SECTION ======================= */}
-                                            <div className="flex w-full flex-col gap-2">
-                                                <Label htmlFor="material">
-                                                    Material
-                                                </Label>
-
-                                                {/* Hidden input */}
-                                                <input
-                                                    hidden
-                                                    id="material"
-                                                    name="material"
-                                                    value={material}
-                                                    onChange={(e) =>
-                                                        setMaterial(
-                                                            e.target.value as
-                                                                | 'leather'
-                                                                | 'other'
-                                                                | 'cotton',
-                                                        )
-                                                    }
-                                                />
-
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger
-                                                        asChild
-                                                    >
-                                                        <Button
-                                                            variant="outline"
-                                                            className="flex w-full items-center justify-between"
-                                                        >
-                                                            {material ||
-                                                                'Select Material'}
-                                                            <ChevronsUpDownIcon className="h-4 w-4 opacity-60" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-
-                                                    <DropdownMenuContent className="w-56">
-                                                        {materials.map(
-                                                            (mat) => (
-                                                                <DropdownMenuItem
-                                                                    key={mat}
-                                                                    className="capitalize"
-                                                                    onClick={() =>
-                                                                        setMaterial(
-                                                                            mat as
-                                                                                | 'leather'
-                                                                                | 'other'
-                                                                                | 'cotton',
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {mat}
-                                                                </DropdownMenuItem>
-                                                            ),
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-
-                                                <InputError
-                                                    message={errors?.material}
-                                                />
-                                            </div>
-
-                                            {/* ======================= COLOR SECTION ======================= */}
-                                            <div className="flex flex-col gap-3">
-                                                <Label>Colors</Label>
-
-                                                {/* ======================= FREE COLOR MODE ======================= */}
-                                                <div className="flex items-center gap-3">
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            setShowPicker(
-                                                                !showPicker,
-                                                            )
-                                                        }
-                                                        className="flex items-center gap-2"
-                                                    >
-                                                        <div
-                                                            className="h-4 w-4 rounded border"
-                                                            style={{
-                                                                background:
-                                                                    pickerColor,
-                                                            }}
-                                                        />
-                                                        Pick Color
-                                                    </Button>
-
-                                                    <Button
-                                                        type="button"
-                                                        variant="default"
-                                                        className="px-4"
-                                                        onClick={() => {
-                                                            if (
-                                                                !colors.includes(
-                                                                    pickerColor,
-                                                                )
-                                                            ) {
-                                                                setColors([
-                                                                    ...colors,
-                                                                    pickerColor,
-                                                                ]);
-                                                            }
-                                                        }}
-                                                    >
-                                                        Add Color
-                                                    </Button>
-                                                </div>
-
-                                                {/* FLOATING PICKER CARD */}
-                                                {showPicker && (
-                                                    <div className="w-fit rounded-xl border bg-white p-3 shadow-md">
-                                                        <ChromePicker
-                                                            color={pickerColor}
-                                                            onChange={(color) =>
-                                                                setPickerColor(
-                                                                    color.hex,
-                                                                )
-                                                            }
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                {/* Hidden inputs for backend */}
-                                                {colors.map((c, i) => (
-                                                    <input
-                                                        key={i}
-                                                        type="hidden"
-                                                        name="colors[]"
-                                                        value={c}
-                                                    />
-                                                ))}
-
-                                                {/* Color Chips */}
-                                                <div className="mt-1 flex flex-wrap gap-2">
-                                                    {colors.map((color) => (
-                                                        <Badge
-                                                            key={color}
-                                                            className="flex items-center gap-2 px-3 py-1"
-                                                        >
-                                                            <div
-                                                                className="h-4 w-4 rounded border"
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        color,
-                                                                }}
-                                                            />
-                                                            <span>{color}</span>
-
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    removeColor(
-                                                                        color,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <X className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" />
-                                                            </button>
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <MaterialColors
+                                            material={material}
+                                            setMaterial={setMaterial}
+                                            pickerColor={pickerColor}
+                                            setPickerColor={setPickerColor}
+                                            showPicker={showPicker}
+                                            setShowPicker={setShowPicker}
+                                            colors={colors}
+                                            setColors={setColors}
+                                            removeColor={removeColor}
+                                            errors={errors}
+                                        />
 
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="keywords">
