@@ -187,15 +187,158 @@ class ProductController extends Controller
      */
     public function edit(string $slug)
     {
-        //
+        try {
+            $categories = ProductCategory::all();
+            $types = ProductType::all();
+            $brands = ProductBrand::all();
+            $colors = Color::all();
+
+            $data = Product::where('slug', $slug)->with('brand', 'category', 'type', 'images')->first();
+
+            if (!$data) {
+                return redirect()->back()->with('error', 'Product not found');
+            }
+
+
+            return Inertia::render('admin/product/edit', [
+                'data' => $data,
+                'categories' => $categories,
+                'types' => $types,
+                'brands' => $brands,
+                'all_colors' => $colors
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Fail to get Edit Product Page ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $slug)
+    public function update(CreateProductRequest $request, string $slug)
     {
-        //
+        try {
+
+            $product = Product::where('slug', $slug)->first();
+
+            if (!$product) {
+                return redirect()->back()->with('error', 'Product not found');
+            }
+
+            /* -------------------------------------------
+            UPDATE BASIC PRODUCT FIELDS
+            -------------------------------------------- */
+            $newSlug = $product->slug;
+
+            if ($product->name != $request->name) {
+                $newSlug = SlugHelper::generate($request->name, 'products', 'slug');
+            }
+
+            $product->update([
+                'name' => $request->name,
+                'slug' => $newSlug,
+                'description' => $request->description,
+                'price' => $request->price,
+                'sale_price' => $request->sale_price,
+                'sale_start_at' => $request->sale_start_at,
+                'sale_end_at' => $request->sale_end_at,
+                'product_category_id' => $request->category_id,
+                'product_brand_id' => $request->brand_id,
+                'product_type_id' => $request->type_id,
+                'material' => $request->material,
+                'colors' => $request->colors,
+                'keywords' => $request->keywords,
+                'meta' => [
+                    'title' => $request->meta_title,
+                    'description' => $request->meta_description,
+                ],
+            ]);
+
+            /* -------------------------------------------
+            SYNC KEYWORDS TABLE
+            -------------------------------------------- */
+            if ($request->has('keywords')) {
+                foreach ($request->keywords as $keyword) {
+                    if (!$keyword)
+                        continue;
+
+                    ProductKeyword::firstOrCreate([
+                        'keyword' => $keyword
+                    ]);
+                }
+            }
+
+            /* -------------------------------------------
+            HANDLE EXISTING IMAGES (KEEP / REMOVE)
+            -------------------------------------------- */
+
+            $existingIds = $request->input('existing_images', []);
+
+            $product->images()
+                ->whereNotIn('id', $existingIds)
+                ->each(function ($img) {
+                    FileHelper::delete($img->path);
+                    $img->delete();
+                });
+
+            /* -------------------------------------------
+            HANDLE NEW IMAGES UPLOAD
+            -------------------------------------------- */
+
+            $hasPrimary = $product->images()->where('is_primary', true)->exists();
+
+            if ($request->hasFile('images')) {
+
+                foreach ($request->file('images') as $image) {
+
+                    $path = FileHelper::store($image, 'products');
+
+                    $product->images()->create([
+                        'path' => $path,
+                        'alt' => $product->name,
+                        'is_primary' => !$hasPrimary, // set first uploaded as primary if missing
+                    ]);
+
+                    $hasPrimary = true;
+                }
+            }
+
+            /* -------------------------------------------
+            ENSURE PRIMARY IMAGE EXISTS
+            -------------------------------------------- */
+            if (!$hasPrimary && $product->images()->exists()) {
+                $first = $product->images()->first();
+                $first->update(['is_primary' => true]);
+            }
+
+            return redirect()
+                ->route('admin.product.index')
+                ->with('success', 'Product updated successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Fail to update product ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function updateStatus(string $slug, string $status)
+    {
+        try {
+            $product = Product::where('slug', $slug)->first();
+
+            if (!$product) {
+                return redirect()->back()->with('error', 'Product not found');
+            }
+
+            $product->status = $status;
+            $product->save();
+
+            return redirect()->back()->with('success', 'Product status updated successfully');
+        } catch (\Exception $e) {
+            Log::error('Fail to update product status: ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     /**

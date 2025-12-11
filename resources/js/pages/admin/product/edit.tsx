@@ -30,6 +30,7 @@ import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { BreadcrumbItem } from '@/types';
 import {
+    Product,
     ProductBrand,
     ProductCategory,
     ProductColor,
@@ -53,20 +54,29 @@ type Props = {
     types: ProductType[];
     brands: ProductBrand[];
     all_colors: ProductColor[];
+    data: Product;
 };
 
 const materials = ['Leather', 'Cotton', 'Nylon', 'Other'];
 
-const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
-    const [hasSalePrice, setHaSalePrice] = useState<boolean>(false);
+const CreateProduct = ({
+    categories,
+    types,
+    brands,
+    all_colors,
+    data,
+}: Props) => {
+    const [hasSalePrice, setHaSalePrice] = useState<boolean>(!!data.sale_price);
     const [saleStartDate, setSaleStartDate] = useState<Date | undefined>(
-        new Date(),
+        data.sale_start_at ? new Date(data.sale_start_at) : undefined,
     );
+
     const [saleEndDate, setSaleEndDate] = useState<Date | undefined>(
-        new Date(),
+        data.sale_end_at ? new Date(data.sale_end_at) : undefined,
     );
     const [startError, setStartError] = useState<string | null>(null);
     const [endError, setEndError] = useState<string | null>(null);
+
     // Validate start date (cannot be in past)
     useEffect(() => {
         if (saleStartDate && isPast(saleStartDate)) {
@@ -91,20 +101,23 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
 
     // STATE for comboboxes
     const [selectedCategory, setSelectedCategory] =
-        useState<ProductCategory | null>(null);
+        useState<ProductCategory | null>(data.category);
+
     const [openCategory, setOpenCategory] = useState(false);
 
     const [selectedBrand, setSelectedBrand] = useState<ProductBrand | null>(
-        null,
+        data.brand,
     );
     const [openBrand, setOpenBrand] = useState(false);
 
-    const [selectedType, setSelectedType] = useState<ProductType | null>(null);
+    const [selectedType, setSelectedType] = useState<ProductType | null>(
+        data.type,
+    );
     const [openType, setOpenType] = useState(false);
 
     // MATERIAL
     const [material, setMaterial] = useState<'leather' | 'cotton' | 'other'>(
-        'other',
+        data.material.toLowerCase() as 'leather' | 'cotton' | 'other',
     );
 
     // COLORS
@@ -112,11 +125,11 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
         null,
     );
     // COLORS
-    const [colors, setColors] = useState<string[]>([]);
+    const [colors, setColors] = useState<string[]>(data.colors || []);
     const [colorInput, setColorInput] = useState('');
 
     // KEYWORDS (TAGS)
-    const [keywords, setKeywords] = useState<string[]>([]);
+    const [keywords, setKeywords] = useState<string[]>(data.keywords || []);
     const [keywordInput, setKeywordInput] = useState<string>('');
 
     // Add color on Enter
@@ -156,16 +169,18 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                 <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 rounded-xl border p-4">
                     <h1 className="text-2xl">Create New Product</h1>
 
-                    <Form action={admin.product.store()} method="post">
+                    <Form action={admin.product.update(data.slug)} method="put">
                         {({ errors, processing }) => (
                             <div className="flex flex-col gap-4">
                                 <div className="flex w-full gap-5">
                                     <div className="flex w-full flex-col gap-2 border p-3">
                                         <div>
-                                            <FileUploaderSection />
-                                            <InputError message={errors.images} />
+                                            <FileUploaderSection data={data.images} />
+                                            <InputError
+                                                message={errors.images}
+                                            />
                                         </div>
-                                        <div className="mt-2 border-t border-dashed border-primary py-3 flex flex-col gap-2">
+                                        <div className="mt-2 flex flex-col gap-2 border-t border-dashed border-primary py-3">
                                             <div className="flex flex-col gap-2">
                                                 <Label htmlFor="meta_title">
                                                     Meta Title
@@ -175,9 +190,11 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                                     name="meta_title"
                                                     placeholder="Navy Blue Snaker Shoe"
                                                     className="w-full"
+                                                    defaultValue={data.meta.title}
                                                 />
                                                 <InputError
                                                     message={errors.meta_title}
+
                                                 />
                                             </div>
                                             <div className="flex flex-col gap-2">
@@ -189,9 +206,12 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                                     name="meta_description"
                                                     placeholder="Navy Blue Snaker Shoe"
                                                     className="w-full"
+                                                    defaultValue={data.meta.description}
                                                 />
                                                 <InputError
-                                                    message={errors.meta_description}
+                                                    message={
+                                                        errors.meta_description
+                                                    }
                                                 />
                                             </div>
                                         </div>
@@ -207,6 +227,7 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                                 name="name"
                                                 placeholder="Navy Blue Snaker Shoe"
                                                 className="w-full"
+                                                defaultValue={data.name}
                                             />
                                             <InputError message={errors.name} />
                                         </div>
@@ -363,6 +384,7 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                                     name="price"
                                                     placeholder="175"
                                                     className="w-full"
+                                                    defaultValue={data.price}
                                                 />
                                                 <InputError
                                                     message={errors.price}
@@ -390,6 +412,9 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                                         name="sale_price"
                                                         placeholder="150"
                                                         className="w-full"
+                                                        defaultValue={
+                                                            data.sale_price
+                                                        }
                                                     />
                                                     <InputError
                                                         message={
@@ -599,6 +624,7 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                                 id="description"
                                                 name="description"
                                                 className="w-full"
+                                                defaultValue={data.description}
                                             />
                                             <InputError
                                                 message={errors.description}
@@ -677,7 +703,7 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                                         {selectedColor && (
                                                             <input
                                                                 type="hidden"
-                                                                name="color_id"
+                                                                name="colors[]"
                                                                 value={
                                                                     selectedColor.id
                                                                 }

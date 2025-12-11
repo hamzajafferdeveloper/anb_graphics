@@ -38,14 +38,14 @@ class AppSettingController extends Controller
                 'site_currency_symbol' => ['required', 'string', 'max:255'],
                 'site_logo' => [
                     'nullable',
-                    'image',
+                    // 'image',
                     'max:2048',
                     'mimes:jpeg,png,jpg,gif,svg',
                     'dimensions:min_width=174,min_height=40,max_width=174,max_height=40',
                 ],
                 'site_favicon' => [
                     'nullable',
-                    'image',
+                    // 'image',
                     'max:2048',
                     'mimes:jpeg,png,jpg,gif,svg',
                     'dimensions:min_width=32,min_height=32,max_width=32,max_height=32',

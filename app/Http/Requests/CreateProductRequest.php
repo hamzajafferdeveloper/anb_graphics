@@ -45,7 +45,7 @@ class CreateProductRequest extends FormRequest
             'keywords' => 'nullable|array',
             'keywords.*' => 'string|max:255',
 
-            'images' => 'required|array',
+            'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
         ];
     }

@@ -1,6 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
     Pagination,
@@ -18,6 +24,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Table,
     TableBody,
@@ -39,6 +46,7 @@ import {
 import { Head, Link, router } from '@inertiajs/react';
 import { format } from 'date-fns';
 import {
+    Hourglass,
     LockKeyhole,
     LockKeyholeOpen,
     Pencil,
@@ -77,6 +85,10 @@ const ProductIndex = ({
     const [loading, setLoading] = useState<boolean>(false);
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
     const [selectedProductSlug, setSelectedProductSlug] = useState<string>('');
+    const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
+    const [loadingStatusChange, setLoadingStatusChange] =
+        useState<boolean>(false);
+
     const fetchProducts = () => {
         setLoading(true);
 
@@ -115,6 +127,35 @@ const ProductIndex = ({
                 // fetchProducts();
             },
         });
+    };
+
+    const handleChangeStatus = async (
+        slug: string | undefined,
+        status: 'published' | 'unpublished' | 'draft',
+    ) => {
+        if (!slug) {
+            console.error('Product slug is undefined!');
+            return;
+        }
+
+        setLoadingStatusChange(true);
+
+        setLoadingSlug(slug);
+
+        try {
+            router.post(
+                admin.product.updateStatus({ slug, status }),
+                {},
+                {
+                    preserveState: true,
+                    onSuccess: () => console.log(`Status updated to ${status}`),
+                    onError: (errors) => console.error(errors),
+                },
+            );
+        } finally {
+            setLoadingSlug(null);
+            setLoadingStatusChange(false);
+        }
     };
 
     return (
@@ -265,6 +306,13 @@ const ProductIndex = ({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
+                                {loading && (
+                                    <TableRow className="w-full">
+                                        <TableCell className="w-full">
+                                            <Spinner className="mx-auto" />
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                                 {products.data.map((product) => (
                                     <TableRow key={product.id}>
                                         <TableCell>
@@ -305,22 +353,68 @@ const ProductIndex = ({
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge
-                                                variant={
-                                                    product.status ===
-                                                    'published'
-                                                        ? 'default'
-                                                        : 'outline'
-                                                }
-                                            >
-                                                {product.status ===
-                                                'published' ? (
-                                                    <LockKeyholeOpen />
-                                                ) : (
-                                                    <LockKeyhole />
-                                                )}{' '}
-                                                {product.status}
-                                            </Badge>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger>
+                                                    <Badge
+                                                        variant={
+                                                            product.status ===
+                                                            'published'
+                                                                ? 'default'
+                                                                : product.status ===
+                                                                    'unpublished'
+                                                                  ? 'outline'
+                                                                  : 'destructive'
+                                                        }
+                                                        className="flex items-center gap-1"
+                                                    >
+                                                        {loadingStatusChange ? (
+                                                            <Spinner className="h-4 w-4" />
+                                                        ) : product.status ===
+                                                          'published' ? (
+                                                            <LockKeyholeOpen className="h-4 w-4" />
+                                                        ) : product.status ===
+                                                          'unpublished' ? (
+                                                            <LockKeyhole className="h-4 w-4" />
+                                                        ) : (
+                                                            <Hourglass className="h-4 w-4" />
+                                                        )}
+                                                        <span>
+                                                            {product.status}
+                                                        </span>
+                                                    </Badge>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    {[
+                                                        'published',
+                                                        'unpublished',
+                                                        'draft',
+                                                    ].map((s) => (
+                                                        <DropdownMenuItem
+                                                            key={s}
+                                                            className="flex cursor-pointer items-center justify-between !text-sm hover:!bg-primary/20"
+                                                            onClick={() =>
+                                                                handleChangeStatus(
+                                                                    product.slug,
+                                                                    s as any,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                loadingSlug ===
+                                                                product.slug
+                                                            } // prevent double click
+                                                        >
+                                                            {s
+                                                                .charAt(0)
+                                                                .toUpperCase() +
+                                                                s.slice(1)}
+                                                            {loadingSlug ===
+                                                                product.slug && (
+                                                                <span className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700"></span>
+                                                            )}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                         <TableCell>
                                             {format(
@@ -333,15 +427,23 @@ const ProductIndex = ({
                                                 size="sm"
                                                 className="cursor-pointer"
                                             >
-                                                <Pencil className="h-4 w-4" />
+                                                <Link
+                                                    href={admin.product.edit(
+                                                        product.slug,
+                                                    )}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Link>
                                             </Button>
                                             <Button
                                                 size="sm"
                                                 className="cursor-pointer"
                                                 variant="destructive"
                                                 onClick={() => {
-                                                    setSelectedProductSlug(product.slug)
-                                                    setOpenDeleteModal(true)
+                                                    setSelectedProductSlug(
+                                                        product.slug,
+                                                    );
+                                                    setOpenDeleteModal(true);
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />

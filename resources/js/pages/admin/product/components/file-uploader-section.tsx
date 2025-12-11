@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
+import { ProductImage } from '@/types/data';
 import { Images, Trash2, Upload } from 'lucide-react';
-import { ChangeEvent, DragEvent, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from 'react';
 
 interface UploadedFile {
     id: string;
@@ -8,16 +9,27 @@ interface UploadedFile {
     previewUrl: string | null;
 }
 
-const FileUploaderSection: React.FC = () => {
+const FileUploaderSection = ({ data }: { data?: ProductImage[] }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+
     const [files, setFiles] = useState<UploadedFile[]>([]);
+    const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
     const [dragOver, setDragOver] = useState(false);
+
+    // Load existing images when editing
+    useEffect(() => {
+        if (data && Array.isArray(data)) {
+            setExistingImages(data);
+        }
+    }, [data]);
 
     const uid = (): string =>
         Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
+    // Add new files
     const handleFilesAdded = (fileList: FileList | null) => {
         if (!fileList) return;
+
         const arr = Array.from(fileList);
         const newFiles: UploadedFile[] = arr.map((file) => ({
             id: uid(),
@@ -26,10 +38,11 @@ const FileUploaderSection: React.FC = () => {
                 ? URL.createObjectURL(file)
                 : null,
         }));
+
         const merged = [...files, ...newFiles];
         setFiles(merged);
 
-        // Update actual file input so Inertia form submits them
+        // Update actual <input type="file"> for form submission
         const dt = new DataTransfer();
         merged.forEach((f) => dt.items.add(f.file));
         if (fileInputRef.current) fileInputRef.current.files = dt.files;
@@ -37,14 +50,22 @@ const FileUploaderSection: React.FC = () => {
 
     const removeFile = (id: string) => {
         const kept = files.filter((f) => f.id !== id);
+
         files
             .filter((f) => f.id === id)
             .forEach((f) => f.previewUrl && URL.revokeObjectURL(f.previewUrl));
+
         setFiles(kept);
 
         const dt = new DataTransfer();
         kept.forEach((f) => dt.items.add(f.file));
+
         if (fileInputRef.current) fileInputRef.current.files = dt.files;
+    };
+
+    // Remove existing DB images
+    const removeExisting = (id: number) => {
+        setExistingImages(existingImages.filter((img) => img.id !== id));
     };
 
     const handleDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -65,8 +86,8 @@ const FileUploaderSection: React.FC = () => {
     };
 
     return (
-        <div className="flex w-full flex-col gap-2 rounded-md ">
-            {/* Drag & Drop / Browse */}
+        <div className="flex w-full flex-col gap-2 rounded-md">
+            {/* Drag & Drop */}
             <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -88,7 +109,7 @@ const FileUploaderSection: React.FC = () => {
                     name="images[]"
                 />
 
-                <Images className="h-20 w-20 text-primary/60 transition-all group-hover:text-primary" />
+                <Images className="h-20 w-20 text-primary/60 group-hover:text-primary" />
 
                 <div className="mt-4 text-center">
                     <p className="text-sm text-muted-foreground">
@@ -99,19 +120,49 @@ const FileUploaderSection: React.FC = () => {
                         </span>
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                        Supported: JPG, PNG, WEBP, PDF, MP4
+                        Supported: JPG, PNG, WEBP
                     </p>
                 </div>
             </div>
 
-            {/* Uploaded files list */}
-            <div className="mt-2 flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: '300px' }}>
-                {files.length === 0 && (
-                    <p className="py-4 text-center text-sm text-gray-500">
-                        No files uploaded yet
-                    </p>
-                )}
+            {/* EXISTING IMAGES FROM DB */}
+            {existingImages.length > 0 && (
+                <div className="mt-2 flex flex-col gap-2">
+                    {existingImages.map((img) => (
+                        <div
+                            key={img.id}
+                            className="flex items-center justify-between rounded-md border p-2"
+                        >
+                            <div className="flex items-center gap-3">
+                                <img
+                                    src={`/storage/${img.path}`}
+                                    alt={img.alt ?? 'Image'}
+                                    className="h-20 w-20 rounded-md object-cover"
+                                />
+                                <div>
+                                    <p className="text-sm">{img.path.split('/').pop()}</p>
 
+                                    {img.is_primary && (
+                                        <span className="text-xs text-green-600 font-semibold">
+                                            ⭐ Primary Image
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <button onClick={() => removeExisting(img.id)}>
+                                <Trash2 className="h-5 w-5 hover:text-red-500" />
+                            </button>
+
+                            {/* Keep IDs for backend */}
+                            <input type="hidden" name="existing_images[]" value={img.id} />
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* NEW UPLOADED FILES */}
+            <div className="mt-2 flex flex-col gap-2">
                 {files.map((f) => (
                     <div
                         key={f.id}
@@ -125,21 +176,17 @@ const FileUploaderSection: React.FC = () => {
                                     className="h-20 w-20 rounded-md object-cover"
                                 />
                             ) : (
-                                <div className="flex h-20 w-20 items-center justify-center rounded-md bg-gray-100 text-xs">
-                                    {f.file.type.split('/')[0]}
+                                <div className="h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center">
+                                    File
                                 </div>
                             )}
                             <div>
-                                <h1 className="text-gray-700 dark:text-gray-100">
-                                    {f.file.name}
-                                </h1>
-                                <p className="text-sm text-gray-700 dark:text-gray-100">
-                                    {(f.file.size / 1024).toFixed(2)} KB
-                                </p>
+                                <h1 className="text-gray-700">{f.file.name}</h1>
+                                <p className="text-sm">{(f.file.size / 1024).toFixed(2)} KB</p>
                             </div>
                         </div>
                         <button onClick={() => removeFile(f.id)}>
-                            <Trash2 className="h-5 w-5 cursor-pointer hover:text-red-500" />
+                            <Trash2 className="h-5 w-5 hover:text-red-500" />
                         </button>
                     </div>
                 ))}

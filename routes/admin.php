@@ -26,6 +26,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/edit/{slug}', [ProductController::class, 'edit'])->name('edit');
         Route::put('/update/{slug}', [ProductController::class, 'update'])->name('update');
         Route::delete('/destroy/{slug}', [ProductController::class, 'destroy'])->name('destroy');
+        Route::post('/update-status/{slug}/{status}', [ProductController::class, 'updateStatus'])->name('update-status');
 
         // Product Category Routes
         Route::prefix('category')->name('category.')->group(function () {
