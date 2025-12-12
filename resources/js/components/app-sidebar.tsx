@@ -14,7 +14,7 @@ import { dashboard } from '@/routes';
 import admin from '@/routes/admin';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Archive, BookOpen, Box, CirclePlus, Folder, LayoutGrid, List, Palette, Settings, Tag } from 'lucide-react';
+import { Archive, BookOpen, Box, CirclePlus, Folder, LayoutGrid, List, Palette, Settings, Tag, Ticket } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -43,6 +43,11 @@ const mainNavItems: NavItem[] = [
         href: admin.settings.index(),
         icon: Settings,
     },
+    {
+        title: 'Coupon',
+        href: admin.coupon.index(),
+        icon: Ticket,
+    }
 ];
 
 const footerNavItems: NavItem[] = [

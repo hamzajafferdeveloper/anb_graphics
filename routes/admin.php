@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductSvgTemplate;
 use App\Http\Controllers\Admin\ProductSvgTemplateController;
 use App\Http\Controllers\Admin\ProductTypeController;
+use App\Http\Controllers\CouponController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -65,6 +66,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('/{id}', [ProductTypeController::class, 'destroy'])->name('destroy');
         });
 
+    });
+
+    Route::prefix('coupon')->name('coupon.')->group(function () {
+        Route::get('/index', [CouponController::class, 'index'])->name('index');
     });
 
     // Color Routes
