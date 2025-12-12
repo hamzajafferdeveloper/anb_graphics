@@ -5,12 +5,11 @@ use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductColorController;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\ProductSvgTemplate;
 use App\Http\Controllers\Admin\ProductSvgTemplateController;
 use App\Http\Controllers\Admin\ProductTypeController;
-use App\Http\Controllers\CouponController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\CouponController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::prefix('admin')->name('admin.')->group(function () {
 
@@ -68,12 +67,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     });
 
+    // Coupon Routes
     Route::prefix('coupon')->name('coupon.')->group(function () {
         Route::get('/index', [CouponController::class, 'index'])->name('index');
         Route::get('/get-coupons', [CouponController::class, 'getCoupons'])->name('get-coupons');
         Route::post('/store', [CouponController::class, 'store'])->name('store');
         Route::put('/update/{id}', [CouponController::class, 'update'])->name('update');
         Route::delete('/destroy/{id}', [CouponController::class, 'destroy'])->name('destroy');
+    });
+
+    // User Routes
+    Route::prefix('/user')->name('user.')->group(function () {
+        Route::get('/index', [UserController::class, 'index'])->name('index');
     });
 
     // Color Routes
