@@ -592,7 +592,7 @@ const ProductIndex = ({
                         >
                             <div className="flex items-center gap-2">
                                 <SlidersHorizontal className="h-4 w-4" />
-                                Add Customizer
+                                Customizer
                             </div>
                         </Button>
 

@@ -29,7 +29,7 @@ class ProductController extends Controller
             $types = ProductType::all();
             $brands = ProductBrand::all();
 
-            $query = Product::with(['category', 'type', 'brand', 'images']);
+            $query = Product::with(['category', 'type', 'brand', 'images', 'template']);
 
             if ($search = request('search')) {
                 $query->where(function ($q) use ($search) {

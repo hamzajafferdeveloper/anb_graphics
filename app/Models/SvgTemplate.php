@@ -19,6 +19,6 @@ class SvgTemplate extends Model
 
     public function parts()
     {
-        return $this->hasMany(SvgTemplatePart::class);
+        return $this->hasMany(SvgTemplatePart::class, 'template_id');
     }
 }

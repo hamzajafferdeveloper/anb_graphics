@@ -10,7 +10,7 @@ import {
 import { extractFillMap } from '@/lib/utils';
 import admin from '@/routes/admin';
 import { type SharedData } from '@/types';
-import { Product } from '@/types/data';
+import { Product, SvgTemplate, TemplatePart } from '@/types/data';
 import { router, usePage } from '@inertiajs/react';
 import { CircleSlash2, RefreshCw, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
 import React, { forwardRef, memo, useEffect, useRef, useState } from 'react';
@@ -45,7 +45,7 @@ const SvgViewer = memo(
 
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
 
-const AddTemplateSection = ({ product }: { product: Product }) => {
+const EditTemplateSection = ({ product, template }: { product: Product, template: SvgTemplate }) => {
     const { toggleSidebar } = useSidebar();
     const sharedData = usePage<SharedData>();
     const fileRef = useRef<HTMLInputElement | null>(null);
@@ -55,9 +55,10 @@ const AddTemplateSection = ({ product }: { product: Product }) => {
     // svgRootRef references the div that contains the actual <svg> markup (inner HTML)
     const svgRootRef = useRef<HTMLDivElement | null>(null);
 
-    const [svgContent, setSvgContent] = useState<string | null>(null);
-    const [selectedParts, setSelectedParts] = useState<SelectedPart[]>([]);
-    const [templateName, setTemplateName] = useState<string>('');
+    const [svgContent, setSvgContent] = useState<string | null>(template.template);
+    // @ts-ignore
+    const [selectedParts, setSelectedParts] = useState<SelectedPart[]>(template.parts);
+    const [templateName, setTemplateName] = useState<string>(template.name);
     const [showHoverColor, setShowHoverColor] = useState<boolean>(false);
     const [hoverColor, setHoverColor] = useState<string>('#1C175C');
     const [fillMap, setFillMap] = useState<Record<string, string>>({});
@@ -302,7 +303,7 @@ const AddTemplateSection = ({ product }: { product: Product }) => {
             parts: selectedParts,
         };
         console.log(payload);
-        router.post(admin.product.svgTemplate.store(product.slug), payload);
+        router.put(admin.product.svgTemplate.update(template.id), payload);
     };
 
     // Ensure SVG has responsive sizing when loaded
@@ -651,4 +652,4 @@ const AddTemplateSection = ({ product }: { product: Product }) => {
     );
 };
 
-export default AddTemplateSection;
+export default EditTemplateSection;

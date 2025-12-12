@@ -33,6 +33,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::prefix('svg-template')->name('svgTemplate.')->group(function () {
             Route::get('/product={slug}', [ProductSvgTemplateController::class, 'create'])->name('create');
+            Route::post('/store/product={slug}', [ProductSvgTemplateController::class, 'store'])->name('store');
+            Route::get('/edit/product={slug}', [ProductSvgTemplateController::class, 'edit'])->name('edit');
+            Route::put('/update/{id}', [ProductSvgTemplateController::class, 'update'])->name('update');
         });
 
         // Product Category Routes
