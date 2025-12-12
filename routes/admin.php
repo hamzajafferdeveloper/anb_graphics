@@ -79,6 +79,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // User Routes
     Route::prefix('/user')->name('user.')->group(function () {
         Route::get('/index', [UserController::class, 'index'])->name('index');
+        Route::get('/get-users', [UserController::class, 'getUsers'])->name('get-users');
+        Route::post('/store', [UserController::class, 'store'])->name('store');
+        Route::put('/update/{id}', [UserController::class, 'update'])->name('update');
+        Route::delete('/destroy/{id}', [UserController::class, 'destroy'])->name('destroy');
     });
 
     // Color Routes
