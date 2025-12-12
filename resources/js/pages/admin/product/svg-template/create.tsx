@@ -3,7 +3,7 @@ import admin from '@/routes/admin';
 import { BreadcrumbItem } from '@/types';
 import { Product } from '@/types/data';
 import { Head } from '@inertiajs/react';
-import AddTemplateSection from '@/sections/TemplateEditor/AddTemplateSection';
+import AddTemplateSection from '@/sections/add-template-section';
 
 
 type Props = {
