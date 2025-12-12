@@ -70,6 +70,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::prefix('coupon')->name('coupon.')->group(function () {
         Route::get('/index', [CouponController::class, 'index'])->name('index');
+        Route::get('/get-coupons', [CouponController::class, 'getCoupons'])->name('get-coupons');
+        Route::post('/store', [CouponController::class, 'store'])->name('store');
+        Route::put('/update/{id}', [CouponController::class, 'update'])->name('update');
+        Route::delete('/destroy/{id}', [CouponController::class, 'destroy'])->name('destroy');
     });
 
     // Color Routes

@@ -91,3 +91,14 @@ export interface TemplatePart {
   created_at: string
   updated_at: string
 }
+
+export interface Coupon {
+    id: number;
+    coupon: string;
+    discount?: number | null;
+    limit?: number | null;
+    status?: number | null;
+    expires_in?: number; // unix timestamp in seconds
+    created_at: string;
+    updated_at: string;
+}
