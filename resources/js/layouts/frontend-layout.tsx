@@ -23,11 +23,11 @@ export default function FrontendLayout({
     }, [flash]);
 
     return (
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-screen  flex-col">
             <FrontendHeader />
 
             {breadcrumbs?.length ? (
-                <div className="border-b">
+                <div className="border-b mx-auto p-3 max-w-7xl w-full">
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             ) : null}

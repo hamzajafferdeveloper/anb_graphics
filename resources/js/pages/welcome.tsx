@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import FrontendLayout from '@/layouts/frontend-layout';
-import { dashboard, products, register } from '@/routes';
+import { dashboard, register } from '@/routes';
+import { index } from '@/routes/products';
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import gsap from 'gsap';
@@ -98,7 +99,7 @@ const Welcome = () => {
                             </Link>
                         )}
 
-                        <Link href={products()}>
+                        <Link href={index()}>
                             <Button size="lg" variant="outline">
                                 Browse Products
                             </Button>

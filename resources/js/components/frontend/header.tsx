@@ -6,14 +6,15 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { dashboard, home, login, logout, products, register } from '@/routes';
+import { dashboard, home, login, logout, register } from '@/routes';
+import { index } from '@/routes/products';
 import { SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
 
 const navLinks = [
     { label: 'Home', href: home() },
-    { label: 'Products', href: products() },
+    { label: 'Products', href: index() },
 ];
 
 const FrontendHeader = () => {
@@ -52,13 +53,17 @@ const FrontendHeader = () => {
                         <div className="flex gap-3">
                             <Link href={dashboard()}>
                                 <Button className="w-full">
-                                    Go to Dashboard
+                                    Dashboard
                                 </Button>
                             </Link>
 
-                            <Link href={logout()} method="post">
-                                <Button variant="outline" className="w-full">Logout</Button>
-                            </Link>
+                            <Button
+                                onClick={() => router.post(logout())}
+                                variant="outline"
+                                className="w-full"
+                            >
+                                Logout
+                            </Button>
                         </div>
                     ) : (
                         <>
