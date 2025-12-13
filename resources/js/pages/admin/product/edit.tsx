@@ -634,6 +634,7 @@ const CreateProduct = ({
                                                 onChange={(decs) =>
                                                     setDescription(decs)
                                                 }
+                                                initialValue={description}
                                             />
                                             <InputError
                                                 message={errors.description}
