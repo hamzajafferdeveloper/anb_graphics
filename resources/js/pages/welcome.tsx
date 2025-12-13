@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import FrontendLayout from '@/layouts/frontend-layout';
-import { products, register } from '@/routes';
-import { Link } from '@inertiajs/react';
+import { dashboard, products, register } from '@/routes';
+import { SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 import gsap from 'gsap';
 import { Download, Package, Paintbrush, ShoppingCart } from 'lucide-react';
 import { useEffect, useRef } from 'react';
@@ -22,8 +23,7 @@ const features = [
     {
         icon: ShoppingCart,
         title: 'Buy Packages',
-        description:
-            'Purchase packages to unlock downloads and premium features.',
+        description: 'Purchase packages to unlock more discounted products.',
     },
     {
         icon: Download,
@@ -34,6 +34,8 @@ const features = [
 ];
 
 const Welcome = () => {
+    const page = usePage<SharedData>().props;
+    const { auth } = page;
     const heroRef = useRef<HTMLDivElement>(null);
     const featureRefs = useRef<HTMLDivElement[]>([]);
 
@@ -86,9 +88,15 @@ const Welcome = () => {
                     </p>
 
                     <div className="mt-10 flex flex-wrap justify-center gap-4">
-                        <Link href={register()}>
-                            <Button size="lg">Get Started</Button>
-                        </Link>
+                        {auth.user ? (
+                            <Link href={dashboard()}>
+                                <Button size="lg">Dashboard</Button>
+                            </Link>
+                        ) : (
+                            <Link href={register()}>
+                                <Button size="lg">Get Started</Button>
+                            </Link>
+                        )}
 
                         <Link href={products()}>
                             <Button size="lg" variant="outline">
@@ -151,9 +159,15 @@ const Welcome = () => {
                     </p>
 
                     <div className="mt-8">
-                        <Link href={register()}>
-                            <Button size="lg">Create Your Account</Button>
-                        </Link>
+                        {auth.user ? (
+                            <Link href={dashboard()}>
+                                <Button size="lg">Dashboard</Button>
+                            </Link>
+                        ) : (
+                            <Link href={register()}>
+                                <Button size="lg">Get Started</Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
 

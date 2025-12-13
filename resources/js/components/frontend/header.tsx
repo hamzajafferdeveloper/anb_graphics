@@ -6,7 +6,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { home, products } from '@/routes';
+import { dashboard, home, login, logout, products, register } from '@/routes';
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
@@ -49,12 +49,20 @@ const FrontendHeader = () => {
                 {/* Right Actions */}
                 <div className="flex items-center gap-3">
                     {auth?.user ? (
-                        <Link href="/dashboard">
-                            <Button size="sm">Dashboard</Button>
-                        </Link>
+                        <div className="flex gap-3">
+                            <Link href={dashboard()}>
+                                <Button className="w-full">
+                                    Go to Dashboard
+                                </Button>
+                            </Link>
+
+                            <Link href={logout()} method="post">
+                                <Button variant="outline" className="w-full">Logout</Button>
+                            </Link>
+                        </div>
                     ) : (
                         <>
-                            <Link href="/login">
+                            <Link href={login()}>
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -93,7 +101,7 @@ const FrontendHeader = () => {
                                 </SheetTitle>
                             </SheetHeader>
 
-                            <div className='p-4'>
+                            <div className="p-4">
                                 {/* Mobile Nav */}
                                 <div className="mt-6 flex flex-col gap-4">
                                     {navLinks.map((item) => (
@@ -110,14 +118,22 @@ const FrontendHeader = () => {
                                 {/* Auth Actions */}
                                 <div className="mt-8 border-t pt-6">
                                     {auth?.user ? (
-                                        <Link href="/dashboard">
-                                            <Button className="w-full">
-                                                Go to Dashboard
-                                            </Button>
-                                        </Link>
+                                        <div className="flex flex-col gap-3">
+                                            <Link href={dashboard()}>
+                                                <Button className="w-full">
+                                                    Go to Dashboard
+                                                </Button>
+                                            </Link>
+
+                                            <Link href={logout()} method="post">
+                                                <Button className="w-full">
+                                                    Logout
+                                                </Button>
+                                            </Link>
+                                        </div>
                                     ) : (
                                         <div className="flex flex-col gap-3">
-                                            <Link href="/login">
+                                            <Link href={login()}>
                                                 <Button
                                                     variant="outline"
                                                     className="w-full"
@@ -126,7 +142,7 @@ const FrontendHeader = () => {
                                                 </Button>
                                             </Link>
 
-                                            <Link href="/register">
+                                            <Link href={register()}>
                                                 <Button className="w-full">
                                                     Get Started
                                                 </Button>

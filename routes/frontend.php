@@ -5,12 +5,10 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+    return Inertia::render('welcome');
 })->name('home');
 
 Route::get('/products', function () {
-    dd('products');
+    return Inertia::render('frontend/product/index');
 })->name('products');
 
