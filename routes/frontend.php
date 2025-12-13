@@ -9,3 +9,8 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+Route::get('/products', function () {
+    dd('products');
+})->name('products');
+

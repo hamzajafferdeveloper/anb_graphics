@@ -6,16 +6,14 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import { home, products } from '@/routes';
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
 
 const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Models', href: '/models' },
-    { label: 'Professionals', href: '/professionals' },
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Home', href: home() },
+    { label: 'Products', href: products() },
 ];
 
 const FrontendHeader = () => {

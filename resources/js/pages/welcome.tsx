@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import FrontendLayout from '@/layouts/frontend-layout';
-import { register } from '@/routes';
+import { products, register } from '@/routes';
 import { Link } from '@inertiajs/react';
 import gsap from 'gsap';
 import { Download, Package, Paintbrush, ShoppingCart } from 'lucide-react';
@@ -90,7 +90,7 @@ const Welcome = () => {
                             <Button size="lg">Get Started</Button>
                         </Link>
 
-                        <Link href="/products">
+                        <Link href={products()}>
                             <Button size="lg" variant="outline">
                                 Browse Products
                             </Button>
