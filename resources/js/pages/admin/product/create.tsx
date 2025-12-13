@@ -42,6 +42,7 @@ import { useEffect, useState } from 'react';
 import { ChromePicker } from 'react-color';
 import FileUploaderSection from './components/file-uploader-section';
 import MaterialColors from './components/material-colors';
+import CustomTextEditor from '@/components/text-editor';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,6 +68,8 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
     );
     const [startError, setStartError] = useState<string | null>(null);
     const [endError, setEndError] = useState<string | null>(null);
+
+    const [description, setDescription] = useState<string>('');
 
     // Validate start date (cannot be in past)
     useEffect(() => {
@@ -608,11 +611,8 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                             <Label htmlFor="description">
                                                 Descripton
                                             </Label>
-                                            <Textarea
-                                                id="description"
-                                                name="description"
-                                                className="w-full"
-                                            />
+                                            <input  type="hidden" name="description" value={description}/>
+                                            <CustomTextEditor onChange={(decs) => setDescription(decs)} />
                                             <InputError
                                                 message={errors.description}
                                             />
