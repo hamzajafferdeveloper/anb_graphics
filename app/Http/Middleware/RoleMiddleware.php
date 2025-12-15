@@ -38,6 +38,6 @@ class RoleMiddleware
             default => route('login'),
         };
 
-        return redirect($redirect)->with('error', 'Unauthorized access!');
+        return redirect($redirect);
     }
 }

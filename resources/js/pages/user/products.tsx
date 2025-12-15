@@ -6,19 +6,19 @@ import React from 'react'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Home',
-        href: home().url,
-    },
-    {
         title: 'Dashboard',
         href: user.dashboard().url,
     },
+    {
+        title: 'Products',
+        href: user.products().url,
+    },
 ];
 
-const UserDashboard = () => {
+const UserProduct = () => {
   return (
     <UserLayout breadcrumbs={breadcrumbs}>UserDashboard</UserLayout>
   )
 }
 
-export default UserDashboard
+export default UserProduct

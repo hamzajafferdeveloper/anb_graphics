@@ -10,6 +10,7 @@ use App\Helpers\FileHelper;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\UploadedFile;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -85,6 +86,10 @@ class UserController extends Controller
                 'password' => $validated['password'],
                 'profile_pic' => $validated['profile_pic'] ?? null,
             ]);
+
+            $role = Role::firstOrCreate(['name' => 'admin_user']);
+
+            $user->assignRole($role->name);
 
             return back()->with('success', 'User created!');
         } catch (\Throwable $e) {
