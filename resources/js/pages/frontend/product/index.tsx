@@ -28,6 +28,11 @@ import {
 } from '@/types/data';
 import { Head, Link, router } from '@inertiajs/react';
 import { Eye, ShoppingCart } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '@/stores/cartSlice';
+import { usePage } from '@inertiajs/react';
+import { SharedData } from '@/types';
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 
 interface Props {
@@ -65,6 +70,8 @@ const ProductIndexPage = ({
         filters?.max_price ?? '',
     );
     const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
+    const { auth } = usePage<SharedData>().props;
 
     const buildQuery = (page?: number) => {
         const params: any = {};
@@ -234,15 +241,30 @@ const ProductIndexPage = ({
 
                                                 <Button
                                                     variant="outline"
-                                                    asChild
                                                     size="icon"
+                                                    onClick={async () => {
+                                                        if (!auth?.user) {
+                                                            toast.error('Please login to add items to cart');
+                                                            router.visit('/login');
+                                                            return;
+                                                        }
+
+                                                        const res: any = await dispatch(addToCart(product.id as number));
+                                                        if (res?.meta?.requestStatus === 'rejected' || res?.type?.endsWith('/rejected')) {
+                                                            const message = res?.error?.message || res?.payload?.message || 'Failed to add to cart';
+                                                            toast.error(message);
+                                                            return;
+                                                        }
+
+                                                        if (res?.payload?.already) {
+                                                            toast('Product already in cart');
+                                                            return;
+                                                        }
+
+                                                        toast.success('Added to cart');
+                                                    }}
                                                 >
-                                                    <a
-                                                        href={`/storage/${product.images[0]?.path ?? ''}`}
-                                                        download
-                                                    >
-                                                        <ShoppingCart />
-                                                    </a>
+                                                    <ShoppingCart />
                                                 </Button>
                                             </div>
                                         </div>

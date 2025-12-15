@@ -4,6 +4,9 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { store } from '@/stores/store';
+import { fetchCart } from '@/stores/cartSlice';
 import { initializeTheme } from './hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -17,10 +20,23 @@ createInertiaApp({
         ),
     setup({ el, App, props }) {
         const root = createRoot(el);
+        // If an authenticated user is present on initial page load, fetch their cart
+        try {
+            // props has initialPage.props when using Inertia
+            const initialProps: any = props;
+            const user = initialProps?.initialPage?.props?.auth?.user;
+            if (user) {
+                store.dispatch(fetchCart() as any);
+            }
+        } catch (e) {
+            // ignore
+        }
 
         root.render(
             <StrictMode>
-                <App {...props} />
+                <Provider store={store}>
+                    <App {...props} />
+                </Provider>
             </StrictMode>,
         );
     },

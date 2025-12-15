@@ -7,8 +7,39 @@ import { Product, ProductImage } from '@/types/data';
 import { Head, usePage } from '@inertiajs/react';
 import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '@/stores/cartSlice';
+import { toast } from 'sonner';
 
 const ProductDetail = ({ product }: { product: Product }) => {
+    const dispatch = useDispatch();
+    const { auth } = usePage<SharedData>().props;
+
+    const add = async () => {
+        if (!auth?.user) {
+            toast.error('Please login to add items to cart');
+            // redirect to login page
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            window.location.href = '/login';
+            return;
+        }
+        const res: any = await dispatch(addToCart(product.id as number));
+
+        // RTK returns an action object; check status and error
+        if (res?.meta?.requestStatus === 'rejected' || res?.type?.endsWith('/rejected')) {
+            const message = res?.error?.message || res?.payload?.message || 'Failed to add to cart';
+            toast.error(message);
+            return;
+        }
+
+        if (res?.payload?.already) {
+            toast('Product already in cart');
+            return;
+        }
+
+        toast.success('Added to cart');
+    };
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Products', href: products.index().url },
         { title: product.name, href: products.show(product.slug).url },
@@ -25,6 +56,7 @@ const ProductDetail = ({ product }: { product: Product }) => {
     return (
         <FrontendLayout breadcrumbs={breadcrumbs}>
             <Head title={product.name} />
+
             <section className="mx-auto w-full max-w-7xl flex-col">
                 <section className="flex gap-8 p-4 lg:flex-row">
                     {/* Left Side: Images */}
@@ -151,20 +183,20 @@ const ProductDetail = ({ product }: { product: Product }) => {
                         </div>
 
                         {/* CTA */}
-                        <Button className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg">
+                        <Button onClick={add} className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg">
                             <ShoppingCart className="h-5 w-5" />
                             Add to Cart
                         </Button>
                     </div>
                 </section>
-                <p className=" w-full p-2">
+                <div className="w-full p-2">
                     <div
                         dangerouslySetInnerHTML={{
                             __html: product.description,
                         }}
                         className="editor-content"
                     />
-                </p>
+                </div>
             </section>
         </FrontendLayout>
     );
