@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\CartItem;
+use Inertia\Inertia;
 
 class CheckoutController extends Controller
 {
@@ -64,8 +66,39 @@ class CheckoutController extends Controller
 
     public function success(Request $request)
     {
-        // Render a simple Inertia page; the frontend shows detailed message
-        return inertia('frontend/cart/success', ['session_id' => $request->input('session_id')]);
+        try {
+            $user = $request->user();
+            $sessionId = $request->input('session_id');
+
+            if (!$user || !$sessionId) {
+                return redirect()->route('cart.index')->with('error', 'Invalid session');
+            }
+
+            // Get items from cart
+            $items = CartItem::with('product')->where('user_id', $user->id)->get();
+
+            foreach ($items as $item) {
+                UserProduct::firstOrCreate([
+                    'user_id' => $user->id,
+                    'product_id' => $item->product_id,
+                    'stripe_payment_id' => $sessionId,
+                ]);
+            }
+
+
+            // Clear cart
+            CartItem::where('user_id', $user->id)->delete();
+
+            // return redirect()->route('cart.index')->with('success', 'Checkout successful');
+
+            return Inertia::render('frontend/cart/success', [
+                'session_id' => $sessionId,
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('Stripe checkout success error: ' . $e->getMessage());
+            return redirect()->route('cart.index')->with('error', 'Failed to process checkout');
+        }
     }
 
     public function cancel(Request $request)

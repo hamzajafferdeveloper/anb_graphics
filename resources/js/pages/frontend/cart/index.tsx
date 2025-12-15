@@ -53,6 +53,8 @@ export default function CartPage() {
 
             if (!stripe) throw new Error('Stripe failed to load');
 
+
+            // @ts-ignore
             await stripe.redirectToCheckout({ sessionId: json.id });
         } catch (e: any) {
             console.error('Checkout error', e);

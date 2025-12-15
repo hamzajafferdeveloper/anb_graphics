@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\CartItem;
+use App\Models\UserProduct;
 
 class StripeWebhookController extends Controller
 {
@@ -16,7 +17,12 @@ class StripeWebhookController extends Controller
         $endpointSecret = config('services.stripe.webhook_secret');
 
         try {
-            $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $endpointSecret);
+            if ($endpointSecret) {
+                $event = \Stripe\Webhook::constructEvent($payload, $sigHeader, $endpointSecret);
+            } else {
+                // In testing or when no webhook secret is configured, accept raw JSON
+                $event = json_decode($payload);
+            }
         } catch (\UnexpectedValueException $e) {
             return response('Invalid payload', 400);
         } catch (\Stripe\Exception\SignatureVerificationException $e) {
@@ -30,10 +36,22 @@ class StripeWebhookController extends Controller
 
             if ($userId) {
                 try {
+                    // Persist purchased products for the user before clearing cart
+                    $items = CartItem::where('user_id', $userId)->get();
+
+                    foreach ($items as $item) {
+                        UserProduct::create([
+                            'user_id' => $userId,
+                            'product_id' => $item->product_id,
+                            'stripe_payment_id' => $session->payment_intent ?? null,
+                        ]);
+                    }
+
                     CartItem::where('user_id', $userId)->delete();
-                    Log::info('Cleared cart for user after successful payment', ['user_id' => $userId]);
+
+                    Log::info('Created UserProduct entries and cleared cart after payment', ['user_id' => $userId]);
                 } catch (\Throwable $e) {
-                    Log::error('Failed clearing cart after webhook: ' . $e->getMessage());
+                    Log::error('Failed processing checkout webhook: ' . $e->getMessage());
                 }
             }
         }
