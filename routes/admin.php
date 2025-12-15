@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CouponController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['role:admin'])->name('admin.')->group(function () {
 
     // App Settings Route
     Route::prefix('app-settings')->name('settings.')->group(function () {
