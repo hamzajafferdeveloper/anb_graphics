@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/stores/store';
 import { fetchCart, removeFromCart, clearCart, CartItem } from '@/stores/cartSlice';
 import React from 'react';
+import { loadStripe } from '@stripe/stripe-js';
 
 export default function CartPage() {
     const dispatch = useDispatch();
@@ -19,6 +20,44 @@ export default function CartPage() {
 
     const handleRemove = (id: number) => {
         dispatch(removeFromCart(id));
+    };
+
+    const handleCheckout = async () => {
+        try {
+            const res = await fetch('/cart/checkout', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': (
+                        document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
+                    )?.content || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(body?.error || 'Failed to create checkout session');
+            }
+
+            const json = await res.json();
+            const stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
+
+            if (json.url) {
+                // If server returned direct url (modern Stripe), redirect browser
+                window.location.href = json.url;
+                return;
+            }
+
+            if (!stripe) throw new Error('Stripe failed to load');
+
+            await stripe.redirectToCheckout({ sessionId: json.id });
+        } catch (e: any) {
+            console.error('Checkout error', e);
+            alert(e?.message || 'Failed to start checkout');
+        }
     };
 
     if (items.length === 0) {
@@ -114,7 +153,7 @@ export default function CartPage() {
                                 <span>${items.reduce((t: number, it: CartItem) => t + it.price * it.quantity, 0).toFixed(2)}</span>
                             </div>
                         </div>
-                        <Button className="mt-6 w-full" size="lg">
+                        <Button className="mt-6 w-full" size="lg" onClick={handleCheckout}>
                             Proceed to Checkout
                         </Button>
                     </div>

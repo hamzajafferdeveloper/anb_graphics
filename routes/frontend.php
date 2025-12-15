@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\CartController;
+use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -28,4 +30,12 @@ Route::prefix('cart')->name('cart.')->group(function () {
     Route::get('/items', [CartController::class, 'index'])->name('items.index');
     Route::post('/items', [CartController::class, 'store'])->middleware('auth')->name('items.store');
     Route::delete('/items/{id}', [CartController::class, 'destroy'])->middleware('auth')->name('items.destroy');
+    Route::post('/checkout', [CheckoutController::class, 'create'])->middleware('auth')->name('checkout');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 });
+
+// Stripe webhook endpoint (no CSRF middleware)
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
+    ->name('stripe.webhook')
+    ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
