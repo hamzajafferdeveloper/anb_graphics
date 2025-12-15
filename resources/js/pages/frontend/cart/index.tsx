@@ -55,7 +55,7 @@ export default function CartPage() {
                                 >
                                     <div className="h-32 w-32 flex-shrink-0 overflow-hidden rounded-md">
                                         <img
-                                            src={item.image || '/images/placeholder-product.jpg'}
+                                            src={`storage/${item.image}` || '/images/placeholder-product.jpg'}
                                             alt={item.name}
                                             className="h-full w-full object-cover"
                                         />

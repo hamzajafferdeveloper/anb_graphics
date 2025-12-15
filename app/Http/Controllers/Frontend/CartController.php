@@ -17,7 +17,7 @@ class CartController extends Controller
                 return response()->json(['data' => []]);
             }
 
-            $items = CartItem::with('product')
+            $items = CartItem::with('product.images')
                 ->where('user_id', $request->user()->id)
                 ->get();
 

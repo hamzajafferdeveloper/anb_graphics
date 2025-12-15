@@ -32,7 +32,8 @@ import { cn, isSameUrl, resolveUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, ShoppingCart, Trash2 } from 'lucide-react';
+
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -193,6 +194,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             >
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
+
                             <div className="hidden lg:flex">
                                 {rightNavItems.map((item) => (
                                     <TooltipProvider

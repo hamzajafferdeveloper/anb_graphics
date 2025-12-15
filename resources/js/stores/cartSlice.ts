@@ -1,5 +1,6 @@
 // @ts-ignore: optional dependency in some environments
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ProductImage } from '@/types/data';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 type BackendCartItem = {
     id: number;
@@ -38,66 +39,87 @@ const mapBackendItem = (b: BackendCartItem): CartItem => {
         name: product.name || 'Product',
         price: parseFloat(product.sale_price || product.price || 0) || 0,
         quantity: 1,
-        image: product.images?.[0]?.path || null,
+        image:
+            product.images?.find((img: ProductImage) => img.is_primary)?.path ||
+            null,
         slug: product.slug || null,
     };
 };
 
 export const fetchCart = createAsyncThunk('cart/fetch', async () => {
-    const res = await fetch('/cart/items', { headers: { Accept: 'application/json' } });
+    const res = await fetch('/cart/items', {
+        headers: { Accept: 'application/json' },
+    });
     if (!res.ok) throw new Error('Failed to fetch cart');
     const json = await res.json();
     return (json.data || []) as BackendCartItem[];
 });
 
-export const addToCart = createAsyncThunk('cart/add', async (product_id: number, { dispatch }: { dispatch: any }) => {
-    const res = await fetch('/cart/items', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({ product_id }),
-    });
+export const addToCart = createAsyncThunk(
+    'cart/add',
+    async (product_id: number, { dispatch }: { dispatch: any }) => {
+        const res = await fetch('/cart/items', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN':
+                    (
+                        document.querySelector(
+                            'meta[name="csrf-token"]',
+                        ) as HTMLMetaElement
+                    )?.content || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ product_id }),
+        });
 
-    // parse response body when possible to extract friendly messages
-    let body: any = null;
-    try {
-        body = await res.json();
-    } catch (e) {
-        // ignore parse errors
-    }
+        // parse response body when possible to extract friendly messages
+        let body: any = null;
+        try {
+            body = await res.json();
+        } catch (e) {
+            // ignore parse errors
+        }
 
-    if (res.status === 409) {
-        // already in cart - refresh so UI is accurate
+        if (res.status === 409) {
+            // already in cart - refresh so UI is accurate
+            await dispatch(fetchCart());
+            return { already: true } as any;
+        }
+
+        if (!res.ok) {
+            const message =
+                body?.message || body?.error || 'Failed to add to cart';
+            throw new Error(message);
+        }
+
         await dispatch(fetchCart());
-        return { already: true } as any;
-    }
+        return { ok: true } as any;
+    },
+);
 
-    if (!res.ok) {
-        const message = body?.message || (body?.error) || 'Failed to add to cart';
-        throw new Error(message);
-    }
-
-    await dispatch(fetchCart());
-    return { ok: true } as any;
-});
-
-export const removeFromCart = createAsyncThunk('cart/remove', async (id: number, { dispatch }: { dispatch: any }) => {
-    const res = await fetch(`/cart/items/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-    });
-    if (!res.ok) throw new Error('Failed to remove item');
-    await dispatch(fetchCart());
-    return id;
-});
+export const removeFromCart = createAsyncThunk(
+    'cart/remove',
+    async (id: number, { dispatch }: { dispatch: any }) => {
+        const res = await fetch(`/cart/items/${id}`, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN':
+                    (
+                        document.querySelector(
+                            'meta[name="csrf-token"]',
+                        ) as HTMLMetaElement
+                    )?.content || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+        if (!res.ok) throw new Error('Failed to remove item');
+        await dispatch(fetchCart());
+        return id;
+    },
+);
 
 export const cartSlice = createSlice({
     name: 'cart',

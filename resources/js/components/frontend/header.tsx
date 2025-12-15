@@ -8,9 +8,17 @@ import {
 } from '@/components/ui/sheet';
 import { dashboard, home, login, logout, register } from '@/routes';
 import { index } from '@/routes/products';
+import {
+    CartItem as CartItemType,
+    fetchCart,
+    removeFromCart,
+} from '@/stores/cartSlice';
+import { RootState } from '@/stores/store';
 import { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Menu } from 'lucide-react';
+import { Menu, ShoppingCart, Trash2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const navLinks = [
     { label: 'Home', href: home() },
@@ -21,6 +29,94 @@ const FrontendHeader = () => {
     const page = usePage<SharedData>().props;
     const { auth } = page;
     const { site_logo, site_name } = page.appSettings;
+
+    // Small cart preview component used in the header sheet
+    const CartList = () => {
+        const dispatch = useDispatch();
+        const items = useSelector(
+            (s: RootState) => s.cart.items as CartItemType[],
+        );
+
+        useEffect(() => {
+            dispatch(fetchCart() as any);
+        }, [dispatch]);
+
+        if (!items || items.length === 0) {
+            return (
+                <div className="py-8 text-center text-sm text-gray-500">
+                    Your cart is empty
+                </div>
+            );
+        }
+
+        return (
+            <div className="space-y-4">
+                {items.map((item: CartItemType) => (
+                    <div key={item.id} className="flex items-center gap-4">
+                        <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
+                            <img
+                                src={
+                                    `storage/${item.image}` ||
+                                    '/images/placeholder-product.jpg'
+                                }
+                                alt={item.name}
+                                className="h-full w-full object-cover"
+                            />
+                        </div>
+
+                        <div className="flex-1">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <div className="text-sm font-medium">
+                                        {item.name}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                        Quantity: {item.quantity}
+                                    </div>
+                                </div>
+                                <div className="text-sm font-semibold">
+                                    ${item.price.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                                dispatch(removeFromCart(Number(item.id)) as any)
+                            }
+                        >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                    </div>
+                ))}
+
+                <div className="mt-4 flex items-center justify-between">
+                    <div className="text-sm">Subtotal</div>
+                    <div className="font-semibold">
+                        $
+                        {items
+                            .reduce(
+                                (t: number, it: CartItemType) =>
+                                    t + it.price * it.quantity,
+                                0,
+                            )
+                            .toFixed(2)}
+                    </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 gap-2">
+                    <Link className="w-full" href="/cart">
+                        <Button className="w-full">View Cart</Button>
+                    </Link>
+                    {/* <Button variant="secondary" className="w-full">
+                        Checkout
+                    </Button> */}
+                </div>
+            </div>
+        );
+    };
 
     return (
         <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
@@ -52,9 +148,7 @@ const FrontendHeader = () => {
                     {auth?.user ? (
                         <div className="flex gap-3">
                             <Link href={dashboard()}>
-                                <Button className="w-full">
-                                    Dashboard
-                                </Button>
+                                <Button className="w-full">Dashboard</Button>
                             </Link>
 
                             <Button
@@ -64,6 +158,57 @@ const FrontendHeader = () => {
                             >
                                 Logout
                             </Button>
+
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label="Open cart"
+                                        className="relative h-10 w-10 rounded-full transition-all hover:scale-105 hover:bg-muted active:scale-95"
+                                    >
+                                        {/* Cart Icon */}
+                                        <ShoppingCart className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
+
+                                        {/* Accessible text */}
+                                        <span className="sr-only">
+                                            Open cart
+                                        </span>
+
+                                        {/* Badge */}
+                                        <span className="pointer-events-none absolute -top-1 -right-3 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-primary-foreground shadow">
+                                            {useSelector(
+                                                (s: RootState) =>
+                                                    s.cart.items.length,
+                                            ) || 0}
+                                        </span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent
+                                    side="right"
+                                    className="w-full max-w-md"
+                                >
+                                    <SheetHeader>
+                                        <SheetTitle>Your Cart</SheetTitle>
+                                    </SheetHeader>
+                                    {!auth?.user ? (
+                                        <div className="p-6 text-center text-sm text-gray-600">
+                                            Please{' '}
+                                            <Link
+                                                href="/login"
+                                                className="text-primary underline"
+                                            >
+                                                login
+                                            </Link>{' '}
+                                            to view your cart.
+                                        </div>
+                                    ) : (
+                                        <div className="p-4">
+                                            <CartList />
+                                        </div>
+                                    )}
+                                </SheetContent>
+                            </Sheet>
                         </div>
                     ) : (
                         <>
