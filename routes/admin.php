@@ -83,6 +83,10 @@ Route::prefix('admin')->middleware(['role:admin'])->name('admin.')->group(functi
         Route::post('/store', [UserController::class, 'store'])->name('store');
         Route::put('/update/{id}', [UserController::class, 'update'])->name('update');
         Route::delete('/destroy/{id}', [UserController::class, 'destroy'])->name('destroy');
+
+        Route::get('/assign-product/{id}', [UserController::class, 'assignProduct'])->name('assignProduct');
+        Route::post('/assign-product/{id}', [UserController::class, 'assignProductPost'])->name('assignProductPost');
+
     });
 
     // Color Routes

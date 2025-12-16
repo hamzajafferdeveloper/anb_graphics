@@ -55,4 +55,9 @@ class Product extends Model
     {
         return $this->hasOne(SvgTemplate::class);
     }
+
+    public function userAssignments()
+    {
+        return $this->morphMany(UserProductAssignment::class, 'assignable');
+    }
 }

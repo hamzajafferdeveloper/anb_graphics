@@ -35,6 +35,7 @@ class RoleMiddleware
         $redirect = match ($role) {
             'admin' => route('dashboard'),
             'user' => route('user.dashboard'),
+            'admin_user' => route('user.dashboard'),
             default => route('login'),
         };
 

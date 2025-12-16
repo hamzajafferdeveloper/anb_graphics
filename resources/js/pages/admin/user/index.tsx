@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
@@ -127,7 +127,7 @@ export default function UserIndex() {
                                     <TableRow key={user.id}>
                                         <TableCell>{user.id}</TableCell>
                                         <TableCell>{user.name}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell className='hover:underline'><Link href={admin.user.assignProduct(user.id)} >{user.email}</Link></TableCell>
                                         <TableCell>
                                             {user.profile_pic ? (
                                                 <img src={`/storage/${user.profile_pic}`} className="h-8 w-8 rounded-full object-cover" />

@@ -10,4 +10,10 @@ class ProductType extends Model
         'name',
         'slug',
     ];
+
+    public function userAssignments()
+    {
+        return $this->morphMany(UserProductAssignment::class, 'assignable');
+    }
+
 }

@@ -51,4 +51,10 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    public function productAssignments()
+    {
+        return $this->hasMany(UserProductAssignment::class);
+    }
+
 }

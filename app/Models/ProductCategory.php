@@ -11,4 +11,10 @@ class ProductCategory extends Model
         'slug',
         'image'
     ];
+
+    public function userAssignments()
+    {
+        return $this->morphMany(UserProductAssignment::class, 'assignable');
+    }
+
 }
