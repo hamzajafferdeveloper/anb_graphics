@@ -6,7 +6,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { dashboard, home, login, logout, register } from '@/routes';
+import { couponPricePage, dashboard, home, login, logout, register } from '@/routes';
 import { index } from '@/routes/products';
 import {
     CartItem as CartItemType,
@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 const navLinks = [
     { label: 'Home', href: home() },
     { label: 'Products', href: index() },
+    { label: 'Coupon Price', href: couponPricePage() }
 ];
 
 const FrontendHeader = () => {

@@ -125,7 +125,7 @@ export default function CouponIndex() {
                                 <TableHead>Coupon</TableHead>
                                 <TableHead>Discount</TableHead>
                                 <TableHead>Limit</TableHead>
-                                <TableHead>Expires At</TableHead>
+                                <TableHead>Expires in</TableHead>
                                 <TableHead>Price</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Created</TableHead>

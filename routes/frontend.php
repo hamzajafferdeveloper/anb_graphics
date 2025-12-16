@@ -4,6 +4,7 @@ use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\StripeWebhookController;
+use App\Models\Coupon;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -11,14 +12,20 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-
-
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [ProductController::class, 'index'])->name('index');
     Route::get('/{slug}', [ProductController::class, 'show'])->name('show');
 });
 
+Route::get('/coupon-price', function () {
+       $coupons = Coupon::where('status', 1) // Only active coupons
+        ->orderBy('created_at', 'desc')
+        ->get();
 
+    return Inertia::render('frontend/coupon-price/index', [
+        'coupons' => $coupons
+    ]);
+})->name('couponPricePage');
 
 // Cart pages and API
 Route::get('/cart', function () {
@@ -33,8 +40,3 @@ Route::prefix('cart')->name('cart.')->group(function () {
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 });
-
-// Stripe webhook endpoint (no CSRF middleware)
-Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
-    ->name('stripe.webhook')
-    ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
