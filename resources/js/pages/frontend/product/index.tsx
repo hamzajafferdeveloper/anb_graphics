@@ -70,7 +70,10 @@ const ProductIndexPage = ({
     );
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
-    const { auth } = usePage<SharedData>().props;
+    const page = usePage<SharedData>();
+    const { auth, appSettings } = page.props;
+
+    const { site_currency, site_currency_symbol } = appSettings;
 
     const buildQuery = (page?: number) => {
         const params: any = {};
@@ -221,12 +224,11 @@ const ProductIndexPage = ({
                                                     {product.brand?.name ?? ''}
                                                 </div>
                                                 <div className="font-medium">
-                                                    $
-                                                    {product.sale_price ??
+                                                    {site_currency_symbol}{product.sale_price ??
                                                         product.price}
                                                     {product.sale_price && (
                                                         <span className="ml-2 text-xs text-gray-400 line-through">
-                                                            ${product.price}
+                                                            {site_currency_symbol}{product.price}
                                                         </span>
                                                     )}
                                                 </div>

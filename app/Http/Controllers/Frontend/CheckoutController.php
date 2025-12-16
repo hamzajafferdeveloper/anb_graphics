@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
+use App\Models\CartItem;
 use App\Models\UserProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\CartItem;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
@@ -15,7 +16,9 @@ class CheckoutController extends Controller
     {
         $user = $request->user();
 
-        if (!$user) {
+        $currency = AppSetting::where('key', 'site_currency')->first()->value ?? 'usd';
+
+        if (! $user) {
             return response()->json(['error' => 'Authentication required'], 401);
         }
 
@@ -36,7 +39,7 @@ class CheckoutController extends Controller
 
                 $lineItems[] = [
                     'price_data' => [
-                        'currency' => 'usd',
+                        'currency' => strtolower($currency),
                         'product_data' => [
                             'name' => $product->name,
                         ],
@@ -53,13 +56,14 @@ class CheckoutController extends Controller
                 'metadata' => [
                     'user_id' => (string) $user->id,
                 ],
-                'success_url' => route('cart.checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'success_url' => route('cart.checkout.success').'?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('cart.checkout.cancel'),
             ]);
 
             return response()->json(['id' => $session->id, 'url' => $session->url]);
         } catch (\Throwable $e) {
-            Log::error('Stripe checkout create error: ' . $e->getMessage());
+            Log::error('Stripe checkout create error: '.$e->getMessage());
+
             return response()->json(['error' => 'Failed to create checkout session'], 500);
         }
     }
@@ -70,7 +74,7 @@ class CheckoutController extends Controller
             $user = $request->user();
             $sessionId = $request->input('session_id');
 
-            if (!$user || !$sessionId) {
+            if (! $user || ! $sessionId) {
                 return redirect()->route('cart.index')->with('error', 'Invalid session');
             }
 
@@ -85,7 +89,6 @@ class CheckoutController extends Controller
                 ]);
             }
 
-
             // Clear cart
             CartItem::where('user_id', $user->id)->delete();
 
@@ -96,7 +99,8 @@ class CheckoutController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-            Log::error('Stripe checkout success error: ' . $e->getMessage());
+            Log::error('Stripe checkout success error: '.$e->getMessage());
+
             return redirect()->route('cart.index')->with('error', 'Failed to process checkout');
         }
     }

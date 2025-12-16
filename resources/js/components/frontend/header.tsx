@@ -28,7 +28,7 @@ const navLinks = [
 const FrontendHeader = () => {
     const page = usePage<SharedData>().props;
     const { auth } = page;
-    const { site_logo, site_name } = page.appSettings;
+    const { site_logo, site_name, site_currency_symbol } = page.appSettings;
 
     // Small cart preview component used in the header sheet
     const CartList = () => {
@@ -75,7 +75,7 @@ const FrontendHeader = () => {
                                     </div>
                                 </div>
                                 <div className="text-sm font-semibold">
-                                    ${item.price.toFixed(2)}
+                                    {site_currency_symbol}{item.price.toFixed(2)}
                                 </div>
                             </div>
                         </div>
@@ -95,7 +95,7 @@ const FrontendHeader = () => {
                 <div className="mt-4 flex items-center justify-between">
                     <div className="text-sm">Subtotal</div>
                     <div className="font-semibold">
-                        $
+                        {site_currency_symbol}
                         {items
                             .reduce(
                                 (t: number, it: CartItemType) =>

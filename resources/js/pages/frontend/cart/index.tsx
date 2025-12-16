@@ -8,7 +8,8 @@ import {
     removeFromCart,
 } from '@/stores/cartSlice';
 import { RootState } from '@/stores/store';
-import { Head, Link } from '@inertiajs/react';
+import { SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Trash2 } from 'lucide-react';
 import React from 'react';
@@ -18,6 +19,9 @@ export default function CartPage() {
     const dispatch = useDispatch();
     const items = useSelector((s: RootState) => s.cart.items);
     const [loading, setLoading] = React.useState(false);
+    const { appSettings } = usePage<SharedData>().props;
+
+    const { site_currency, site_currency_symbol } = appSettings;
 
     // fetch cart on mount
     React.useEffect(() => {
@@ -142,7 +146,8 @@ export default function CartPage() {
                                             </Button>
                                         </div>
                                         <p className="mt-1 text-lg font-medium">
-                                            ${item.price.toFixed(2)}
+                                            {site_currency_symbol}
+                                            {item.price.toFixed(2)}
                                         </p>
                                         <div className="mt-4 flex items-center">
                                             <div className="text-sm text-gray-600">
@@ -185,7 +190,7 @@ export default function CartPage() {
                                     items)
                                 </span>
                                 <span>
-                                    $
+                                    {site_currency_symbol}
                                     {items
                                         .reduce(
                                             (t: number, it: CartItem) =>
@@ -198,7 +203,7 @@ export default function CartPage() {
                             <div className="flex justify-between font-medium">
                                 <span>Total</span>
                                 <span>
-                                    $
+                                    {site_currency_symbol}
                                     {items
                                         .reduce(
                                             (t: number, it: CartItem) =>
@@ -215,7 +220,8 @@ export default function CartPage() {
                             onClick={handleCheckout}
                             disabled={loading}
                         >
-                            {loading && <Spinner className="mr-2" />} Proceed to Checkout
+                            {loading && <Spinner className="mr-2" />} Proceed to
+                            Checkout
                         </Button>
                     </div>
                 </div>
