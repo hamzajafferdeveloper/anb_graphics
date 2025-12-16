@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Pagination,
@@ -18,12 +17,12 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import UserLayout from '@/layouts/user-layout';
-import products, { show } from '@/routes/products';
+import products from '@/routes/products';
 import user from '@/routes/user';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Eye } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ProductCard from './components/product-card';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -42,10 +41,14 @@ const UserProduct = () => {
     // server-provided
     const purchased: any[] = page.purchased ?? [];
     const purchasedPagination: any = page.purchased_pagination ?? null;
+    const assigned: any[] = page.assigned ?? [];
+    const assignedPagination: any = page.assigned_pagination ?? null;
     const serverFilters: any = page.filters ?? {};
     const brands: any[] = page.brands ?? [];
     const purchasedCount: number =
         page.purchased_count ?? purchased?.length ?? 0;
+    const assignedCount: number = page.assigned_count ?? 0;
+    const isAdminUser: boolean = page.is_admin_user ?? false;
     const currency = page.appSettings?.site_currency_symbol ?? '$';
 
     // local state for filters
@@ -90,14 +93,47 @@ const UserProduct = () => {
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-3xl font-extrabold">
-                            Your Purchases
+                            {isAdminUser ? 'Your Products' : 'Your Purchases'}
                         </h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            You have purchased{' '}
-                            <span className="font-semibold">
-                                {purchasedCount}
-                            </span>{' '}
-                            product{purchasedCount !== 1 ? 's' : ''}.
+                            {isAdminUser ? (
+                                <>
+                                    You have access to{' '}
+                                    <span className="font-semibold">
+                                        {purchasedCount + assignedCount}
+                                    </span>{' '}
+                                    product
+                                    {purchasedCount + assignedCount !== 1
+                                        ? 's'
+                                        : ''}
+                                    {purchasedCount > 0 && (
+                                        <>
+                                            {' '}
+                                            (
+                                            <span className="text-primary">
+                                                {purchasedCount} purchased
+                                            </span>
+                                            {assignedCount > 0 && (
+                                                <>
+                                                    ,{' '}
+                                                    <span className="text-blue-500">
+                                                        {assignedCount} assigned
+                                                    </span>
+                                                </>
+                                            )}
+                                            )
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    You have purchased{' '}
+                                    <span className="font-semibold">
+                                        {purchasedCount}
+                                    </span>{' '}
+                                    product{purchasedCount !== 1 ? 's' : ''}.
+                                </>
+                            )}
                         </p>
                     </div>
 
@@ -179,8 +215,89 @@ const UserProduct = () => {
                     </div>
                 </div>
 
-                {/* Grid */}
+                {/* Assigned Products Section for Admin Users */}
+                {isAdminUser && assignedCount > 0 && (
+                    <div className="mb-10">
+                        <div className="mb-4 flex items-center justify-between border-b pb-2">
+                            <h2 className="text-xl font-semibold text-blue-600">
+                                Assigned Products
+                            </h2>
+                        </div>
+                        <div className="relative">
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                {assigned.map((item: any) => (
+                                    <ProductCard
+                                        key={item.id}
+                                        product={item.product}
+                                        currency={currency}
+                                        tagLabel="Assigned"
+                                        tagColor="bg-blue-500"
+                                        showActions={true}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Pagination for assigned products */}
+                            {assignedPagination.last_page > 1 && (
+                                <div className="mt-6">
+                                    <Pagination>
+                                        <PaginationContent>
+                                            {assignedPagination.current_page >
+                                                1 && (
+                                                <PaginationItem>
+                                                    <PaginationPrevious
+                                                        href={`?page=${assignedPagination.current_page - 1}`}
+                                                        className="cursor-pointer"
+                                                    />
+                                                </PaginationItem>
+                                            )}
+                                            {Array.from(
+                                                {
+                                                    length: assignedPagination.last_page,
+                                                },
+                                                (_, i) => i + 1,
+                                            ).map((pageNum) => (
+                                                <PaginationItem key={pageNum}>
+                                                    <PaginationLink
+                                                        href={`?page=${pageNum}`}
+                                                        isActive={
+                                                            pageNum ===
+                                                            assignedPagination.current_page
+                                                        }
+                                                    >
+                                                        {pageNum}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            ))}
+                                            {assignedPagination.current_page <
+                                                assignedPagination.last_page && (
+                                                <PaginationItem>
+                                                    <PaginationNext
+                                                        href={`?page=${assignedPagination.current_page + 1}`}
+                                                        className="cursor-pointer"
+                                                    />
+                                                </PaginationItem>
+                                            )}
+                                        </PaginationContent>
+                                    </Pagination>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Purchased Products Section */}
                 <div className="relative">
+                    {purchasedCount > 0 && (
+                        <div className="mb-4 flex items-center justify-between border-b pb-2">
+                            <h2 className="text-xl font-semibold">
+                                {isAdminUser
+                                    ? 'Purchased Products'
+                                    : 'Your Purchases'}
+                            </h2>
+                        </div>
+                    )}
+
                     {loading && (
                         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50">
                             <Spinner className="h-8 w-8" />
@@ -191,11 +308,14 @@ const UserProduct = () => {
                         {purchased.length === 0 && !loading && (
                             <div className="col-span-full rounded-lg border border-dashed border-gray-200 p-8 text-center">
                                 <h3 className="text-lg font-semibold">
-                                    No purchases yet
+                                    {isAdminUser
+                                        ? 'No products yet'
+                                        : 'No purchases yet'}
                                 </h3>
                                 <p className="mt-2 text-sm text-muted-foreground">
-                                    Once you buy a product, it will appear here
-                                    with quick actions and download/view links.
+                                    {isAdminUser
+                                        ? "You don't have any purchased products yet."
+                                        : 'Once you buy a product, it will appear here with quick actions and download/view links.'}
                                 </p>
                                 <div className="mt-4">
                                     <Link href={products.index()}>
@@ -207,91 +327,19 @@ const UserProduct = () => {
                             </div>
                         )}
 
-                        {purchased.map((p) => {
-                            const prod = p.product;
-                            if (!prod) return null;
-
-                            const img =
-                                prod.images && prod.images.length > 0
-                                    ? (prod.images.find(
-                                          (i: any) => i.is_primary,
-                                      )?.path ?? prod.images[0].path)
-                                    : null;
-
-                            return (
-                                <Card
-                                    key={p.id}
-                                    className="overflow-hidden shadow-lg transition-shadow duration-200 hover:shadow-2xl"
-                                >
-                                    <CardContent className="p-0">
-                                        <div className="relative aspect-[4/3] w-full overflow-hidden">
-                                            {img ? (
-                                                <img
-                                                    src={`/storage/${img}`}
-                                                    alt={prod.name}
-                                                    className="h-full w-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
-                                                />
-                                            ) : (
-                                                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                                                    No image
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="p-4">
-                                            <h3 className="line-clamp-2 text-lg font-semibold">
-                                                {prod.name}
-                                            </h3>
-                                            <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
-                                                <div>
-                                                    <div className="text-xs">
-                                                        {prod.brand?.name ?? ''}
-                                                    </div>
-                                                    <div className="mt-1 font-medium">
-                                                        {currency}
-                                                        {prod.sale_price ??
-                                                            prod.price}
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    <Button size="icon" asChild>
-                                                        <Link
-                                                            href={show(
-                                                                prod.slug,
-                                                            )}
-                                                            className="p-2"
-                                                        >
-                                                            <Eye />
-                                                        </Link>
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        Get Support
-                                                    </Button>
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                                                <div>
-                                                    Purchased on:{' '}
-                                                    <span className="font-medium">
-                                                        {new Date(
-                                                            p.created_at,
-                                                        ).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="font-medium text-emerald-600">
-                                                    Purchased
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
+                        {purchased.map((p) => (
+                            <ProductCard
+                                key={p.id}
+                                product={p.product}
+                                currency={currency}
+                                tagLabel="Purchased"
+                                tagColor="bg-emerald-600"
+                                purchaseDate={new Date(
+                                    p.created_at,
+                                ).toLocaleString()}
+                                showActions={true}
+                            />
+                        ))}
                     </div>
 
                     {/* Pagination */}

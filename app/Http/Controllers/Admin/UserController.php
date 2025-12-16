@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
+use App\Models\UserProductAssignment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\UploadedFile;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -177,45 +179,240 @@ class UserController extends Controller
         }
     }
 
+    // public function assignProduct(string $id)
+    // {
+    //     try {
+    //         $categories = ProductCategory::all();
+    //         $types = ProductType::all();
+    //         $user = User::findOrFail($id);
+
+    //         if (!$user) {
+    //             return redirect()->back()->with('error', 'User not found');
+    //         }
+
+    //         // Get search query and page number from request
+    //         $search = request()->query('search', '');
+    //         $perPage = 12; // number of products per page
+
+    //         // Fetch products with optional search and paginate
+    //         $products = Product::with(['images', 'brand', 'category', 'type'])
+    //             ->when($search, function ($query, $search) {
+    //                 $query->where('name', 'like', "%{$search}%");
+    //             })
+    //             ->orderBy('name')
+    //             ->paginate($perPage)
+    //             ->withQueryString(); // keep search query in pagination links
+
+    //         return Inertia::render('admin/user/assign-product', [
+    //             'user' => $user,
+    //             'categories' => $categories,
+    //             'types' => $types,
+    //             'products' => $products,
+    //         ]);
+    //     } catch (\Throwable $e) {
+    //         Log::error('Error getting user: ' . $e->getMessage());
+    //         return back()->with('error', 'Something went wrong');
+    //     }
+    // }
+
+
     public function assignProduct(string $id)
     {
         try {
-            $categories = ProductCategory::all();
-            $types = ProductType::all();
             $user = User::findOrFail($id);
 
-            if (!$user) {
-                return redirect()->back()->with('error', 'User not found');
-            }
+            $categories = ProductCategory::all();
+            $types = ProductType::all();
 
-            // Get search query and page number from request
             $search = request()->query('search', '');
-            $perPage = 12; // number of products per page
+            $perPage = 12;
 
-            // Fetch products with optional search and paginate
             $products = Product::with(['images', 'brand', 'category', 'type'])
-                ->when($search, function ($query, $search) {
-                    $query->where('name', 'like', "%{$search}%");
-                })
+                ->when(
+                    $search,
+                    fn($q) => $q->where('name', 'like', "%{$search}%")
+                )
                 ->orderBy('name')
                 ->paginate($perPage)
-                ->withQueryString(); // keep search query in pagination links
+                ->withQueryString();
+
+            // Get assigned IDs with proper model classes
+            $assignments = UserProductAssignment::where('user_id', $user->id)->get();
 
             return Inertia::render('admin/user/assign-product', [
                 'user' => $user,
                 'categories' => $categories,
                 'types' => $types,
                 'products' => $products,
+                'assigned' => [
+                    'products' => $assignments
+                        ->where('assignable_type', Product::class)
+                        ->pluck('assignable_id')
+                        ->toArray(),
+
+                    'categories' => $assignments
+                        ->where('assignable_type', ProductCategory::class)
+                        ->pluck('assignable_id')
+                        ->toArray(),
+
+                    'types' => $assignments
+                        ->where('assignable_type', ProductType::class)
+                        ->pluck('assignable_id')
+                        ->toArray(),
+                ],
             ]);
         } catch (\Throwable $e) {
-            Log::error('Error getting user: ' . $e->getMessage());
+            Log::error($e->getMessage());
             return back()->with('error', 'Something went wrong');
         }
     }
 
+    // public function assignProductPost(Request $request, string $id)
+    // {
+    //     try {
+    //         $user = User::findOrFail($id);
+
+    //         $data = $request->validate([
+    //             'categories' => ['array'],
+    //             'categories.*' => ['string'],
+
+    //             'types' => ['array'],
+    //             'types.*' => ['string'],
+
+    //             'products' => ['array'],
+    //             'products.*' => ['integer'],
+    //         ]);
+
+    //         DB::transaction(function () use ($data, $user) {
+
+    //             /* ---------------------------------
+    //              | Assign Categories
+    //              |---------------------------------*/
+    //             if (!empty($data['categories'])) {
+    //                 $categories = ProductCategory::whereIn('slug', $data['categories'])->get();
+
+    //                 foreach ($categories as $category) {
+    //                     UserProductAssignment::firstOrCreate([
+    //                         'user_id' => $user->id,
+    //                         'assignable_type' => ProductCategory::class,
+    //                         'assignable_id' => $category->id,
+    //                     ]);
+    //                 }
+    //             }
+
+    //             /* ---------------------------------
+    //              | Assign Types
+    //              |---------------------------------*/
+    //             if (!empty($data['types'])) {
+    //                 $types = ProductType::whereIn('slug', $data['types'])->get();
+
+    //                 foreach ($types as $type) {
+    //                     UserProductAssignment::firstOrCreate([
+    //                         'user_id' => $user->id,
+    //                         'assignable_type' => ProductType::class,
+    //                         'assignable_id' => $type->id,
+    //                     ]);
+    //                 }
+    //             }
+
+    //             /* ---------------------------------
+    //              | Assign Products
+    //              |---------------------------------*/
+    //             if (!empty($data['products'])) {
+    //                 $products = Product::whereIn('id', $data['products'])->get();
+
+    //                 foreach ($products as $product) {
+    //                     UserProductAssignment::firstOrCreate([
+    //                         'user_id' => $user->id,
+    //                         'assignable_type' => Product::class,
+    //                         'assignable_id' => $product->id,
+    //                     ]);
+    //                 }
+    //             }
+    //         });
+
+    //         return redirect()
+    //             ->back()
+    //             ->with('success', 'Products assigned successfully.');
+    //     } catch (\Throwable $e) {
+    //         Log::error('Error assigning products: ' . $e->getMessage());
+    //         return back()->with('error', 'Something went wrong');
+    //     }
+    // }
+
+
     public function assignProductPost(Request $request, string $id)
     {
-        dd($request->all());
+        $request->validate([
+            'products' => 'array',
+            'categories' => 'array',
+            'types' => 'array',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        DB::transaction(function () use ($request, $user) {
+
+            $this->syncAssignments(
+                $user->id,
+                'product',
+                $request->products ?? []
+            );
+
+            $this->syncAssignments(
+                $user->id,
+                'category',
+                $request->categories ?? []
+            );
+
+            $this->syncAssignments(
+                $user->id,
+                'type',
+                $request->types ?? []
+            );
+        });
+
+        return back()->with('success', 'Permissions updated successfully');
+    }
+
+    /**
+     * Sync assignments (add + remove)
+     */
+    private function syncAssignments(
+        int $userId,
+        string $type,
+        array $ids
+    ) {
+        $modelMap = [
+            'product' => Product::class,
+            'category' => ProductCategory::class,
+            'type' => ProductType::class,
+        ];
+
+        if (!isset($modelMap[$type])) {
+            return;
+        }
+
+        $modelClass = $modelMap[$type];
+        
+        // Remove unchecked
+        UserProductAssignment::where('user_id', $userId)
+            ->where('assignable_type', $modelClass)
+            ->whereNotIn('assignable_id', $ids)
+            ->delete();
+
+        // Add new
+        foreach ($ids as $id) {
+            if (empty($id)) continue;
+            
+            UserProductAssignment::firstOrCreate([
+                'user_id' => $userId,
+                'assignable_type' => $modelClass,
+                'assignable_id' => $id,
+            ], [
+                'assigned_at' => now(),
+            ]);
+        }
     }
 
 }

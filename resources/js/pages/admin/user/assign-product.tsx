@@ -8,7 +8,7 @@ import admin from '@/routes/admin';
 import { type BreadcrumbItem } from '@/types';
 import { ProductCategory, ProductType, User } from '@/types/data';
 import { Head, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -22,12 +22,18 @@ interface Props {
     user: User;
     categories: ProductCategory[];
     types: ProductType[];
+    assigned: {
+        products: number[];
+        categories: number[];
+        types: number[];
+    };
 }
 
 export default function AssignProductToUser({
     user,
     categories,
     types,
+    assigned,
 }: Props) {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -37,6 +43,12 @@ export default function AssignProductToUser({
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        setSelectedProducts(assigned.products.map(String));
+        setSelectedCategories(assigned.categories.map(String));
+        setSelectedTypes(assigned.types.map(String));
+    }, []);
 
     // Fetch products with server-side search and pagination
     const fetchProducts = (page = 1, search = '') => {
@@ -70,11 +82,57 @@ export default function AssignProductToUser({
         list: string[],
         setList: (val: string[]) => void,
     ) => {
-        if (list.includes(value)) setList(list.filter((v) => v !== value));
-        else setList([...list, value]);
+        // Convert to number to ensure consistent comparison
+        const numValue = Number(value);
+        const numList = list.map(Number);
+
+        if (numList.includes(numValue)) {
+            setList(list.filter((v) => Number(v) !== numValue));
+        } else {
+            setList([...list, value]);
+        }
     };
 
-    const handlePost = () => {
+    const hasChanges = useMemo(() => {
+        // Convert all arrays to sets of numbers for comparison
+        const toNumberSet = (arr: (string | number)[]) =>
+            new Set(arr.map(Number).filter(Boolean));
+
+        const currentProducts = toNumberSet(selectedProducts);
+        const currentCategories = toNumberSet(selectedCategories);
+        const currentTypes = toNumberSet(selectedTypes);
+
+        const assignedProducts = toNumberSet(assigned.products);
+        const assignedCategories = toNumberSet(assigned.categories);
+        const assignedTypes = toNumberSet(assigned.types);
+
+        // Check if any of the sets are different
+        const setsEqual = (a: Set<number>, b: Set<number>) =>
+            a.size === b.size && [...a].every(x => b.has(x));
+
+        return !(
+            setsEqual(currentProducts, assignedProducts) &&
+            setsEqual(currentCategories, assignedCategories) &&
+            setsEqual(currentTypes, assignedTypes)
+        );
+    }, [selectedProducts, selectedCategories, selectedTypes, assigned]);
+
+    // Helper function to check if an item is selected
+    const isSelected = (id: string | number, type: 'product' | 'category' | 'type') => {
+        const idNum = Number(id);
+        if (isNaN(idNum)) return false;
+
+        const selectedArray = type === 'product'
+            ? selectedProducts
+            : type === 'category'
+                ? selectedCategories
+                : selectedTypes;
+
+        return selectedArray.some(selectedId => Number(selectedId) === idNum);
+    };
+
+    const handlePost = async () => {
+        setLoading(true);
         if (
             selectedCategories.length === 0 &&
             selectedTypes.length === 0 &&
@@ -83,18 +141,30 @@ export default function AssignProductToUser({
             toast.error(
                 'Please select at least one category, type or product.',
             );
+            setLoading(false);
             return;
         }
 
-        setLoading(true);
         try {
-            router.post(admin.user.assignProductPost(user.id).url, {
-                categories: selectedCategories,
-                types: selectedTypes,
-                products: selectedProducts,
+            await router.post(admin.user.assignProductPost(user.id).url, {
+                categories: selectedCategories.map(Number).filter(Boolean),
+                types: selectedTypes.map(Number).filter(Boolean),
+                products: selectedProducts.map(Number).filter(Boolean),
+            }, {
+                onSuccess: () => {
+                    toast.success('Products assigned successfully');
+                    // Refresh the page to get updated assignments
+                    window.location.reload();
+                },
+                onError: (errors) => {
+                    toast.error('Failed to assign products. Please try again.');
+                    console.error('Assignment error:', errors);
+                },
+                preserveScroll: true,
             });
         } catch (error) {
-            console.error(error);
+            console.error('Error:', error);
+            toast.error('An error occurred while assigning products');
         } finally {
             setLoading(false);
         }
@@ -112,7 +182,7 @@ export default function AssignProductToUser({
                         </h2>
                         <Button
                             className="cursor-pointer rounded-lg bg-blue-600 px-6 py-2 text-white shadow-md transition-all hover:bg-blue-700"
-                            disabled={loading}
+                            disabled={!hasChanges || loading}
                             onClick={() => handlePost()}
                         >
                             {loading && <Spinner />} Assign Selected Products
@@ -179,9 +249,7 @@ export default function AssignProductToUser({
                                 )}
                                 <div className="mt-2 flex items-center gap-2">
                                     <Checkbox
-                                        checked={selectedProducts.includes(
-                                            p.id,
-                                        )}
+                                        checked={isSelected(p.id, 'product')}
                                     />
                                     <div className="flex flex-col text-left">
                                         <span className="text-sm font-medium">
@@ -241,13 +309,20 @@ function SelectionGroup({
     items,
     selected,
     setSelected,
-}: SelectionGroupProps) {
-    const toggle = (value: string) => {
-        if (selected.includes(value)) {
-            setSelected(selected.filter((v) => v !== value));
-        } else {
-            setSelected([...selected, value]);
-        }
+}: {
+    title: string;
+    items: { id: string; label: string; value: string }[];
+    selected: string[];
+    setSelected: (val: string[]) => void;
+}) {
+    const toggle = (id: string) => {
+        //@ts-ignore
+        setSelected(prev => {
+            const idNum = Number(id);
+            return prev.some((v: string) => Number(v) === idNum)
+                ? prev.filter((v: string) => Number(v) !== idNum)
+                : [...prev, id];
+        });
     };
 
     return (
@@ -258,9 +333,12 @@ function SelectionGroup({
                     <div
                         key={item.id}
                         className="flex cursor-pointer items-center gap-2 rounded-lg p-2 transition hover:bg-blue-100"
-                        onClick={() => toggle(item.value)}
+                        onClick={() => toggle(item.id)}
                     >
-                        <Checkbox checked={selected.includes(item.value)} />
+                        <Checkbox
+                            checked={selected.some(id => Number(id) === Number(item.id))}
+                            onCheckedChange={() => toggle(item.id)}
+                        />
                         <span className="text-sm font-medium">
                             {item.label}
                         </span>
