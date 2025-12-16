@@ -33,7 +33,9 @@ const CreateEditCouponModal = ({
     type: 'create' | 'edit';
 }) => {
     const [status, setStatus] = useState<boolean>(
-        typeof selectedCoupon?.status !== 'undefined' ? !!selectedCoupon?.status : true,
+        typeof selectedCoupon?.status !== 'undefined'
+            ? !!selectedCoupon?.status
+            : true,
     );
 
     return (
@@ -66,7 +68,11 @@ const CreateEditCouponModal = ({
                     {({ errors, processing }) => (
                         <>
                             {type === 'edit' && (
-                                <input type="hidden" name="_method" value="put" />
+                                <input
+                                    type="hidden"
+                                    name="_method"
+                                    value="put"
+                                />
                             )}
 
                             <div className="space-y-4 py-2">
@@ -76,7 +82,9 @@ const CreateEditCouponModal = ({
                                         id="coupon"
                                         name="coupon"
                                         placeholder="e.g. HOLIDAY20"
-                                        defaultValue={selectedCoupon?.coupon ?? ''}
+                                        defaultValue={
+                                            selectedCoupon?.coupon ?? ''
+                                        }
                                     />
                                     <InputError message={errors.coupon} />
                                 </div>
@@ -89,7 +97,9 @@ const CreateEditCouponModal = ({
                                         type="number"
                                         min={0}
                                         placeholder="Discount amount or percent"
-                                        defaultValue={selectedCoupon?.discount ?? ''}
+                                        defaultValue={
+                                            selectedCoupon?.discount ?? ''
+                                        }
                                     />
                                     <InputError message={errors.discount} />
                                 </div>
@@ -102,39 +112,68 @@ const CreateEditCouponModal = ({
                                         type="number"
                                         min={0}
                                         placeholder="e.g. 100"
-                                        defaultValue={selectedCoupon?.limit ?? ''}
+                                        defaultValue={
+                                            selectedCoupon?.limit ?? ''
+                                        }
                                     />
                                     <InputError message={errors.limit} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="expires_in">Expires In</Label>
+                                    <Label htmlFor="expires_in">
+                                        Expires In
+                                    </Label>
                                     <Input
                                         id="expires_in"
                                         name="expires_in"
                                         type="number"
                                         placeholder="Expiration date"
                                         defaultValue={
-                                            selectedCoupon?.expires_in
-
+                                            selectedCoupon?.expires_in ?? ''
                                         }
                                     />
                                     <InputError message={errors.expires_in} />
                                 </div>
 
                                 <div className="grid gap-2">
+                                    <Label htmlFor="price">
+                                        Price
+                                    </Label>
+                                    <Input
+                                        id="price"
+                                        name="price"
+                                        type="number"
+                                        placeholder="e.g. 100"
+                                        defaultValue={
+                                            selectedCoupon?.price ?? ''
+                                        }
+                                    />
+                                    <InputError message={errors.price} />
+                                </div>
+
+                                <div className="grid gap-2">
                                     <Label>Status</Label>
                                     <div className="flex items-center gap-4">
-                                        <span className="text-muted-foreground">Inactive</span>
+                                        <span className="text-muted-foreground">
+                                            Inactive
+                                        </span>
                                         <Switch
                                             id="status"
                                             checked={status}
-                                            onCheckedChange={(v: any) => setStatus(!!v)}
+                                            onCheckedChange={(v: any) =>
+                                                setStatus(!!v)
+                                            }
                                         />
-                                        <span className="text-muted-foreground">Active</span>
+                                        <span className="text-muted-foreground">
+                                            Active
+                                        </span>
                                     </div>
                                     <InputError message={errors.status} />
-                                    <input type="hidden" name="status" value={status ? 1 : 0} />
+                                    <input
+                                        type="hidden"
+                                        name="status"
+                                        value={status ? 1 : 0}
+                                    />
                                 </div>
                             </div>
 
@@ -145,7 +184,9 @@ const CreateEditCouponModal = ({
 
                                 <Button type="submit" disabled={processing}>
                                     {processing && <Spinner className="mr-2" />}
-                                    {type === 'create' ? 'Create' : 'Save Changes'}
+                                    {type === 'create'
+                                        ? 'Create'
+                                        : 'Save Changes'}
                                 </Button>
                             </DialogFooter>
                         </>

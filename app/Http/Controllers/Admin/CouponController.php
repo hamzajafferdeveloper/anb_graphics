@@ -53,14 +53,6 @@ class CouponController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -72,6 +64,7 @@ class CouponController extends Controller
                 'limit' => ['nullable', 'integer', 'min:0'],
                 'status' => ['nullable', 'integer', 'in:0,1'],
                 'expires_in' => ['nullable', 'integer', 'min:0'],
+                'price'=> ['nullable', 'integer','min:0'],
             ]);
 
             Coupon::create([
@@ -79,7 +72,8 @@ class CouponController extends Controller
                 'discount' => $validated['discount'] ?? null,
                 'limit' => $validated['limit'] ?? null,
                 'status' => $validated['status'] ?? 1,
-                'expires_in' => $validated['status'] ?? 1,
+                'expires_in' => $validated['expires_in'] ?? 1,
+                'price'=> $validated['price'] ?? null,
             ]);
 
             return back()->with('success', 'Coupon created!');
@@ -90,22 +84,6 @@ class CouponController extends Controller
             Log::error($e->getMessage());
             return back()->with('error', 'Something went wrong');
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -122,6 +100,7 @@ class CouponController extends Controller
                 'limit' => ['nullable', 'integer', 'min:0'],
                 'status' => ['nullable', 'integer', 'in:0,1'],
                 'expires_in' => ['nullable', 'integer', 'min:0'],
+                'price'=> ['nullable', 'integer','min:0'],
             ]);
 
             $coupon->update([
@@ -130,6 +109,7 @@ class CouponController extends Controller
                 'limit' => $validated['limit'] ?? $coupon->limit,
                 'status' => $validated['status'] ?? $coupon->status,
                 'expires_in' => $validated['expires_in'] ?? $coupon->expires_in,
+                'price'=> $validated['price'] ?? $coupon->price,
             ]);
 
             return back()->with('success', 'Coupon updated!');

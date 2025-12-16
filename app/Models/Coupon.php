@@ -11,6 +11,7 @@ class Coupon extends Model
         'discount',
         'limit',
         'status',
-        'expires_in'
+        'expires_in',
+        'price',
     ];
 }

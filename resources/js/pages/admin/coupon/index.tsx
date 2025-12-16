@@ -126,6 +126,7 @@ export default function CouponIndex() {
                                 <TableHead>Discount</TableHead>
                                 <TableHead>Limit</TableHead>
                                 <TableHead>Expires At</TableHead>
+                                <TableHead>Price</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Created</TableHead>
                                 <TableHead>Updated</TableHead>
@@ -166,6 +167,9 @@ export default function CouponIndex() {
                                         </TableCell>
                                         <TableCell>
                                             {coupon.expires_in ?? '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {coupon.price ?? '—'}
                                         </TableCell>
                                         <TableCell>
                                             {coupon.status

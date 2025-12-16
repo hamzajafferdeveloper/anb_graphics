@@ -99,7 +99,8 @@ export interface Coupon {
     discount?: number | null;
     limit?: number | null;
     status?: number | null;
-    expires_in?: number; // unix timestamp in seconds
+    expires_in?: number;
+    price?: number | null;
     created_at: string;
     updated_at: string;
 }
