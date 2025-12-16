@@ -70,6 +70,7 @@ export interface Product {
     type: any;
     brand: any;
     images: ProductImage[];
+    canBuy: boolean;
 }
 
 export interface SvgTemplate {

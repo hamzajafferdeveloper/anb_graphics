@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\ProductBrand;
+use App\Models\ProductCategory;
 use App\Models\ProductType;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class ProductController extends Controller
 {
@@ -51,6 +51,19 @@ class ProductController extends Controller
             $perPage = 12;
             $products = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->query());
 
+            // Get the current user
+            $user = auth()->user();
+
+            // Transform products to include canBuy flag
+            $transformedProducts = $products->getCollection()->map(function ($product) use ($user) {
+                return array_merge($product->toArray(), [
+                    'canBuy' => $user ? can_buy_product($product, $user) : true,
+                ]);
+            });
+
+            // Set the transformed collection back to paginator
+            $products->setCollection($transformedProducts);
+
             $categories = ProductCategory::orderBy('name')->get(['id', 'name']);
             $brands = ProductBrand::orderBy('name')->get(['id', 'name']);
             $types = ProductType::orderBy('name')->get(['id', 'name']);
@@ -63,38 +76,22 @@ class ProductController extends Controller
                     'per_page' => $products->perPage(),
                     'total' => $products->total(),
                 ],
-                'filters' => $request->only(['q', 'category', 'brand', 'type', 'min_price', 'max_price']),
                 'categories' => $categories,
                 'brands' => $brands,
                 'types' => $types,
             ]);
         } catch (\Throwable $e) {
-            Log::error('Error fetching products: ' . $e->getMessage());
+            Log::error('Error fetching products: '.$e->getMessage());
+
             return Inertia::render('frontend/product/index', [
                 'products' => [],
                 'productsPagination' => null,
-                'filters' => [],
                 'categories' => [],
                 'brands' => [],
                 'types' => [],
+                'error' => 'Failed to load products. Please try again later.',
             ]);
         }
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
     }
 
     /**
@@ -105,40 +102,20 @@ class ProductController extends Controller
         try {
             $product = Product::with(['images', 'brand', 'category', 'type', 'template.parts'])->where('slug', $slug)->firstOrFail();
 
-            if (!$product) {
+            $canBuy = can_buy_product($product, auth()->user());
+
+            if (! $product) {
                 return redirect()->back()->with('error', 'Product not found');
             }
 
             return Inertia::render('frontend/product/show', [
                 'product' => $product,
+                'canBuy' => $canBuy,
             ]);
         } catch (\Exception $e) {
-            Log::error('Fail to get Show Product Page ' . $e->getMessage());
+            Log::error('Fail to get Show Product Page '.$e->getMessage());
+
             return redirect()->back()->with('error', $e->getMessage());
         }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

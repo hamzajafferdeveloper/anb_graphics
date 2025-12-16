@@ -2,16 +2,22 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import FrontendLayout from '@/layouts/frontend-layout';
 import products from '@/routes/products';
+import { addToCart } from '@/stores/cartSlice';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Product, ProductImage } from '@/types/data';
 import { Head, usePage } from '@inertiajs/react';
 import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '@/stores/cartSlice';
 import { toast } from 'sonner';
 
-const ProductDetail = ({ product }: { product: Product }) => {
+const ProductDetail = ({
+    product,
+    canBuy,
+}: {
+    product: Product;
+    canBuy: boolean;
+}) => {
     const dispatch = useDispatch();
     const { auth } = usePage<SharedData>().props;
 
@@ -27,8 +33,14 @@ const ProductDetail = ({ product }: { product: Product }) => {
         const res: any = await dispatch(addToCart(product.id as number));
 
         // RTK returns an action object; check status and error
-        if (res?.meta?.requestStatus === 'rejected' || res?.type?.endsWith('/rejected')) {
-            const message = res?.error?.message || res?.payload?.message || 'Failed to add to cart';
+        if (
+            res?.meta?.requestStatus === 'rejected' ||
+            res?.type?.endsWith('/rejected')
+        ) {
+            const message =
+                res?.error?.message ||
+                res?.payload?.message ||
+                'Failed to add to cart';
             toast.error(message);
             return;
         }
@@ -183,10 +195,21 @@ const ProductDetail = ({ product }: { product: Product }) => {
                         </div>
 
                         {/* CTA */}
-                        <Button onClick={add} className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg">
-                            <ShoppingCart className="h-5 w-5" />
-                            Add to Cart
-                        </Button>
+
+                        {canBuy ? (
+                            <Button
+                                onClick={add}
+                                className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg"
+                            >
+                                <ShoppingCart className="h-5 w-5" />
+                                Add to Cart
+                            </Button>
+                        ) : (
+                            <Button disabled className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg">
+                                <ShoppingCart className="h-5 w-5" />
+                                Already Purchased
+                            </Button>
+                        )}
                     </div>
                 </section>
                 <div className="w-full p-2">

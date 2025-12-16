@@ -36,7 +36,8 @@
         },
         "files": [
             "app/Helpers/FileHelper.php",
-            "app/Helpers/SlugHelper.php"
+            "app/Helpers/SlugHelper.php",
+            "app/Helpers/helper.php"
         ]
     },
     "autoload-dev": {

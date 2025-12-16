@@ -20,20 +20,19 @@ import { Spinner } from '@/components/ui/spinner';
 import FrontendLayout from '@/layouts/frontend-layout';
 import { index, show } from '@/routes/products';
 
+import { addToCart } from '@/stores/cartSlice';
+import { SharedData } from '@/types';
 import {
     Product,
     ProductBrand,
     ProductCategory,
     ProductType,
 } from '@/types/data';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Eye, ShoppingCart } from 'lucide-react';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '@/stores/cartSlice';
-import { usePage } from '@inertiajs/react';
-import { SharedData } from '@/types';
-import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { toast } from 'sonner';
 
 interface Props {
     products: Product[];
@@ -234,38 +233,74 @@ const ProductIndexPage = ({
                                             </div>
                                             <div className="flex justify-end gap-2">
                                                 <Button asChild size="icon">
-                                                    <Link href={show(product.slug)}>
+                                                    <Link
+                                                        href={show(
+                                                            product.slug,
+                                                        )}
+                                                    >
                                                         <Eye />{' '}
                                                     </Link>
                                                 </Button>
 
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    onClick={async () => {
-                                                        if (!auth?.user) {
-                                                            toast.error('Please login to add items to cart');
-                                                            router.visit('/login');
-                                                            return;
-                                                        }
+                                                {product.canBuy && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        onClick={async () => {
+                                                            if (!auth?.user) {
+                                                                toast.error(
+                                                                    'Please login to add items to cart',
+                                                                );
+                                                                router.visit(
+                                                                    '/login',
+                                                                );
+                                                                return;
+                                                            }
 
-                                                        const res: any = await dispatch(addToCart(product.id as number));
-                                                        if (res?.meta?.requestStatus === 'rejected' || res?.type?.endsWith('/rejected')) {
-                                                            const message = res?.error?.message || res?.payload?.message || 'Failed to add to cart';
-                                                            toast.error(message);
-                                                            return;
-                                                        }
+                                                            const res: any =
+                                                                await dispatch(
+                                                                    addToCart(
+                                                                        product.id as number,
+                                                                    ),
+                                                                );
+                                                            if (
+                                                                res?.meta
+                                                                    ?.requestStatus ===
+                                                                    'rejected' ||
+                                                                res?.type?.endsWith(
+                                                                    '/rejected',
+                                                                )
+                                                            ) {
+                                                                const message =
+                                                                    res?.error
+                                                                        ?.message ||
+                                                                    res?.payload
+                                                                        ?.message ||
+                                                                    'Failed to add to cart';
+                                                                toast.error(
+                                                                    message,
+                                                                );
+                                                                return;
+                                                            }
 
-                                                        if (res?.payload?.already) {
-                                                            toast('Product already in cart');
-                                                            return;
-                                                        }
+                                                            if (
+                                                                res?.payload
+                                                                    ?.already
+                                                            ) {
+                                                                toast(
+                                                                    'Product already in cart',
+                                                                );
+                                                                return;
+                                                            }
 
-                                                        toast.success('Added to cart');
-                                                    }}
-                                                >
-                                                    <ShoppingCart />
-                                                </Button>
+                                                            toast.success(
+                                                                'Added to cart',
+                                                            );
+                                                        }}
+                                                    >
+                                                        <ShoppingCart />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
