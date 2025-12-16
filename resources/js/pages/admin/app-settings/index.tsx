@@ -55,11 +55,11 @@ const AppSettings = ({ app_settings }: { app_settings: AppSetting[] }) => {
                         description="Update site general settings"
                     />
                     <div className="max-w-lg">
-                        <Form action={admin.settings.store()} method="post">
+                        <Form action={admin.settings.store()} method="post" className=''>
                             {({ errors, processing }) => (
-                                <div className="flex flex-col gap-6">
+                                <div className="flex flex-col gap-6 ">
                                     {/* Site Logo */}
-                                    <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
+                                    <div className="flex  flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:gap-4">
                                         <label className="w-32">
                                             Logo (174 x 40)
                                         </label>

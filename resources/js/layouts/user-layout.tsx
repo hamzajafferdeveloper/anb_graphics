@@ -1,4 +1,4 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import UserHeader from '@/components/user/header';
 import UserSideBar from '@/components/user/sidebar';
 import { SharedData, type BreadcrumbItem } from '@/types';
@@ -24,20 +24,21 @@ export default function UserLayout({
 
     return (
         <div className="flex h-screen overflow-hidden bg-muted/30">
-            {/* Sidebar */}
-            <UserSideBar />
+            <SidebarProvider>
+                {/* Sidebar */}
+                <UserSideBar />
 
-            {/* Main Content Area */}
-            <div className="flex flex-1 flex-col">
-                {/* Header */}
-                <UserHeader breadcrumbs={breadcrumbs} />
+                {/* Main Content Area */}
+                <div className="flex flex-1 flex-col">
+                    {/* Header */}
+                    <UserHeader breadcrumbs={breadcrumbs} />
 
-                {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-4 md:p-6">
-                    {children}
-                </main>
-            </div>
-
+                    {/* Page Content */}
+                    <main className="flex-1 overflow-y-auto p-4 md:p-6">
+                        {children}
+                    </main>
+                </div>
+            </SidebarProvider>
             <Toaster richColors position="top-right" />
         </div>
     );

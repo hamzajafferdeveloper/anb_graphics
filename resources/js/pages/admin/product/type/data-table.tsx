@@ -102,7 +102,7 @@ const ProductTypeDataTable = () => {
     };
 
     return (
-        <div className="mx-auto w-full max-w-7xl rounded-md border bg-white p-4 shadow-sm">
+        <div className="mx-auto w-full max-w-7xl rounded-md border p-4 shadow-sm">
             {/* Top bar */}
             <div className="mb-4 flex items-center justify-between gap-4">
                 <Input

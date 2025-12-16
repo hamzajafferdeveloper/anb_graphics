@@ -90,7 +90,7 @@ export default function UserIndex() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="All Users" />
-            <div className="mx-auto w-full max-w-7xl rounded-md border bg-white p-4 shadow-sm">
+            <div className="mx-auto w-full max-w-7xl rounded-md border p-4 shadow-sm">
                 <div className="mb-4 flex items-center justify-between gap-4">
                     <Input placeholder="Search users..." className="max-w-xs" value={search} onChange={(e) => setSearch(e.target.value)} />
                     <Button onClick={() => setOpenCreateModal(true)}>
