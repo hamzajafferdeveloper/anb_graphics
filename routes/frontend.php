@@ -17,15 +17,25 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::get('/{slug}', [ProductController::class, 'show'])->name('show');
 });
 
+use App\Http\Controllers\Frontend\CouponController;
+
 Route::get('/coupon-price', function () {
-       $coupons = Coupon::where('status', 1) // Only active coupons
+    $coupons = Coupon::where('status', 1) // Only active coupons
         ->orderBy('created_at', 'desc')
-        ->get();
+        ->get()
+        ->filter();
 
     return Inertia::render('frontend/coupon-price/index', [
-        'coupons' => $coupons
+        'coupons' => $coupons->values()
     ]);
 })->name('couponPricePage');
+
+// Coupon purchase routes
+Route::prefix('coupons')->name('coupon.')->middleware('auth')->group(function () {
+    Route::post('/{coupon}/purchase', [CouponController::class, 'purchase'])->name('purchase');
+    Route::get('/purchase/success', [CouponController::class, 'success'])->name('purchase.success');
+    Route::get('/purchase/cancel', [CouponController::class, 'cancel'])->name('purchase.cancel');
+});
 
 // Cart pages and API
 Route::get('/cart', function () {

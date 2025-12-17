@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import UserLayout from '@/layouts/user-layout';
+import { home } from '@/routes';
 import products from '@/routes/products';
 import user from '@/routes/user';
 import { BreadcrumbItem, SharedData } from '@/types';
@@ -11,7 +12,7 @@ import React from 'react';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Home',
-        href: user.dashboard().url,
+        href: home().url,
     },
     {
         title: 'Dashboard',

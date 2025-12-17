@@ -16,12 +16,18 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import FrontendLayout from '@/layouts/frontend-layout';
-import { couponPricePage, home } from '@/routes';
+import { couponPricePage, home, login } from '@/routes';
+import { purchase } from '@/routes/coupon';
 import { SharedData } from '@/types';
 import { Coupon } from '@/types/data';
-import { Head, usePage } from '@inertiajs/react';
-import { CheckCircle2, Search, Tag } from 'lucide-react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { loadStripe } from '@stripe/stripe-js';
+import { CheckCircle2, Loader2, Search, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+// Initialize Stripe with your public key
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_KEY || '');
 
 const breadcrumbs = [
     { title: 'Home', href: home().url },
@@ -46,6 +52,7 @@ const CouponPricePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<SortOption>('newest');
     const [showExpired, setShowExpired] = useState(false);
+    const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
     useEffect(() => {
         let result = [...coupons];
@@ -84,8 +91,57 @@ const CouponPricePage = () => {
         setFilteredCoupons(result);
     }, [coupons, searchTerm, sortBy]);
 
-    const handleBuyCoupon = (id: number) => {
-        console.log(id);
+    const handleBuyCoupon = async (coupon: Coupon) => {
+        if (!auth.user) {
+            router.visit(login());
+            return;
+        }
+
+        setIsProcessing(coupon.id);
+
+        try {
+            const res = await fetch(purchase(coupon.id).url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN':
+                        (
+                            document.querySelector(
+                                'meta[name="csrf-token"]',
+                            ) as HTMLMetaElement
+                        )?.content || '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(
+                    body?.error || 'Failed to create buy coupon session',
+                );
+            }
+
+            const json = await res.json();
+            const stripe = await loadStripe(import.meta.env.VITE_STRIPE_KEY);
+
+            if (json.url) {
+                // If server returned direct url (modern Stripe), redirect browser
+                window.location.href = json.url;
+                return;
+            }
+
+            if (!stripe) throw new Error('Stripe failed to load');
+
+            // @ts-ignore
+            await stripe.redirectToCheckout({ sessionId: json.id });
+        } catch (e: any) {
+            console.error('Checkout error', e);
+            toast.error(e?.message || 'Failed to start checkout');
+        } finally {
+            setIsProcessing(null);
+        }
     };
 
     return (
@@ -215,13 +271,23 @@ const CouponPricePage = () => {
                                             </p>
                                         </div>
                                         <Button
-                                            variant="outline"
+                                            size="sm"
+                                            className="w-full"
                                             onClick={() =>
-                                                handleBuyCoupon(coupon.id)
+                                                handleBuyCoupon(coupon)
                                             }
-                                            className="font-medium"
+                                            disabled={
+                                                isProcessing === coupon.id
+                                            }
                                         >
-                                            Buy Coupon
+                                            {isProcessing === coupon.id ? (
+                                                <>
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    Processing...
+                                                </>
+                                            ) : (
+                                                'Buy Now'
+                                            )}
                                         </Button>
                                     </div>
                                 </CardContent>

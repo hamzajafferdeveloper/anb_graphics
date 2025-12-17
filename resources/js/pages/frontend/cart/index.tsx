@@ -14,6 +14,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Trash2 } from 'lucide-react';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
 
 export default function CartPage() {
     const dispatch = useDispatch();
@@ -73,7 +74,7 @@ export default function CartPage() {
             await stripe.redirectToCheckout({ sessionId: json.id });
         } catch (e: any) {
             console.error('Checkout error', e);
-            alert(e?.message || 'Failed to start checkout');
+            toast.error(e?.message || 'Failed to start checkout');
         } finally {
             setLoading(false);
         }
