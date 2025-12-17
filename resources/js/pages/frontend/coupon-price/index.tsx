@@ -19,7 +19,7 @@ import FrontendLayout from '@/layouts/frontend-layout';
 import { couponPricePage, home, login } from '@/routes';
 import { purchase } from '@/routes/coupon';
 import { SharedData } from '@/types';
-import { Coupon } from '@/types/data';
+import { Coupon, UserCoupon } from '@/types/data';
 import { Head, router, usePage } from '@inertiajs/react';
 import { loadStripe } from '@stripe/stripe-js';
 import { CheckCircle2, Loader2, Search, Tag } from 'lucide-react';
@@ -44,7 +44,10 @@ type SortOption =
 const CouponPricePage = () => {
     const { auth, appSettings } = usePage<SharedData>().props;
     const { site_currency_symbol } = appSettings;
-    const { coupons } = usePage<{ coupons: Coupon[] }>().props;
+    const { coupons, buyedCoupon } = usePage<{
+        coupons: Coupon[];
+        buyedCoupon: UserCoupon[];
+    }>().props;
 
     console.log(coupons);
 
@@ -270,25 +273,12 @@ const CouponPricePage = () => {
                                                 {coupon.price}
                                             </p>
                                         </div>
-                                        <Button
-                                            size="sm"
-                                            className="w-full"
-                                            onClick={() =>
-                                                handleBuyCoupon(coupon)
-                                            }
-                                            disabled={
-                                                isProcessing === coupon.id
-                                            }
-                                        >
-                                            {isProcessing === coupon.id ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                    Processing...
-                                                </>
-                                            ) : (
-                                                'Buy Now'
-                                            )}
-                                        </Button>
+                                        <ActionButton
+                                            coupon={coupon}
+                                            handleBuyCoupon={handleBuyCoupon}
+                                            isProcessing={isProcessing}
+                                            buyedCoupon={buyedCoupon}
+                                        />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -313,3 +303,47 @@ const CouponPricePage = () => {
 };
 
 export default CouponPricePage;
+
+const ActionButton = ({
+    coupon,
+    handleBuyCoupon,
+    isProcessing,
+    buyedCoupon,
+}: {
+    coupon: Coupon;
+    buyedCoupon: UserCoupon[];
+    handleBuyCoupon: (coupon: Coupon) => void;
+    isProcessing: number | null;
+}) => {
+    // check if coupon is already purchased
+    const isAlreadyPurchased = buyedCoupon.some(
+        (userCoupon) => userCoupon.coupon_id === coupon.id,
+    );
+
+    return (
+        <>
+            {isAlreadyPurchased ? (
+                <Button size="sm" className="w-full" variant="secondary">
+                    Already Purchased
+                </Button>
+            ) : (
+                <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleBuyCoupon(coupon)}
+                    disabled={isProcessing === coupon.id}
+                    variant="default"
+                >
+                    {isProcessing === coupon.id ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                        </>
+                    ) : (
+                        'Buy Now'
+                    )}
+                </Button>
+            )}
+        </>
+    );
+};

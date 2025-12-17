@@ -3,7 +3,7 @@
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\CheckoutController;
-use App\Http\Controllers\Frontend\StripeWebhookController;
+use App\Http\Controllers\Frontend\CouponController;
 use App\Models\Coupon;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,18 +17,9 @@ Route::prefix('products')->name('products.')->group(function () {
     Route::get('/{slug}', [ProductController::class, 'show'])->name('show');
 });
 
-use App\Http\Controllers\Frontend\CouponController;
 
-Route::get('/coupon-price', function () {
-    $coupons = Coupon::where('status', 1) // Only active coupons
-        ->orderBy('created_at', 'desc')
-        ->get()
-        ->filter();
 
-    return Inertia::render('frontend/coupon-price/index', [
-        'coupons' => $coupons->values()
-    ]);
-})->name('couponPricePage');
+Route::get('/coupon-price', [CouponController::class, 'couponPage'])->name('couponPricePage');
 
 // Coupon purchase routes
 Route::prefix('coupons')->name('coupon.')->middleware('auth')->group(function () {

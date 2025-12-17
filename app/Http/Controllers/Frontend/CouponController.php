@@ -8,10 +8,41 @@ use App\Models\Coupon;
 use App\Models\UserCoupon;
 use Exception;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Log;
 
 class CouponController extends Controller
 {
+    public function couponPage()
+    {
+        try {
+            $coupons = Coupon::where('status', 1)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->filter();
+
+            $user = auth()->user();
+
+            $buyedCoupon = [];
+
+            if ($user) {
+                $buyedCoupon = UserCoupon::where('user_id', $user->id)->where('status' , 'active')->get();
+            }
+
+            return Inertia::render('frontend/coupon-price/index', [
+                'coupons' => $coupons->values(),
+                'buyedCoupon' => $buyedCoupon
+            ]);
+        } catch (Exception $e) {
+            Log::error('Fail to get coupon price page ' . $e->getMessage());
+
+            return Inertia::render('frontend/coupon-price/index', [
+                'coupons' => [],
+                'buyedCoupon' => []
+            ]);
+        }
+    }
+
     public function purchase(Request $request, Coupon $coupon)
     {
         try {
@@ -24,28 +55,30 @@ class CouponController extends Controller
 
             $session = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'],
-                'line_items' => [[
-                    'price_data' => [
-                        'currency' => $currency,
-                        'product_data' => [
-                            'name' => 'Coupon: '.$coupon->coupon,
-                            'description' => 'Get '.$coupon->discount.'% discount on your purchase',
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => $currency,
+                            'product_data' => [
+                                'name' => 'Coupon: ' . $coupon->coupon,
+                                'description' => 'Get ' . $coupon->discount . '% discount on your purchase',
+                            ],
+                            'unit_amount' => $coupon->price * 100,
                         ],
-                        'unit_amount' => $coupon->price * 100,
-                    ],
-                    'quantity' => 1,
-                ]],
+                        'quantity' => 1,
+                    ]
+                ],
                 'mode' => 'payment',
                 'metadata' => [
                     'user_id' => (string) $user->id,
                 ],
-                'success_url' => route('coupon.purchase.success').'?session_id={CHECKOUT_SESSION_ID}&coupon_id='.$coupon->id,
+                'success_url' => route('coupon.purchase.success') . '?session_id={CHECKOUT_SESSION_ID}&coupon_id=' . $coupon->id,
                 'cancel_url' => route('coupon.purchase.cancel'),
             ]);
 
             return response()->json(['id' => $session->id, 'url' => $session->url]);
         } catch (Exception $e) {
-            Log::error('Stripe checkout create error: '.$e->getMessage());
+            Log::error('Stripe checkout create error: ' . $e->getMessage());
 
             return response()->json(['error' => 'Failed to create buy coupon session'], 500);
         }
@@ -57,13 +90,13 @@ class CouponController extends Controller
         $sessionId = $request->get('session_id');
         $couponId = $request->get('coupon_id');
 
-        if (! $sessionId || ! $couponId) {
+        if (!$sessionId || !$couponId) {
             return redirect()->route('couponPricePage')->with('error', 'Invalid request');
         }
 
         $coupon = Coupon::findOrFail($couponId);
 
-        if (! $coupon) {
+        if (!$coupon) {
             return redirect()->route('couponPricePage')->with('error', 'Coupon Not Found');
         }
 

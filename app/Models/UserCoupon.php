@@ -13,6 +13,7 @@ class UserCoupon extends Model
         'limit',
         'stripe_session_id',
         'used_no',
+        'status',
     ];
 
     public function user()

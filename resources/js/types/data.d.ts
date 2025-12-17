@@ -74,23 +74,23 @@ export interface Product {
 }
 
 export interface SvgTemplate {
-  id: number
-  name: string
-  product_id: number
-  template: string
-  parts: TemplatePart[]
-  created_at: string
-  updated_at: string
+    id: number;
+    name: string;
+    product_id: number;
+    template: string;
+    parts: TemplatePart[];
+    created_at: string;
+    updated_at: string;
 }
 
 export interface TemplatePart {
-  id: number
-  part_id: number
-  template_id: number
-  type: string
-  color: string
-  created_at: string
-  updated_at: string
+    id: number;
+    part_id: number;
+    template_id: number;
+    type: string;
+    color: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Coupon {
@@ -111,6 +111,18 @@ export interface User {
     email: string;
     profile_pic?: string | null;
     email_verified_at?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface UserCoupon {
+    id: number;
+    user_id: number;
+    coupon_id: number;
+    code: string;
+    limit: number;
+    stripe_session_id: string;
+    used_no: number;
     created_at: string;
     updated_at: string;
 }
