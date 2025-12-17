@@ -224,13 +224,50 @@ const ProductIndexPage = ({
                                                     {product.brand?.name ?? ''}
                                                 </div>
                                                 <div className="font-medium">
-                                                    {site_currency_symbol}{product.sale_price ??
-                                                        product.price}
-                                                    {product.sale_price && (
-                                                        <span className="ml-2 text-xs text-gray-400 line-through">
-                                                            {site_currency_symbol}{product.price}
-                                                        </span>
-                                                    )}
+                                                    {(() => {
+                                                        const now = new Date();
+                                                        const saleStart =
+                                                            product.sale_start_at
+                                                                ? new Date(
+                                                                      product.sale_start_at,
+                                                                  )
+                                                                : null;
+                                                        const saleEnd =
+                                                            product.sale_end_at
+                                                                ? new Date(
+                                                                      product.sale_end_at,
+                                                                  )
+                                                                : null;
+
+                                                        const isSaleActive =
+                                                            product.sale_price &&
+                                                            (!saleStart ||
+                                                                now >=
+                                                                    saleStart) &&
+                                                            (!saleEnd ||
+                                                                now <= saleEnd);
+
+                                                        return (
+                                                            <>
+                                                                {
+                                                                    site_currency_symbol
+                                                                }
+                                                                {isSaleActive
+                                                                    ? product.sale_price
+                                                                    : product.price}
+                                                                {isSaleActive && (
+                                                                    <span className="ml-2 text-xs text-gray-400 line-through">
+                                                                        {
+                                                                            site_currency_symbol
+                                                                        }
+                                                                        {
+                                                                            product.price
+                                                                        }
+                                                                    </span>
+                                                                )}
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                             <div className="flex justify-end gap-2">

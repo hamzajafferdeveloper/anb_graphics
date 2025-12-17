@@ -33,11 +33,26 @@ const initialState: CartState = {
 
 const mapBackendItem = (b: BackendCartItem): CartItem => {
     const product = b.product || {};
+
+    // Parse sale start and end dates
+    const now = new Date();
+    const saleStart = product.sale_start_at
+        ? new Date(product.sale_start_at)
+        : null;
+    const saleEnd = product.sale_end_at ? new Date(product.sale_end_at) : null;
+
+    // Determine if sale is active
+    const isSaleActive =
+        product.sale_price &&
+        (!saleStart || now >= saleStart) &&
+        (!saleEnd || now <= saleEnd);
+
     return {
         id: b.id,
         product_id: b.product_id,
         name: product.name || 'Product',
-        price: parseFloat(product.sale_price || product.price || 0) || 0,
+        price:
+            parseFloat(isSaleActive ? product.sale_price : product.price) || 0,
         quantity: 1,
         image:
             product.images?.find((img: ProductImage) => img.is_primary)?.path ||

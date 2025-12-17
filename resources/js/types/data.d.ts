@@ -122,6 +122,8 @@ export interface UserCoupon {
     code: string;
     limit: number;
     stripe_session_id: string;
+    user: User;
+    coupon: Coupon;
     used_no: number;
     created_at: string;
     updated_at: string;

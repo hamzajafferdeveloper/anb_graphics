@@ -19,7 +19,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Product::with(['images', 'brand', 'category', 'type']);
+            $query = Product::where('status', 'published')->with(['images', 'brand', 'category', 'type']);
 
             // Filters
             if ($request->filled('q')) {

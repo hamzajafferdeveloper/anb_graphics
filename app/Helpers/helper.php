@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SubOrder;
 use App\Models\UserProduct;
 use App\Models\UserProductAssignment;
 
@@ -17,7 +18,7 @@ if (! function_exists('can_buy_product')) {
         $userId = $user instanceof \App\Models\User ? $user->id : $user;
 
         // Check if user has already purchased the product
-        $hasPurchased = UserProduct::where('user_id', $userId)
+        $hasPurchased = SubOrder::where('user_id', $userId)
             ->where('product_id', $productId)
             ->exists();
 

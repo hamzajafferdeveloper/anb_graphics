@@ -4,8 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\UserProduct;
-use Illuminate\Http\Request;
+use App\Models\SubOrder;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -15,7 +14,7 @@ class DashboardController extends Controller
         $userId = auth()->id();
 
         // recent purchases (latest 4)
-        $recent = UserProduct::where('user_id', $userId)
+        $recent = SubOrder::where('user_id', $userId)
             ->with(['product.images', 'product.brand'])
             ->orderByDesc('created_at')
             ->take(4)
@@ -37,9 +36,9 @@ class DashboardController extends Controller
             });
 
         // total number of purchases and total spent
-        $purchasesCount = UserProduct::where('user_id', $userId)->count();
+        $purchasesCount = SubOrder::where('user_id', $userId)->count();
 
-        $totalSpent = UserProduct::where('user_id', $userId)
+        $totalSpent = SubOrder::where('user_id', $userId)
             ->with('product')
             ->get()
             ->reduce(function ($carry, $up) {
@@ -50,9 +49,10 @@ class DashboardController extends Controller
             }, 0);
 
         // Recommended products: random products excluding already purchased ones
-        $purchasedIds = UserProduct::where('user_id', $userId)->pluck('product_id')->filter()->unique()->values()->all();
+        $purchasedIds = SubOrder::where('user_id', $userId)->pluck('product_id')->filter()->unique()->values()->all();
 
         $recommended = Product::whereNotIn('id', $purchasedIds)
+            ->where('status', 'published')
             ->with('images')
             ->inRandomOrder()
             ->take(4)

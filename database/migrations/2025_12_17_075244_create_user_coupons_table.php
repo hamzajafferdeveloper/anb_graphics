@@ -12,9 +12,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('coupon_id')->constrained()->onDelete('cascade');
-            $table->string('code')->unique();
+            $table->string('code');
             $table->integer('limit')->nullable();
             $table->integer('used_no')->default(0);
+            $table->enum('status', ['active', 'expired', 'used'])->default('active');
             $table->string('stripe_session_id')->nullable();
             $table->timestamps();
         });

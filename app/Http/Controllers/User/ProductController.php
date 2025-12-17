@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\UserProductAssignment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\SubOrder;
 
 class ProductController extends Controller
 {
@@ -23,7 +24,7 @@ class ProductController extends Controller
         $isAdminUser = $user->hasRole('admin_user');
 
         // Base query: user's purchases that have a product matching filters
-        $base = UserProduct::where('user_id', $user->id)
+        $base = SubOrder::where('user_id', $user->id)
             ->whereHas('product', function ($query) use ($q, $brand) {
                 if ($q) {
                     $query->where('name', 'like', "%{$q}%");
@@ -105,9 +106,9 @@ class ProductController extends Controller
         }
 
         // Get all unique brand IDs from both purchased and assigned products
-        $purchasedBrandIds = DB::table('user_products')
-            ->join('products', 'user_products.product_id', '=', 'products.id')
-            ->where('user_products.user_id', $user->id)
+        $purchasedBrandIds = DB::table('sub_orders')
+            ->join('products', 'sub_orders.product_id', '=', 'products.id')
+            ->where('sub_orders.user_id', $user->id)
             ->pluck('products.product_brand_id');
 
         $assignedBrandIds = $isAdminUser
@@ -144,7 +145,7 @@ class ProductController extends Controller
                 'per_page' => $perPage,
             ],
             'brands' => $brands,
-            'purchased_count' => UserProduct::where('user_id', $user->id)->count(),
+            'purchased_count' => SubOrder::where('user_id', $user->id)->count(),
             'assigned_count' => $isAdminUser ? UserProductAssignment::where('user_id', $user->id)->count() : 0,
             'is_admin_user' => $isAdminUser,
         ]);

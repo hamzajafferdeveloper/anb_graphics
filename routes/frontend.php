@@ -23,6 +23,7 @@ Route::get('/coupon-price', [CouponController::class, 'couponPage'])->name('coup
 
 // Coupon purchase routes
 Route::prefix('coupons')->name('coupon.')->middleware('auth')->group(function () {
+    Route::get('/all', [CouponController::class, 'index'])->name('index');
     Route::post('/{coupon}/purchase', [CouponController::class, 'purchase'])->name('purchase');
     Route::get('/purchase/success', [CouponController::class, 'success'])->name('purchase.success');
     Route::get('/purchase/cancel', [CouponController::class, 'cancel'])->name('purchase.cancel');

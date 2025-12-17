@@ -13,6 +13,24 @@ use Log;
 
 class CouponController extends Controller
 {
+    public function index()
+    {
+        try {
+            $user = auth()->user();
+
+            $userCoupons = UserCoupon::where('user_id', $user->id)->with('coupon')->get();
+
+            return response()->json([
+                'userCoupons' => $userCoupons
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 505);
+        }
+    }
+
     public function couponPage()
     {
         try {
@@ -26,7 +44,7 @@ class CouponController extends Controller
             $buyedCoupon = [];
 
             if ($user) {
-                $buyedCoupon = UserCoupon::where('user_id', $user->id)->where('status' , 'active')->get();
+                $buyedCoupon = UserCoupon::where('user_id', $user->id)->where('status', 'active')->get();
             }
 
             return Inertia::render('frontend/coupon-price/index', [
@@ -109,7 +127,7 @@ class CouponController extends Controller
                 'user_id' => auth()->id(),
                 'coupon_id' => $couponId,
                 'code' => $coupon->coupon,
-                'limit' => $coupon->expires_in,
+                'limit' => $coupon->limit,
                 'stripe_session_id' => $sessionId,
             ]);
 
