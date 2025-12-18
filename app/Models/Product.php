@@ -60,4 +60,9 @@ class Product extends Model
     {
         return $this->morphMany(UserProductAssignment::class, 'assignable');
     }
+
+    public function subOrders()
+    {
+        return $this->hasMany(SubOrder::class, 'product_id');
+    }
 }

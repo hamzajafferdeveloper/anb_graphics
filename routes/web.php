@@ -6,9 +6,7 @@ use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->middleware('role:admin')->name('dashboard');
+    Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'dashboard'])->middleware('role:admin')->name('dashboard');
 
     Route::get('user/dashboard', [DashboardController::class, 'dashboard'])->middleware('role:user,admin_user')->name('user.dashboard');
 });
