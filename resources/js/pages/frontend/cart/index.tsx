@@ -97,6 +97,7 @@ export default function CartPage() {
         if (applied) {
             // Percentage discount
             price = Math.max(
+                //@ts-ignore
                 price - price * (applied.coupon.discount / 100),
                 0,
             );
@@ -114,6 +115,7 @@ export default function CartPage() {
         try {
             const res = await fetch('/cart/checkout', {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN':

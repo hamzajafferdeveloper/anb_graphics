@@ -75,6 +75,7 @@ export const addToCart = createAsyncThunk(
     async (product_id: number, { dispatch }: { dispatch: any }) => {
         const res = await fetch('/cart/items', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
@@ -119,6 +120,7 @@ export const removeFromCart = createAsyncThunk(
     async (id: number, { dispatch }: { dispatch: any }) => {
         const res = await fetch(`/cart/items/${id}`, {
             method: 'DELETE',
+            credentials: 'same-origin',
             headers: {
                 Accept: 'application/json',
                 'X-CSRF-TOKEN':
