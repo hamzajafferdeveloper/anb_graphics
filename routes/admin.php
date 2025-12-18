@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ProductBrandController;
 use App\Http\Controllers\Admin\ProductCategoryController;
 use App\Http\Controllers\Admin\ProductColorController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductImageFileController;
 use App\Http\Controllers\Admin\ProductSvgTemplateController;
 use App\Http\Controllers\Admin\ProductTypeController;
 use App\Http\Controllers\Admin\UserController;
@@ -30,6 +31,7 @@ Route::prefix('admin')->middleware(['role:admin'])->name('admin.')->group(functi
         Route::put('/update/{slug}', [ProductController::class, 'update'])->name('update');
         Route::delete('/destroy/{slug}', [ProductController::class, 'destroy'])->name('destroy');
         Route::post('/update-status/{slug}/{status}', [ProductController::class, 'updateStatus'])->name('update-status');
+        Route::post('/upload-file/{slug}', [ProductImageFileController::class, 'store'])->name('uploadFile');
 
         Route::prefix('svg-template')->name('svgTemplate.')->group(function () {
             Route::get('/product={slug}', [ProductSvgTemplateController::class, 'create'])->name('create');

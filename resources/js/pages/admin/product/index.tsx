@@ -65,7 +65,7 @@ import {
     SlidersHorizontal,
     Trash2,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -102,6 +102,9 @@ const ProductIndex = ({
         useState<boolean>(false);
     const [loadingStatusChange, setLoadingStatusChange] =
         useState<boolean>(false);
+
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchProducts = () => {
         setLoading(true);
@@ -169,6 +172,30 @@ const ProductIndex = ({
         } finally {
             setLoadingSlug(null);
             setLoadingStatusChange(false);
+        }
+    };
+
+    const handleFileUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('product_slug', selectedProductSlug);
+        formData.append('file', files[0]);
+        try {
+            await router.post(
+                admin.product.uploadFile(selectedProductSlug),
+                formData,
+                {
+                    preserveState: true,
+                },
+            );
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -387,7 +414,7 @@ const ProductIndex = ({
                                                                   ? 'outline'
                                                                   : 'destructive'
                                                         }
-                                                        className="flex items-center gap-1 cursor-pointer"
+                                                        className="flex cursor-pointer items-center gap-1"
                                                     >
                                                         {loadingStatusChange ? (
                                                             <Spinner className="h-4 w-4" />
@@ -588,24 +615,37 @@ const ProductIndex = ({
                         <Button
                             // variant="outline"
                             className="flex w-full cursor-pointer items-center justify-between"
-                            onClick={() => router.get(admin.product.svgTemplate.create(selectedProductSlug).url)}
+                            onClick={() =>
+                                router.get(
+                                    admin.product.svgTemplate.create(
+                                        selectedProductSlug,
+                                    ).url,
+                                )
+                            }
                         >
                             <div className="flex items-center gap-2">
                                 <SlidersHorizontal className="h-4 w-4" />
                                 Customizer
                             </div>
                         </Button>
-
                         <Button
                             // variant="outline"
+                            disabled={isUploading}
                             className="flex w-full cursor-pointer items-center justify-between"
-                            // onClick={handleAddFiles}
+                            onClick={() => fileInputRef.current?.click()}
                         >
                             <div className="flex items-center gap-2">
                                 <FilePlus className="h-4 w-4" />
-                                Add Files
+                                {isUploading ? 'Uploading...' : 'Add Files'}
                             </div>
                         </Button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" // Add or modify accepted file types
+                        />
                     </div>
 
                     <DialogFooter>
