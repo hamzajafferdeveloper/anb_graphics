@@ -10,10 +10,13 @@ use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\ProductImage;
+use App\Models\ProductImageFile;
 use App\Models\ProductKeyword;
 use App\Models\ProductType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Laravel\Prompts\Key;
 
@@ -74,7 +77,6 @@ class ProductController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -172,14 +174,6 @@ class ProductController extends Controller
             Log::error('Fail to store product ' . $e->getMessage());
             return redirect()->back()->with('error', $e->getMessage());
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -369,4 +363,44 @@ class ProductController extends Controller
         }
     }
 
+    public function files(string $slug)
+    {
+        try {
+
+            $product = Product::where('slug', $slug)->first();
+
+            $images = ProductImage::where('product_id', $product->id)
+                ->get()
+                ->map(fn($image) => [
+                    'id' => $image->id,
+                    'path' => $image->path,
+                    'alt' => $image->alt,
+                    'is_primary' => $image->is_primary,
+                    'size' => Storage::disk('public')->exists($image->path)
+                        ? Storage::disk('public')->size($image->path)
+                        : null,
+                ]);
+
+            $files = ProductImageFile::where('product_id', $product->id)
+                ->get()
+                ->map(fn($file) => [
+                    'id' => $file->id,
+                    'name' => $file->name,
+                    'path' => $file->path,
+                    'extention' => $file->extention,
+                    'size' => Storage::disk('public')->exists($file->path)
+                        ? Storage::disk('public')->size($file->path)
+                        : null,
+                ]);
+
+            return Inertia::render('admin/product/files/index', [
+                'product' => $product,
+                'images' => $images,
+                'files' => $files,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Fail to get product files and image ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Fail to get product files and image ');
+        }
+    }
 }

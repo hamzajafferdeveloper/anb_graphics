@@ -366,18 +366,22 @@ const ProductIndex = ({
                                     <TableRow key={product.id}>
                                         <TableCell>
                                             {product.images.length > 0 && (
-                                                <img
-                                                    src={`/storage/${
-                                                        product.images.find(
-                                                            (
-                                                                img: ProductImage,
-                                                            ) => img.is_primary,
-                                                        )?.path ??
-                                                        product.images[0].path
-                                                    }`}
-                                                    alt={product.name}
-                                                    className="h-12 w-12 rounded object-cover"
-                                                />
+                                                <Link href={admin.product.files(product.slug).url}>
+                                                    <img
+                                                        src={`/storage/${
+                                                            product.images.find(
+                                                                (
+                                                                    img: ProductImage,
+                                                                ) =>
+                                                                    img.is_primary,
+                                                            )?.path ??
+                                                            product.images[0]
+                                                                .path
+                                                        }`}
+                                                        alt={product.name}
+                                                        className="h-12 w-12 rounded object-cover"
+                                                    />
+                                                </Link>
                                             )}
                                         </TableCell>
                                         <TableCell>{product.name}</TableCell>
