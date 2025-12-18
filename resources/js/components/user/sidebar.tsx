@@ -12,11 +12,12 @@ import {
 import { cn, resolveUrl } from '@/lib/utils';
 import user from '@/routes/user';
 import { router, usePage } from '@inertiajs/react';
-import { LayoutDashboard, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Ticket } from 'lucide-react';
 
 const sidebarItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: user.dashboard() },
     { label: 'Products', icon: ShoppingBag, href: user.products() },
+    { label: 'Coupons', icon: Ticket, href: user.coupons() },
 ];
 
 function AppSidebar() {

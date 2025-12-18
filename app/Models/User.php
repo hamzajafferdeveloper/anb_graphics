@@ -57,4 +57,9 @@ class User extends Authenticatable
         return $this->hasMany(UserProductAssignment::class);
     }
 
+    public function coupons()
+    {
+        return $this->hasMany(UserCoupon::class);
+    }
+
 }
