@@ -15,7 +15,7 @@ class FileHelper
      * @param string $folder
      * @return string|null
      */
-    public static function store(UploadedFile $file = null, string $folder = 'uploads')
+    public static function store(?UploadedFile $file, string $folder = 'uploads')
     {
         if (!$file) {
             return null;
@@ -36,7 +36,7 @@ class FileHelper
      * @param string|null $filePath
      * @return void
      */
-    public static function delete(string $filePath = null)
+    public static function delete(?string $filePath)
     {
         if ($filePath && Storage::exists("public/$filePath")) {
             Storage::delete("public/$filePath");

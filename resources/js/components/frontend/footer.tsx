@@ -15,8 +15,8 @@ const FrontendFooter = () => {
                             {site_name ? site_name : 'ANB Graphics'}
                         </h3>
                         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                            Connecting talent with opportunity. Discover models,
-                            professionals, and creative excellence.
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Quisquam, quae.
                         </p>
                     </div>
 

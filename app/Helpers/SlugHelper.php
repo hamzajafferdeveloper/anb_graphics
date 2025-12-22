@@ -15,7 +15,7 @@ class SlugHelper
      * @param string $column
      * @return string
      */
-    public static function generate(string $text, string $table = null, string $column = 'slug')
+    public static function generate(string $text, ?string $table, string $column = 'slug')
     {
         // Basic slug
         $slug = Str::slug($text);

@@ -1,6 +1,7 @@
 // components/ProductCard.tsx
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import customizer from '@/routes/user/customizer';
 import { Link } from '@inertiajs/react';
 import { Eye } from 'lucide-react';
 
@@ -78,7 +79,7 @@ const ProductCard = ({
                                     </Link>
                                 </Button>
                                 <Button variant="outline" size="sm">
-                                    Get Support
+                                    <Link href={customizer.index(product.slug)}>Customize</Link>
                                 </Button>
                             </div>
                         )}
