@@ -108,7 +108,7 @@ export default function AssignProductToUser({
 
         // Check if any of the sets are different
         const setsEqual = (a: Set<number>, b: Set<number>) =>
-            a.size === b.size && [...a].every(x => b.has(x));
+            a.size === b.size && [...a].every((x) => b.has(x));
 
         return !(
             setsEqual(currentProducts, assignedProducts) &&
@@ -118,17 +118,21 @@ export default function AssignProductToUser({
     }, [selectedProducts, selectedCategories, selectedTypes, assigned]);
 
     // Helper function to check if an item is selected
-    const isSelected = (id: string | number, type: 'product' | 'category' | 'type') => {
+    const isSelected = (
+        id: string | number,
+        type: 'product' | 'category' | 'type',
+    ) => {
         const idNum = Number(id);
         if (isNaN(idNum)) return false;
 
-        const selectedArray = type === 'product'
-            ? selectedProducts
-            : type === 'category'
-                ? selectedCategories
-                : selectedTypes;
+        const selectedArray =
+            type === 'product'
+                ? selectedProducts
+                : type === 'category'
+                  ? selectedCategories
+                  : selectedTypes;
 
-        return selectedArray.some(selectedId => Number(selectedId) === idNum);
+        return selectedArray.some((selectedId) => Number(selectedId) === idNum);
     };
 
     const handlePost = async () => {
@@ -146,22 +150,28 @@ export default function AssignProductToUser({
         }
 
         try {
-            await router.post(admin.user.assignProductPost(user.id).url, {
-                categories: selectedCategories.map(Number).filter(Boolean),
-                types: selectedTypes.map(Number).filter(Boolean),
-                products: selectedProducts.map(Number).filter(Boolean),
-            }, {
-                onSuccess: () => {
-                    toast.success('Products assigned successfully');
-                    // Refresh the page to get updated assignments
-                    window.location.reload();
+            await router.post(
+                admin.user.assignProductPost(user.id).url,
+                {
+                    categories: selectedCategories.map(Number).filter(Boolean),
+                    types: selectedTypes.map(Number).filter(Boolean),
+                    products: selectedProducts.map(Number).filter(Boolean),
                 },
-                onError: (errors) => {
-                    toast.error('Failed to assign products. Please try again.');
-                    console.error('Assignment error:', errors);
+                {
+                    onSuccess: () => {
+                        toast.success('Products assigned successfully');
+                        // Refresh the page to get updated assignments
+                        window.location.reload();
+                    },
+                    onError: (errors) => {
+                        toast.error(
+                            'Failed to assign products. Please try again.',
+                        );
+                        console.error('Assignment error:', errors);
+                    },
+                    preserveScroll: true,
                 },
-                preserveScroll: true,
-            });
+            );
         } catch (error) {
             console.error('Error:', error);
             toast.error('An error occurred while assigning products');
@@ -317,7 +327,7 @@ function SelectionGroup({
 }) {
     const toggle = (id: string) => {
         //@ts-ignore
-        setSelected(prev => {
+        setSelected((prev) => {
             const idNum = Number(id);
             return prev.some((v: string) => Number(v) === idNum)
                 ? prev.filter((v: string) => Number(v) !== idNum)
@@ -336,7 +346,9 @@ function SelectionGroup({
                         onClick={() => toggle(item.id)}
                     >
                         <Checkbox
-                            checked={selected.some(id => Number(id) === Number(item.id))}
+                            checked={selected.some(
+                                (id) => Number(id) === Number(item.id),
+                            )}
                             onCheckedChange={() => toggle(item.id)}
                         />
                         <span className="text-sm font-medium">

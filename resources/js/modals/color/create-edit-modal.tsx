@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import admin from '@/routes/admin';
-import { ProductColor, ProductType } from '@/types/data';
+import { ProductColor } from '@/types/data';
 import { Form } from '@inertiajs/react';
 
 const CreateEditTypeModal = ({
@@ -82,7 +82,7 @@ const CreateEditTypeModal = ({
                                     <Label htmlFor="color">Color</Label>
                                     <Input
                                         id="color"
-                                        type='color'
+                                        type="color"
                                         name="color"
                                         placeholder="Color"
                                         defaultValue={selectedColor?.code ?? ''}

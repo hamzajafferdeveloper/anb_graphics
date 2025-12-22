@@ -7,7 +7,7 @@ const Sidebar = () => {
     return (
         <div className="w-1/6 p-3">
             <div className="h-[95vh] rounded-2xl border shadow-2xl">
-                <div className='flex justify-center pt-2'>
+                <div className="flex justify-center pt-2">
                     <img
                         src={`/storage/${site_logo}`}
                         className="h-[40px] w-[174px]"

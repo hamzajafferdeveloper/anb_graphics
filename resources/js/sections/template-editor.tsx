@@ -74,9 +74,13 @@ const TemplateEditor = ({
     // svgRootRef references the div that contains the actual <svg> markup (inner HTML)
     const svgRootRef = useRef<HTMLDivElement | null>(null);
 
-    const [svgContent, setSvgContent] = useState<string | null>(initialSvgContent);
-    const [selectedParts, setSelectedParts] = useState<SelectedPart[]>(initialSelectedParts);
-    const [templateName, setTemplateName] = useState<string>(initialTemplateName);
+    const [svgContent, setSvgContent] = useState<string | null>(
+        initialSvgContent,
+    );
+    const [selectedParts, setSelectedParts] =
+        useState<SelectedPart[]>(initialSelectedParts);
+    const [templateName, setTemplateName] =
+        useState<string>(initialTemplateName);
     const [showHoverColor, setShowHoverColor] = useState<boolean>(false);
     const [hoverColor, setHoverColor] = useState<string>('#1C175C');
     const [fillMap, setFillMap] = useState<Record<string, string>>({});
@@ -97,15 +101,27 @@ const TemplateEditor = ({
 
     const startPan = (e: React.MouseEvent | React.TouchEvent) => {
         isPanning.current = true;
-        const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+        const clientX =
+            'touches' in e
+                ? e.touches[0].clientX
+                : (e as React.MouseEvent).clientX;
+        const clientY =
+            'touches' in e
+                ? e.touches[0].clientY
+                : (e as React.MouseEvent).clientY;
         lastPos.current = { x: clientX, y: clientY };
     };
 
     const movePan = (e: MouseEvent | TouchEvent) => {
         if (!isPanning.current || !lastPos.current) return;
-        const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
-        const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
+        const clientX =
+            'touches' in e
+                ? (e as TouchEvent).touches[0].clientX
+                : (e as MouseEvent).clientX;
+        const clientY =
+            'touches' in e
+                ? (e as TouchEvent).touches[0].clientY
+                : (e as MouseEvent).clientY;
 
         const dx = clientX - lastPos.current.x;
         const dy = clientY - lastPos.current.y;
@@ -139,7 +155,8 @@ const TemplateEditor = ({
         selectedPartsRef.current = selectedParts;
     }, [selectedParts]);
 
-    const handleShowHoverColor = (checked: boolean) => setShowHoverColor(checked);
+    const handleShowHoverColor = (checked: boolean) =>
+        setShowHoverColor(checked);
 
     const targetedSvgPart = (partId: string) => {
         if (!svgContent || !svgRootRef.current) return;
@@ -164,9 +181,15 @@ const TemplateEditor = ({
     };
 
     const handleColorChange = (partId: string, newColor: string) => {
-        setSelectedParts((prev) => prev.map((part) => (part.id === partId ? { ...part, color: newColor } : part)));
+        setSelectedParts((prev) =>
+            prev.map((part) =>
+                part.id === partId ? { ...part, color: newColor } : part,
+            ),
+        );
 
-        const el = svgRootRef.current?.querySelector<SVGGraphicsElement>(`[part-id="${partId}"]`);
+        const el = svgRootRef.current?.querySelector<SVGGraphicsElement>(
+            `[part-id="${partId}"]`,
+        );
         if (el) {
             el.setAttribute('fill', newColor);
             const updatedSvg = svgRootRef.current?.innerHTML;
@@ -177,7 +200,9 @@ const TemplateEditor = ({
     const handleRemovePart = (partId: string) => {
         const targetedPart = targetedSvgPart(partId);
         if (targetedPart) {
-            const orig = selectedParts.find((p) => p.id === partId)?.defaultColor ?? null;
+            const orig =
+                selectedParts.find((p) => p.id === partId)?.defaultColor ??
+                null;
             if (orig) targetedPart.setAttribute('fill', orig);
             targetedPart.removeAttribute('part-id');
         }
@@ -197,24 +222,33 @@ const TemplateEditor = ({
         const onSvgClick = (event: Event) => {
             if (isPanning.current) return;
 
-            const target = (event.target as Element)?.closest<SVGGraphicsElement>('path,rect,circle,polygon,polyline,ellipse,line');
+            const target = (
+                event.target as Element
+            )?.closest<SVGGraphicsElement>(
+                'path,rect,circle,polygon,polyline,ellipse,line',
+            );
             if (!target) return;
 
             const existingId = target.getAttribute('part-id');
             if (existingId) {
-                const existsInState = selectedPartsRef.current.some((p) => p.id === existingId);
+                const existsInState = selectedPartsRef.current.some(
+                    (p) => p.id === existingId,
+                );
                 if (existsInState) {
                     toast.error('Part already selected');
                     return;
                 }
             }
 
-            const newId = existingId ?? `part-${Math.random().toString(36).slice(2, 9)}`;
+            const newId =
+                existingId ?? `part-${Math.random().toString(36).slice(2, 9)}`;
             target.setAttribute('part-id', newId);
 
             let defaultColor = target.getAttribute('fill') ?? undefined;
             if (!defaultColor) {
-                const className = Array.from(target.classList).find((c) => (fillMap as any)[c]);
+                const className = Array.from(target.classList).find(
+                    (c) => (fillMap as any)[c],
+                );
                 if (className) defaultColor = (fillMap as any)[className];
             }
             if (!defaultColor) defaultColor = '#000000';
@@ -246,10 +280,12 @@ const TemplateEditor = ({
         if (!svgEl) return;
 
         const keep = new Set(selectedParts.map((p) => p.id));
-        svgEl.querySelectorAll<SVGGraphicsElement>('[part-id]').forEach((el) => {
-            const pid = el.getAttribute('part-id');
-            if (pid && !keep.has(pid)) el.removeAttribute('part-id');
-        });
+        svgEl
+            .querySelectorAll<SVGGraphicsElement>('[part-id]')
+            .forEach((el) => {
+                const pid = el.getAttribute('part-id');
+                if (pid && !keep.has(pid)) el.removeAttribute('part-id');
+            });
     }, [selectedParts]);
 
     const handleSubmit = () => {
@@ -263,7 +299,9 @@ const TemplateEditor = ({
             return;
         }
 
-        const invalidParts = selectedParts.filter((p) => !p.name || !p.name.trim());
+        const invalidParts = selectedParts.filter(
+            (p) => !p.name || !p.name.trim(),
+        );
         if (invalidParts.length > 0) {
             toast.error('Each part must have a name.');
             return;
@@ -320,15 +358,20 @@ const TemplateEditor = ({
             svgEl.appendChild(style);
 
             selectedParts.forEach((part) => {
-                const el = svgEl.querySelector<SVGGraphicsElement>(`[part-id="${part.id}"]`);
+                const el = svgEl.querySelector<SVGGraphicsElement>(
+                    `[part-id="${part.id}"]`,
+                );
                 if (el) el.style.setProperty('--part-fill', hoverColor);
             });
         } else {
             selectedParts.forEach((part) => {
-                const el = svgEl.querySelector<SVGGraphicsElement>(`[part-id="${part.id}"]`);
+                const el = svgEl.querySelector<SVGGraphicsElement>(
+                    `[part-id="${part.id}"]`,
+                );
                 if (el) {
                     el.style.removeProperty('--part-fill');
-                    if (part.defaultColor) el.setAttribute('fill', part.defaultColor);
+                    if (part.defaultColor)
+                        el.setAttribute('fill', part.defaultColor);
                     else el.removeAttribute('fill');
                 }
             });
@@ -378,11 +421,23 @@ const TemplateEditor = ({
             <div className="h-full w-full xl:flex">
                 {/* SVG Upload & Preview */}
                 <div className="mb-5 flex w-full items-center justify-center xl:mb-0 xl:h-full">
-                    <input type="file" ref={fileRef} accept=".svg" onChange={handleFileChange} className="hidden" />
+                    <input
+                        type="file"
+                        ref={fileRef}
+                        accept=".svg"
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
                     {!svgContent ? (
-                        <div className="flex w-3/5 cursor-pointer flex-col items-center justify-center text-gray-400" onClick={() => fileRef.current?.click()}>
+                        <div
+                            className="flex w-3/5 cursor-pointer flex-col items-center justify-center text-gray-400"
+                            onClick={() => fileRef.current?.click()}
+                        >
                             <CircleSlash2 className="h-60 w-60 opacity-50" />
-                            <p>No SVG Template Selected. Click me to select Template</p>
+                            <p>
+                                No SVG Template Selected. Click me to select
+                                Template
+                            </p>
                         </div>
                     ) : (
                         <>
@@ -395,16 +450,26 @@ const TemplateEditor = ({
                                         style={{
                                             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                                             transformOrigin: 'center center',
-                                            transition: isPanning.current ? 'none' : 'transform 0.1s ease-out',
-                                            cursor: isPanning.current ? 'grabbing' : 'grab',
+                                            transition: isPanning.current
+                                                ? 'none'
+                                                : 'transform 0.1s ease-out',
+                                            cursor: isPanning.current
+                                                ? 'grabbing'
+                                                : 'grab',
                                             touchAction: 'none',
                                             pointerEvents: 'auto',
                                         }}
                                         onMouseDown={startPan}
                                         onTouchStart={startPan}
                                     >
-                                        <div ref={svgRootRef} className="h-full w-full touch-none object-contain">
-                                            <SvgViewer svgContent={svgContent} ref={svgRootRef} />
+                                        <div
+                                            ref={svgRootRef}
+                                            className="h-full w-full touch-none object-contain"
+                                        >
+                                            <SvgViewer
+                                                svgContent={svgContent}
+                                                ref={svgRootRef}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -429,35 +494,113 @@ const TemplateEditor = ({
                         </div>
                     )}
                     <div className="flex w-full gap-2">
-                        <Input className="w-4/5" placeholder="Enter Template Name Here..." value={templateName} onChange={(e) => setTemplateName(e.target.value)} />
-                        <Button className="w-1/5" onClick={handleSubmit}>Save</Button>
+                        <Input
+                            className="w-4/5"
+                            placeholder="Enter Template Name Here..."
+                            value={templateName}
+                            onChange={(e) => setTemplateName(e.target.value)}
+                        />
+                        <Button className="w-1/5" onClick={handleSubmit}>
+                            Save
+                        </Button>
                     </div>
 
                     <div className="mt-4 max-h-[75vh] overflow-y-auto">
                         <div className="flex h-full justify-between border-b border-gray-300 p-3">
-                            <h1 className="text-xl">Selected Parts ({selectedParts.length})</h1>
-                            <div className={`flex items-center gap-1 text-gray-500 ${selectedParts.length === 0 ? 'pointer-events-none opacity-50' : ''}`}>
-                                <input type="color" value={hoverColor} onChange={(e) => setHoverColor(e.target.value)} className="h-6 w-6 rounded border" />
+                            <h1 className="text-xl">
+                                Selected Parts ({selectedParts.length})
+                            </h1>
+                            <div
+                                className={`flex items-center gap-1 text-gray-500 ${selectedParts.length === 0 ? 'pointer-events-none opacity-50' : ''}`}
+                            >
+                                <input
+                                    type="color"
+                                    value={hoverColor}
+                                    onChange={(e) =>
+                                        setHoverColor(e.target.value)
+                                    }
+                                    className="h-6 w-6 rounded border"
+                                />
                                 <p>Show Color</p>
-                                <Switch checked={showHoverColor} onCheckedChange={handleShowHoverColor} />
+                                <Switch
+                                    checked={showHoverColor}
+                                    onCheckedChange={handleShowHoverColor}
+                                />
                             </div>
                         </div>
 
                         {selectedParts.length === 0 ? (
-                            <p className="p-2 text-sm text-gray-500">Click on SVG parts to select them</p>
+                            <p className="p-2 text-sm text-gray-500">
+                                Click on SVG parts to select them
+                            </p>
                         ) : (
                             <div className="my-2 h-full space-y-2">
                                 {selectedParts.map((part) => (
-                                    <div key={part.id} className="flex w-full items-center gap-2 rounded-md border border-gray-300 p-2">
-                                        <Input placeholder={`Name for ${part.isGroup ? 'Group' : 'Part'} ${part.id}`} value={part.name} onChange={(e) => setSelectedParts((prev) => prev.map((p) => p.id === part.id ? { ...p, name: e.target.value } : p))} />
+                                    <div
+                                        key={part.id}
+                                        className="flex w-full items-center gap-2 rounded-md border border-gray-300 p-2"
+                                    >
+                                        <Input
+                                            placeholder={`Name for ${part.isGroup ? 'Group' : 'Part'} ${part.id}`}
+                                            value={part.name}
+                                            onChange={(e) =>
+                                                setSelectedParts((prev) =>
+                                                    prev.map((p) =>
+                                                        p.id === part.id
+                                                            ? {
+                                                                  ...p,
+                                                                  name: e.target
+                                                                      .value,
+                                                              }
+                                                            : p,
+                                                    ),
+                                                )
+                                            }
+                                        />
 
-                                        <input type="color" className="h-10 w-10 rounded border" value={part.color || '#000000'} onChange={(e) => handleColorChange(part.id, e.target.value)} />
+                                        <input
+                                            type="color"
+                                            className="h-10 w-10 rounded border"
+                                            value={part.color || '#000000'}
+                                            onChange={(e) =>
+                                                handleColorChange(
+                                                    part.id,
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
 
-                                        <Trash2 className="cursor-pointer text-red-500" onClick={() => handleRemovePart(part.id)} />
+                                        <Trash2
+                                            className="cursor-pointer text-red-500"
+                                            onClick={() =>
+                                                handleRemovePart(part.id)
+                                            }
+                                        />
 
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Switch checked={part.protection || false} onCheckedChange={(checked) => setSelectedParts((prev) => prev.map((p) => p.id === part.id ? { ...p, protection: checked } : p))} />
+                                                <Switch
+                                                    checked={
+                                                        part.protection || false
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        setSelectedParts(
+                                                            (prev) =>
+                                                                prev.map((p) =>
+                                                                    p.id ===
+                                                                    part.id
+                                                                        ? {
+                                                                              ...p,
+                                                                              protection:
+                                                                                  checked,
+                                                                          }
+                                                                        : p,
+                                                                ),
+                                                        )
+                                                    }
+                                                />
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 <p>Protection</p>
@@ -466,7 +609,30 @@ const TemplateEditor = ({
 
                                         <Tooltip>
                                             <TooltipTrigger asChild>
-                                                <Switch checked={part.isGroup || part.is_group || false} onCheckedChange={(checked) => setSelectedParts((prev) => prev.map((p) => p.id === part.id ? { ...p, isGroup: checked } : p))} />
+                                                <Switch
+                                                    checked={
+                                                        part.isGroup ||
+                                                        part.is_group ||
+                                                        false
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        setSelectedParts(
+                                                            (prev) =>
+                                                                prev.map((p) =>
+                                                                    p.id ===
+                                                                    part.id
+                                                                        ? {
+                                                                              ...p,
+                                                                              isGroup:
+                                                                                  checked,
+                                                                          }
+                                                                        : p,
+                                                                ),
+                                                        )
+                                                    }
+                                                />
                                             </TooltipTrigger>
                                             <TooltipContent>
                                                 <p>Group</p>

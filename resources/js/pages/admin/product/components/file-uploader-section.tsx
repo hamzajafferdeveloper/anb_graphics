@@ -140,10 +140,12 @@ const FileUploaderSection = ({ data }: { data?: ProductImage[] }) => {
                                     className="h-20 w-20 rounded-md object-cover"
                                 />
                                 <div>
-                                    <p className="text-sm">{img.path.split('/').pop()}</p>
+                                    <p className="text-sm">
+                                        {img.path.split('/').pop()}
+                                    </p>
 
                                     {img.is_primary && (
-                                        <span className="text-xs text-green-600 font-semibold">
+                                        <span className="text-xs font-semibold text-green-600">
                                             ⭐ Primary Image
                                         </span>
                                     )}
@@ -155,7 +157,11 @@ const FileUploaderSection = ({ data }: { data?: ProductImage[] }) => {
                             </button>
 
                             {/* Keep IDs for backend */}
-                            <input type="hidden" name="existing_images[]" value={img.id} />
+                            <input
+                                type="hidden"
+                                name="existing_images[]"
+                                value={img.id}
+                            />
                         </div>
                     ))}
                 </div>
@@ -176,13 +182,15 @@ const FileUploaderSection = ({ data }: { data?: ProductImage[] }) => {
                                     className="h-20 w-20 rounded-md object-cover"
                                 />
                             ) : (
-                                <div className="h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center">
+                                <div className="flex h-20 w-20 items-center justify-center rounded-md bg-gray-100">
                                     File
                                 </div>
                             )}
                             <div>
                                 <h1 className="text-gray-700">{f.file.name}</h1>
-                                <p className="text-sm">{(f.file.size / 1024).toFixed(2)} KB</p>
+                                <p className="text-sm">
+                                    {(f.file.size / 1024).toFixed(2)} KB
+                                </p>
                             </div>
                         </div>
                         <button onClick={() => removeFile(f.id)}>

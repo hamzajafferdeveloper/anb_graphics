@@ -22,7 +22,7 @@ const FrontendFooter = () => {
 
                     {/* Company */}
                     <div>
-                        <h4 className="mb-4 text-sm font-semibold uppercase text-foreground">
+                        <h4 className="mb-4 text-sm font-semibold text-foreground uppercase">
                             Company
                         </h4>
                         <ul className="space-y-3 text-sm">
@@ -41,7 +41,7 @@ const FrontendFooter = () => {
 
                     {/* Resources */}
                     <div>
-                        <h4 className="mb-4 text-sm font-semibold uppercase text-foreground">
+                        <h4 className="mb-4 text-sm font-semibold text-foreground uppercase">
                             Resources
                         </h4>
                         <ul className="space-y-3 text-sm">
@@ -55,14 +55,14 @@ const FrontendFooter = () => {
                                             {item}
                                         </a>
                                     </li>
-                                )
+                                ),
                             )}
                         </ul>
                     </div>
 
                     {/* Social */}
                     <div>
-                        <h4 className="mb-4 text-sm font-semibold uppercase text-foreground">
+                        <h4 className="mb-4 text-sm font-semibold text-foreground uppercase">
                             Follow Us
                         </h4>
                         <div className="flex gap-3">
@@ -75,7 +75,7 @@ const FrontendFooter = () => {
                                     >
                                         <Icon size={18} />
                                     </a>
-                                )
+                                ),
                             )}
                         </div>
                     </div>
@@ -85,7 +85,8 @@ const FrontendFooter = () => {
                 <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t pt-6 text-sm text-muted-foreground md:flex-row">
                     <span>
                         © {new Date().getFullYear()}{' '}
-                        {site_name ? site_name : 'ANB Graphics'}. All rights reserved.
+                        {site_name ? site_name : 'ANB Graphics'}. All rights
+                        reserved.
                     </span>
                 </div>
             </div>

@@ -104,11 +104,15 @@ const CategoryIndex = () => {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Product Category" />
             <ResizablePanelGroup
-                direction={isMediumOrBelow ? "vertical" : "horizontal"}
+                direction={isMediumOrBelow ? 'vertical' : 'horizontal'}
                 className="h-[calc(100vh-48px)] w-full"
             >
                 {/* Form Panel */}
-                <ResizablePanel defaultSize={25} minSize={0} maxSize={isMediumOrBelow ? 90 : 40}>
+                <ResizablePanel
+                    defaultSize={25}
+                    minSize={0}
+                    maxSize={isMediumOrBelow ? 90 : 40}
+                >
                     <div className="flex h-full justify-center overflow-hidden p-6">
                         <Card className="h-fit w-full max-w-sm">
                             <CardHeader className="!flex flex-row items-start justify-between pb-4">

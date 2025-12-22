@@ -172,9 +172,13 @@ export default function CouponIndex() {
                                             {coupon.price ?? '—'}
                                         </TableCell>
                                         <TableCell>
-                                            {coupon.status
-                                                ? <Badge>Active</Badge>
-                                                : <Badge variant="destructive">Inactive</Badge>}
+                                            {coupon.status ? (
+                                                <Badge>Active</Badge>
+                                            ) : (
+                                                <Badge variant="destructive">
+                                                    Inactive
+                                                </Badge>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             {new Date(

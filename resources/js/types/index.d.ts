@@ -55,8 +55,8 @@ export interface User {
 }
 
 export interface MetaData {
-  title: string
-  description: string
+    title: string;
+    description: string;
 }
 
 export interface AppSetting {

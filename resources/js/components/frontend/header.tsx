@@ -6,7 +6,14 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { couponPricePage, dashboard, home, login, logout, register } from '@/routes';
+import {
+    couponPricePage,
+    dashboard,
+    home,
+    login,
+    logout,
+    register,
+} from '@/routes';
 import { index } from '@/routes/products';
 import {
     CartItem as CartItemType,
@@ -23,7 +30,7 @@ import { useDispatch, useSelector } from 'react-redux';
 const navLinks = [
     { label: 'Home', href: home() },
     { label: 'Products', href: index() },
-    { label: 'Coupon Price', href: couponPricePage() }
+    { label: 'Coupon Price', href: couponPricePage() },
 ];
 
 const FrontendHeader = () => {
@@ -76,7 +83,8 @@ const FrontendHeader = () => {
                                     </div>
                                 </div>
                                 <div className="text-sm font-semibold">
-                                    {site_currency_symbol}{item.price.toFixed(2)}
+                                    {site_currency_symbol}
+                                    {item.price.toFixed(2)}
                                 </div>
                             </div>
                         </div>

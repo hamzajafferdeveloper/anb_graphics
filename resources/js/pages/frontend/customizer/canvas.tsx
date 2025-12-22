@@ -1,7 +1,5 @@
 const Canvas = () => {
-  return (
-    <div>Canvas</div>
-  )
-}
+    return <div>Canvas</div>;
+};
 
-export default Canvas
+export default Canvas;

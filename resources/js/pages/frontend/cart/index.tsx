@@ -106,8 +106,14 @@ export default function CartPage() {
         return price * item.quantity;
     };
 
-    const subtotal = items.reduce((t: number, it: CartItem) => t + it.price * it.quantity, 0);
-    const total = items.reduce((t: number, it: CartItem) => t + getItemTotal(it), 0);
+    const subtotal = items.reduce(
+        (t: number, it: CartItem) => t + it.price * it.quantity,
+        0,
+    );
+    const total = items.reduce(
+        (t: number, it: CartItem) => t + getItemTotal(it),
+        0,
+    );
 
     /* -------------------- Checkout -------------------- */
     const handleCheckout = async () => {

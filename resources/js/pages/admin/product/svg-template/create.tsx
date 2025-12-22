@@ -1,10 +1,9 @@
 import AppLayout from '@/layouts/app-layout';
 import admin from '@/routes/admin';
+import AddTemplateSection from '@/sections/add-template-section';
 import { BreadcrumbItem } from '@/types';
 import { Product } from '@/types/data';
 import { Head } from '@inertiajs/react';
-import AddTemplateSection from '@/sections/add-template-section';
-
 
 type Props = {
     product: Product;

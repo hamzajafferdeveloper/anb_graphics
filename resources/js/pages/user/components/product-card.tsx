@@ -79,7 +79,9 @@ const ProductCard = ({
                                     </Link>
                                 </Button>
                                 <Button variant="outline" size="sm">
-                                    <Link href={customizer.index(product.slug)}>Customize</Link>
+                                    <Link href={customizer.index(product.slug)}>
+                                        Customize
+                                    </Link>
                                 </Button>
                             </div>
                         )}

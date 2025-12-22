@@ -205,7 +205,10 @@ const ProductDetail = ({
                                 Add to Cart
                             </Button>
                         ) : (
-                            <Button disabled className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg">
+                            <Button
+                                disabled
+                                className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg"
+                            >
                                 <ShoppingCart className="h-5 w-5" />
                                 Already Purchased
                             </Button>

@@ -1,7 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
-import admin from '@/routes/admin';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
@@ -13,11 +9,15 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import CreateEditUserModal from '@/modals/user/create-edit-modal';
+import AppLayout from '@/layouts/app-layout';
 import ConfirmModal from '@/modals/comfirmation';
+import CreateEditUserModal from '@/modals/user/create-edit-modal';
+import admin from '@/routes/admin';
+import { type BreadcrumbItem } from '@/types';
 import { User } from '@/types/data';
-import { useEffect, useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import { PlusCircle, SquarePen, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -60,7 +60,10 @@ export default function UserIndex() {
         const data = await response.json();
 
         setUsers(data.users);
-        setPagination({ current_page: data.current_page, last_page: data.last_page });
+        setPagination({
+            current_page: data.current_page,
+            last_page: data.last_page,
+        });
         setLoading(false);
     };
 
@@ -92,7 +95,12 @@ export default function UserIndex() {
             <Head title="All Users" />
             <div className="mx-auto w-full max-w-7xl rounded-md border p-4 shadow-sm">
                 <div className="mb-4 flex items-center justify-between gap-4">
-                    <Input placeholder="Search users..." className="max-w-xs" value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <Input
+                        placeholder="Search users..."
+                        className="max-w-xs"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                     <Button onClick={() => setOpenCreateModal(true)}>
                         <PlusCircle className="mr-2 h-4 w-4" /> Create New
                     </Button>
@@ -108,35 +116,64 @@ export default function UserIndex() {
                                 <TableHead>Profile</TableHead>
                                 <TableHead>Created</TableHead>
                                 <TableHead>Updated</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="text-right">
+                                    Actions
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="py-6 text-center">
+                                    <TableCell
+                                        colSpan={7}
+                                        className="py-6 text-center"
+                                    >
                                         <Spinner className="mx-auto" />
                                     </TableCell>
                                 </TableRow>
                             ) : users.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="py-6 text-center">No users found.</TableCell>
+                                    <TableCell
+                                        colSpan={7}
+                                        className="py-6 text-center"
+                                    >
+                                        No users found.
+                                    </TableCell>
                                 </TableRow>
                             ) : (
                                 users.map((user) => (
                                     <TableRow key={user.id}>
                                         <TableCell>{user.id}</TableCell>
                                         <TableCell>{user.name}</TableCell>
-                                        <TableCell className='hover:underline'><Link href={admin.user.assignProduct(user.id)} >{user.email}</Link></TableCell>
+                                        <TableCell className="hover:underline">
+                                            <Link
+                                                href={admin.user.assignProduct(
+                                                    user.id,
+                                                )}
+                                            >
+                                                {user.email}
+                                            </Link>
+                                        </TableCell>
                                         <TableCell>
                                             {user.profile_pic ? (
-                                                <img src={`/storage/${user.profile_pic}`} className="h-8 w-8 rounded-full object-cover" />
+                                                <img
+                                                    src={`/storage/${user.profile_pic}`}
+                                                    className="h-8 w-8 rounded-full object-cover"
+                                                />
                                             ) : (
                                                 '—'
                                             )}
                                         </TableCell>
-                                        <TableCell>{new Date(user.created_at).toLocaleString()}</TableCell>
-                                        <TableCell>{new Date(user.updated_at).toLocaleString()}</TableCell>
+                                        <TableCell>
+                                            {new Date(
+                                                user.created_at,
+                                            ).toLocaleString()}
+                                        </TableCell>
+                                        <TableCell>
+                                            {new Date(
+                                                user.updated_at,
+                                            ).toLocaleString()}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-2">
                                                 <Button
@@ -154,10 +191,16 @@ export default function UserIndex() {
                                                     variant="destructive"
                                                     onClick={() => {
                                                         setSelectedUser(user);
-                                                        setOpenDeleteModal(true);
+                                                        setOpenDeleteModal(
+                                                            true,
+                                                        );
                                                     }}
                                                 >
-                                                    {loadingDelete ? <Spinner className="h-5 w-5" /> : <Trash2 className="h-5 w-5" />}
+                                                    {loadingDelete ? (
+                                                        <Spinner className="h-5 w-5" />
+                                                    ) : (
+                                                        <Trash2 className="h-5 w-5" />
+                                                    )}
                                                 </Button>
                                             </div>
                                         </TableCell>
@@ -172,25 +215,56 @@ export default function UserIndex() {
                 {pagination && (
                     <div className="mt-4 flex items-center justify-between">
                         <div className="flex gap-2">
-                            <Button onClick={prevPage} disabled={page === 1}>Prev</Button>
-                            <div className="flex items-center px-2">Page {pagination.current_page} of {pagination.last_page}</div>
-                            <Button onClick={nextPage} disabled={page === pagination.last_page}>Next</Button>
+                            <Button onClick={prevPage} disabled={page === 1}>
+                                Prev
+                            </Button>
+                            <div className="flex items-center px-2">
+                                Page {pagination.current_page} of{' '}
+                                {pagination.last_page}
+                            </div>
+                            <Button
+                                onClick={nextPage}
+                                disabled={page === pagination.last_page}
+                            >
+                                Next
+                            </Button>
                         </div>
                     </div>
                 )}
 
                 {/* Modals */}
                 {openCreateModal && (
-                    <CreateEditUserModal open={openCreateModal} fetchUsers={() => fetchUsers(page)} onOpenChange={setOpenCreateModal} type="create" />
+                    <CreateEditUserModal
+                        open={openCreateModal}
+                        fetchUsers={() => fetchUsers(page)}
+                        onOpenChange={setOpenCreateModal}
+                        type="create"
+                    />
                 )}
                 {selectedUser && openEditModal && (
-                    <CreateEditUserModal open={openEditModal} fetchUsers={() => fetchUsers(page)} onOpenChange={setOpenEditModal} selectedUser={selectedUser} type="edit" />
+                    <CreateEditUserModal
+                        open={openEditModal}
+                        fetchUsers={() => fetchUsers(page)}
+                        onOpenChange={setOpenEditModal}
+                        selectedUser={selectedUser}
+                        type="edit"
+                    />
                 )}
                 {selectedUser && openDeleteModal && (
-                    <ConfirmModal open={openDeleteModal} onOpenChange={setOpenDeleteModal} title="Delete this user?" description="Are you sure you want to delete this user? This cannot be undone." confirmText="Yes, delete it" cancelText="Cancel" onConfirm={() => selectedUser && handleDelete(selectedUser)} />
+                    <ConfirmModal
+                        open={openDeleteModal}
+                        onOpenChange={setOpenDeleteModal}
+                        title="Delete this user?"
+                        description="Are you sure you want to delete this user? This cannot be undone."
+                        confirmText="Yes, delete it"
+                        cancelText="Cancel"
+                        onConfirm={() =>
+                            selectedUser && handleDelete(selectedUser)
+                        }
+                    />
                 )}
             </div>
         </AppLayout>
     );
 }
-22
+22;

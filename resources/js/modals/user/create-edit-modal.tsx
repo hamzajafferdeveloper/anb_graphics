@@ -33,7 +33,9 @@ const CreateEditUserModal = ({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[550px]">
                 <DialogHeader>
-                    <DialogTitle>{type === 'create' ? 'Create User' : 'Edit User'}</DialogTitle>
+                    <DialogTitle>
+                        {type === 'create' ? 'Create User' : 'Edit User'}
+                    </DialogTitle>
                     <DialogDescription>
                         {type === 'create'
                             ? 'Provide user details below.'
@@ -57,7 +59,11 @@ const CreateEditUserModal = ({
                     {({ errors, processing }) => (
                         <>
                             {type === 'edit' && (
-                                <input type="hidden" name="_method" value="put" />
+                                <input
+                                    type="hidden"
+                                    name="_method"
+                                    value="put"
+                                />
                             )}
 
                             <div className="space-y-4 py-2">
@@ -86,7 +92,12 @@ const CreateEditUserModal = ({
                                 </div>
 
                                 <div className="grid space-y-2">
-                                    <Label htmlFor="password">Password {type === 'edit' ? '(leave blank to keep current)' : ''}</Label>
+                                    <Label htmlFor="password">
+                                        Password{' '}
+                                        {type === 'edit'
+                                            ? '(leave blank to keep current)'
+                                            : ''}
+                                    </Label>
                                     <Input
                                         id="password"
                                         name="password"
@@ -97,15 +108,22 @@ const CreateEditUserModal = ({
                                 </div>
 
                                 <div className="grid space-y-2">
-                                    <Label htmlFor="profile_pic">Profile Picture (optional)</Label>
-                                    {type === 'edit' && selectedUser?.profile_pic && (
-                                        <img
-                                            src={`/storage/${selectedUser.profile_pic}`}
-                                            alt={selectedUser.name}
-                                            className="h-16 w-16 rounded-full mb-2 object-cover"
-                                        />
-                                    )}
-                                    <Input id="profile_pic" name="profile_pic" type="file" />
+                                    <Label htmlFor="profile_pic">
+                                        Profile Picture (optional)
+                                    </Label>
+                                    {type === 'edit' &&
+                                        selectedUser?.profile_pic && (
+                                            <img
+                                                src={`/storage/${selectedUser.profile_pic}`}
+                                                alt={selectedUser.name}
+                                                className="mb-2 h-16 w-16 rounded-full object-cover"
+                                            />
+                                        )}
+                                    <Input
+                                        id="profile_pic"
+                                        name="profile_pic"
+                                        type="file"
+                                    />
                                     <InputError message={errors.profile_pic} />
                                 </div>
                             </div>
@@ -117,7 +135,9 @@ const CreateEditUserModal = ({
 
                                 <Button type="submit" disabled={processing}>
                                     {processing && <Spinner className="mr-2" />}
-                                    {type === 'create' ? 'Create' : 'Save Changes'}
+                                    {type === 'create'
+                                        ? 'Create'
+                                        : 'Save Changes'}
                                 </Button>
                             </DialogFooter>
                         </>

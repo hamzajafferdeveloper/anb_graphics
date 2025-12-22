@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import CustomTextEditor from '@/components/text-editor';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -11,12 +12,6 @@ import {
     CommandItem,
     CommandList,
 } from '@/components/ui/command';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -39,10 +34,8 @@ import { Form, Head } from '@inertiajs/react';
 import { format, isBefore, isPast } from 'date-fns';
 import { CalendarIcon, ChevronsUpDownIcon, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { ChromePicker } from 'react-color';
 import FileUploaderSection from './components/file-uploader-section';
 import MaterialColors from './components/material-colors';
-import CustomTextEditor from '@/components/text-editor';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -611,8 +604,16 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                             <Label htmlFor="description">
                                                 Descripton
                                             </Label>
-                                            <input  type="hidden" name="description" value={description}/>
-                                            <CustomTextEditor onChange={(decs) => setDescription(decs)} />
+                                            <input
+                                                type="hidden"
+                                                name="description"
+                                                value={description}
+                                            />
+                                            <CustomTextEditor
+                                                onChange={(decs) =>
+                                                    setDescription(decs)
+                                                }
+                                            />
                                             <InputError
                                                 message={errors.description}
                                             />

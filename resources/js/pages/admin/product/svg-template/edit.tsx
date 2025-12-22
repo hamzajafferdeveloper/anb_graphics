@@ -7,7 +7,7 @@ import { Head } from '@inertiajs/react';
 
 type Props = {
     product: Product;
-    template: SvgTemplate
+    template: SvgTemplate;
 };
 
 const CreateSvgTemplate = ({ product, template }: Props) => {

@@ -1,11 +1,21 @@
-import React from 'react';
-import { router } from '@inertiajs/react';
 import admin from '@/routes/admin';
-import TemplateEditor, { SelectedPart } from './template-editor';
 import { Product, SvgTemplate } from '@/types/data';
+import { router } from '@inertiajs/react';
+import TemplateEditor, { SelectedPart } from './template-editor';
 
-const EditTemplateSection = ({ product, template }: { product: Product; template: SvgTemplate }) => {
-    const handleSubmit = (payload: { product_id: number; name: string; svg: string; parts: SelectedPart[] }) => {
+const EditTemplateSection = ({
+    product,
+    template,
+}: {
+    product: Product;
+    template: SvgTemplate;
+}) => {
+    const handleSubmit = (payload: {
+        product_id: number;
+        name: string;
+        svg: string;
+        parts: SelectedPart[];
+    }) => {
         router.put(admin.product.svgTemplate.update(template.id), payload);
     };
 

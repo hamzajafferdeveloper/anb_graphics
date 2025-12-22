@@ -366,7 +366,13 @@ const ProductIndex = ({
                                     <TableRow key={product.id}>
                                         <TableCell>
                                             {product.images.length > 0 && (
-                                                <Link href={admin.product.files(product.slug).url}>
+                                                <Link
+                                                    href={
+                                                        admin.product.files(
+                                                            product.slug,
+                                                        ).url
+                                                    }
+                                                >
                                                     <img
                                                         src={`/storage/${
                                                             product.images.find(

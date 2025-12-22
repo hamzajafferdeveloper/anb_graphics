@@ -8,9 +8,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import { ChromePicker } from 'react-color';
 import { ChevronsUpDownIcon, X } from 'lucide-react';
-import React from 'react';
+import { ChromePicker } from 'react-color';
 
 const materials = ['Leather', 'Cotton', 'Nylon', 'Other'];
 
@@ -127,14 +126,20 @@ export default function MaterialColors({
 
                 <div className="mt-1 flex flex-wrap gap-2">
                     {colors.map((color) => (
-                        <Badge key={color} className="flex items-center gap-2 px-3 py-1">
+                        <Badge
+                            key={color}
+                            className="flex items-center gap-2 px-3 py-1"
+                        >
                             <div
                                 className="h-4 w-4 rounded border"
                                 style={{ backgroundColor: color }}
                             />
                             <span>{color}</span>
 
-                            <button type="button" onClick={() => removeColor(color)}>
+                            <button
+                                type="button"
+                                onClick={() => removeColor(color)}
+                            >
                                 <X className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" />
                             </button>
                         </Badge>

@@ -1,12 +1,12 @@
 import '../css/app.css';
 
+import { fetchCart } from '@/stores/cartSlice';
+import { store } from '@/stores/store';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
-import { store } from '@/stores/store';
-import { fetchCart } from '@/stores/cartSlice';
 import { initializeTheme } from './hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';

@@ -188,7 +188,11 @@ const ProductTypeDataTable = () => {
                                                     setOpenDeleteModal(true);
                                                 }}
                                             >
-                                                {loadingDelete ? <Spinner className="h-5 w-5" /> : <Trash2 className="h-5 w-5" />}
+                                                {loadingDelete ? (
+                                                    <Spinner className="h-5 w-5" />
+                                                ) : (
+                                                    <Trash2 className="h-5 w-5" />
+                                                )}
                                             </Button>
                                         </div>
                                     </TableCell>

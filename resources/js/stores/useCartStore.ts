@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from '@/stores/store';
 import {
     addToCart as addToCartThunk,
+    clearCart as clearCartAction,
     fetchCart as fetchCartThunk,
     removeFromCart as removeFromCartThunk,
-    clearCart as clearCartAction,
 } from '@/stores/cartSlice';
+import type { AppDispatch, RootState } from '@/stores/store';
+import { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 // Re-export thunks for compatibility with existing named imports
 export const addToCart = addToCartThunk;
@@ -29,23 +29,39 @@ export const useCartStore = () => {
         dispatch(fetchCartThunk());
     }, [dispatch]);
 
-    const add = useCallback((payload: number | { id?: number; product_id?: number }) => {
-        const productId = typeof payload === 'number' ? payload : payload.id ?? payload.product_id;
-        if (typeof productId !== 'number') return;
-        dispatch(addToCartThunk(productId));
-    }, [dispatch]);
+    const add = useCallback(
+        (payload: number | { id?: number; product_id?: number }) => {
+            const productId =
+                typeof payload === 'number'
+                    ? payload
+                    : (payload.id ?? payload.product_id);
+            if (typeof productId !== 'number') return;
+            dispatch(addToCartThunk(productId));
+        },
+        [dispatch],
+    );
 
-    const remove = useCallback((id: number) => dispatch(removeFromCartThunk(id)), [dispatch]);
+    const remove = useCallback(
+        (id: number) => dispatch(removeFromCartThunk(id)),
+        [dispatch],
+    );
 
-    const updateQuantity = useCallback((_id: string | number, _quantity: number) => {
-        // Quantity is fixed to 1 by design — no-op
-        console.warn('updateQuantity is a no-op; cart quantities are fixed to 1');
-    }, []);
+    const updateQuantity = useCallback(
+        (_id: string | number, _quantity: number) => {
+            // Quantity is fixed to 1 by design — no-op
+            console.warn(
+                'updateQuantity is a no-op; cart quantities are fixed to 1',
+            );
+        },
+        [],
+    );
 
     const clear = useCallback(() => dispatch(clearCartAction()), [dispatch]);
 
-    const itemCount = () => items.reduce((t: number, it: any) => t + it.quantity, 0);
-    const totalPrice = () => items.reduce((t: number, it: any) => t + it.price * it.quantity, 0);
+    const itemCount = () =>
+        items.reduce((t: number, it: any) => t + it.quantity, 0);
+    const totalPrice = () =>
+        items.reduce((t: number, it: any) => t + it.price * it.quantity, 0);
 
     return {
         items,

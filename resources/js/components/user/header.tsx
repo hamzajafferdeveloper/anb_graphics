@@ -9,13 +9,13 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Appearance, useAppearance } from '@/hooks/use-appearance';
+import { useInitials } from '@/hooks/use-initials';
 import { logout } from '@/routes';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronDown, LogOut, LucideIcon, Moon, Sun } from 'lucide-react';
 import { Breadcrumbs } from '../breadcrumbs';
 import { SidebarTrigger } from '../ui/sidebar';
-import { useInitials } from '@/hooks/use-initials';
 
 interface UserHeaderProps {
     breadcrumbs?: BreadcrumbItem[];
@@ -68,7 +68,11 @@ const UserHeader = ({ breadcrumbs }: UserHeaderProps) => {
                             >
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src="/avatar.png" />
-                                    <AvatarFallback>{ auth.user ? getInitials(auth.user.name) : 'U' }</AvatarFallback>
+                                    <AvatarFallback>
+                                        {auth.user
+                                            ? getInitials(auth.user.name)
+                                            : 'U'}
+                                    </AvatarFallback>
                                 </Avatar>
                                 <span className="hidden text-sm font-medium md:block">
                                     {auth.user ? auth.user.name : 'User'}

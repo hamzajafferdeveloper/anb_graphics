@@ -1,8 +1,6 @@
-import FrontendLayout from '@/layouts/frontend-layout';
-import { Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
-import React from 'react';
+import FrontendLayout from '@/layouts/frontend-layout';
+import { Head, Link } from '@inertiajs/react';
 
 export default function Success({ session_id }: { session_id?: string }) {
     return (
@@ -10,7 +8,10 @@ export default function Success({ session_id }: { session_id?: string }) {
             <Head title="Payment Successful" />
             <div className="container mx-auto px-4 py-12 text-center">
                 <h1 className="mb-6 text-3xl font-bold">Payment Successful</h1>
-                <p className="mb-8">Thank you for your purchase. Your payment has been processed.</p>
+                <p className="mb-8">
+                    Thank you for your purchase. Your payment has been
+                    processed.
+                </p>
                 <div className="flex justify-center">
                     <Link href="/">
                         <Button>Continue Shopping</Button>
