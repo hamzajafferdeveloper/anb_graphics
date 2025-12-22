@@ -22,7 +22,10 @@ class CustomizerController extends Controller
                 return redirect()->back()->with('error', 'No template found');
             }
 
-            return Inertia::render('frontend/customizer/index');
+            return Inertia::render('frontend/customizer/index', [
+                'template' => $template,
+                'product' => $product
+            ]);
         } catch (\Exception $e) {
             Log::error('Fail to get Customizer Page ' . $e->getMessage());
             return redirect()->back()->with('error', $e->getMessage());

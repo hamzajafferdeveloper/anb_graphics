@@ -1,0 +1,1 @@
+export const SVG_TEMPLATE_PARENT_MAX_SIZE = 1200;
