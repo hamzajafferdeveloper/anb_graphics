@@ -1,13 +1,16 @@
+import { TemplatePart } from '@/types/data';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CustomizerState {
     selectedSidebar: string;
     selectedSvgPart: string;
+    parts: TemplatePart[];
 }
 
 const initialState: CustomizerState = {
     selectedSidebar: 'Color',
     selectedSvgPart: '',
+    parts: [],
 };
 
 const customizerSlice = createSlice({
@@ -22,11 +25,15 @@ const customizerSlice = createSlice({
         setSelectedSvgPart(state: any, action: PayloadAction<string>) {
             state.selectedSvgPart = action.payload;
         },
+        // @ts-ignore
+        setParts(state: any, action: PayloadAction<TemplatePart[]>) {
+            state.parts = action.payload;
+        },
     },
 });
 
-// Export actions
-export const { setSelectedSidebar, setSelectedSvgPart } =
+// Export setParts
+export const { setSelectedSidebar, setSelectedSvgPart, setParts } =
     customizerSlice.actions;
 
 // Export reducer

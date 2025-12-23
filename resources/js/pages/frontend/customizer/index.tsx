@@ -3,9 +3,13 @@ import {
     useCustomizerHistory,
 } from '@/contexts/CustomizerHistoryContext';
 import { handleClickonSvgContainer } from '@/lib/customizer/customizer';
+import { setParts } from '@/stores/customizer/customizerSlice';
+import { AppDispatch, RootState } from '@/stores/store';
 import { TemplatePart } from '@/types/data';
 import { CustomizerPageProps } from '@/types/page-props';
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Toaster } from 'sonner';
 import Canvas from './canvas';
 import Sidebar from './sidebar/sidebar';
 
@@ -33,6 +37,12 @@ const CustomizerComponent = ({
     template,
     product,
 }: CustomizerPageProps): ReactNode => {
+    const dispatch = useDispatch<AppDispatch>();
+
+    const templateParts = useSelector(
+        (state: RootState) => state.customizer.parts,
+    );
+
     const {
         present,
         setLive,
@@ -46,14 +56,17 @@ const CustomizerComponent = ({
     } = useCustomizerHistory<EditorState>();
 
     const svgContainerRef = useRef<HTMLDivElement | null>(null);
-    const [openColorMenu, setOpenColorMenu] = useState<string>('');
     const [actionPerformed, setActionPerformed] = useState<boolean>(false);
 
     useEffect(() => {
+        if (!template) return;
+
         if (svgContainerRef.current) {
             svgContainerRef.current.innerHTML = template.template;
         }
-    }, [template]);
+
+        dispatch(setParts(template.parts));
+    }, [template, dispatch]);
 
     // Convenient derived getters/setters that operate on the combined state
     const parts = present.parts;
@@ -62,7 +75,7 @@ const CustomizerComponent = ({
     const handleSvgContainerClick = (
         event: React.MouseEvent<HTMLDivElement>,
     ) => {
-        handleClickonSvgContainer(event, parts, setOpenColorMenu);
+        handleClickonSvgContainer(event, parts, dispatch, svgContainerRef);
     };
 
     useEffect(() => {
@@ -78,6 +91,7 @@ const CustomizerComponent = ({
                 handleSvgContainerClick={handleSvgContainerClick}
             />
             <Sidebar className="order-2 xl:order-1" />
+            <Toaster richColors position="top-right" />
         </section>
     );
 };

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Color;
 use App\Models\Product;
 use App\Models\SvgTemplate;
 use Illuminate\Http\Request;
@@ -28,6 +29,17 @@ class CustomizerController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Fail to get Customizer Page ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function getColors()
+    {
+        try {
+            $colors = Color::all();
+            return response()->json($colors);
+        } catch (\Exception $e) {
+            Log::error('Fail to get Colors ' . $e->getMessage());
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
