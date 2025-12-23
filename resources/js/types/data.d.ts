@@ -28,6 +28,7 @@ export interface ProductColor {
     id: number;
     name: string;
     slug: string;
+    is_protection: boolean;
     code: string;
     created_at: string;
     updated_at: string;
@@ -85,7 +86,7 @@ export interface SvgTemplate {
 
 export interface TemplatePart {
     id: number;
-    part_id: number;
+    part_id: string;
     template_id: number;
     type: string;
     color: string;

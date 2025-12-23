@@ -102,5 +102,6 @@ Route::prefix('admin')->middleware(['role:admin'])->name('admin.')->group(functi
         Route::post('/', [ProductColorController::class, 'store'])->name('store');
         Route::put('/{id}', [ProductColorController::class, 'update'])->name('update');
         Route::delete('/{id}', [ProductColorController::class, 'destroy'])->name('destroy');
+        Route::post('/update-is-protection/{id}', [ProductColorController::class, 'updateIsProtection'])->name('updateIsProtection');
     });
 });

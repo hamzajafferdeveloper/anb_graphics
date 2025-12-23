@@ -4,25 +4,11 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { btnSideBarLink } from '@/constant/customizer-icon-bar-data';
 import { setSelectedSidebar } from '@/stores/customizer/customizerSlice';
 import { AppDispatch, RootState } from '@/stores/store';
-import { Layers, PaintBucket, Text } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
-const btnSideBarLink = [
-    {
-        name: 'Home',
-        icon: PaintBucket,
-    },
-    {
-        name: 'Layer',
-        icon: Layers,
-    },
-    {
-        name: 'Text',
-        icon: Text,
-    },
-];
 const IconBar = () => {
     const dispatch = useDispatch<AppDispatch>();
     const selectedSidebar = useSelector(

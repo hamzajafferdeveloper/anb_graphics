@@ -1,5 +1,3 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,6 +9,7 @@ import {
     PaginationPrevious,
 } from '@/components/ui/pagination';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import {
     Table,
     TableBody,
@@ -38,17 +37,22 @@ const ColorsDataTable = () => {
     const [openCreateModal, setOpenCreateModal] = useState(false);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
     const [selectedColor, setSelectedColor] = useState<ProductColor | null>(
         null,
     );
-    const [loadingDelete, setLoadingDelete] = useState(false);
 
-    // Debounce search
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [togglingId, setTogglingId] = useState<number | null>(null);
+
+    /* ---------------- Search debounce ---------------- */
     useEffect(() => {
-        const delayDebounce = setTimeout(() => {
+        const timer = setTimeout(() => {
+            setPage(1);
             fetchColors(1);
         }, 400);
-        return () => clearTimeout(delayDebounce);
+
+        return () => clearTimeout(timer);
     }, [search]);
 
     useEffect(() => {
@@ -58,40 +62,54 @@ const ColorsDataTable = () => {
     const fetchColors = async (pageNumber = 1) => {
         setLoading(true);
 
-        const response = await fetch(
-            admin.color.getColors().url +
-                `?page=${pageNumber}&search=${search}`,
+        const res = await fetch(
+            `${admin.color.getColors().url}?page=${pageNumber}&search=${search}`,
         );
 
-        const data = await response.json();
-
+        const data = await res.json();
         setColors(data.colorsPagination.data);
         setPagination(data.colorsPagination);
         setLoading(false);
     };
 
+    /* ---------------- Pagination ---------------- */
     const nextPage = () => {
-        if (pagination?.next_page_url) setPage(page + 1);
-    };
-    const prevPage = () => {
-        if (pagination?.prev_page_url && page > 1) setPage(page - 1);
+        if (pagination?.next_page_url) setPage((p) => p + 1);
     };
 
-    const handleDelete = async (color: ProductColor) => {
-        try {
-            setLoadingDelete(true);
-            await router.delete(admin.color.destroy(color.id), {
-                onSuccess: () => {
+    const prevPage = () => {
+        if (pagination?.prev_page_url && page > 1) setPage((p) => p - 1);
+    };
+
+    /* ---------------- Delete ---------------- */
+    const handleDelete = async () => {
+        if (!selectedColor) return;
+
+        setDeletingId(selectedColor.id);
+
+        router.delete(admin.color.destroy(selectedColor.id), {
+            onSuccess: () => {
+                fetchColors(page);
+                setSelectedColor(null);
+            },
+            onFinish: () => setDeletingId(null),
+        });
+    };
+
+    /* ---------------- Toggle protection ---------------- */
+    const toggleProtection = (id: number) => {
+        setTogglingId(id);
+
+        router.post(
+            admin.color.updateIsProtection(id),
+            {},
+            {
+                onFinish: () => {
                     fetchColors(page);
-                    setSelectedColor(null);
+                    setTogglingId(null);
                 },
-                onError: console.error,
-            });
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoadingDelete(false);
-        }
+            },
+        );
     };
 
     return (
@@ -105,7 +123,8 @@ const ColorsDataTable = () => {
                     onChange={(e) => setSearch(e.target.value)}
                 />
                 <Button onClick={() => setOpenCreateModal(true)}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Create New
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create New
                 </Button>
             </div>
 
@@ -116,7 +135,8 @@ const ColorsDataTable = () => {
                         <TableRow>
                             <TableHead>ID</TableHead>
                             <TableHead>Name</TableHead>
-                            <TableHead>Hex Code</TableHead>
+                            <TableHead>Hex</TableHead>
+                            <TableHead>Protection</TableHead>
                             <TableHead>Created</TableHead>
                             <TableHead>Updated</TableHead>
                             <TableHead className="text-right">
@@ -124,11 +144,12 @@ const ColorsDataTable = () => {
                             </TableHead>
                         </TableRow>
                     </TableHeader>
+
                     <TableBody>
                         {loading ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={6}
+                                    colSpan={7}
                                     className="py-6 text-center"
                                 >
                                     <Spinner className="mx-auto" />
@@ -137,7 +158,7 @@ const ColorsDataTable = () => {
                         ) : colors.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={6}
+                                    colSpan={7}
                                     className="py-6 text-center"
                                 >
                                     No records found.
@@ -148,13 +169,25 @@ const ColorsDataTable = () => {
                                 <TableRow key={color.id}>
                                     <TableCell>{color.id}</TableCell>
                                     <TableCell>{color.name}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="flex items-center gap-2">
                                         <span
-                                            className="inline-block h-6 w-6 rounded-full"
+                                            className="h-5 w-5 rounded-full border"
                                             style={{
                                                 backgroundColor: color.code,
                                             }}
-                                        ></span>
+                                        />
+                                        <span className="text-xs text-muted-foreground">
+                                            {color.code}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Switch
+                                            checked={color.is_protection}
+                                            disabled={togglingId === color.id}
+                                            onCheckedChange={() =>
+                                                toggleProtection(color.id)
+                                            }
+                                        />
                                     </TableCell>
                                     <TableCell>
                                         {new Date(
@@ -186,7 +219,7 @@ const ColorsDataTable = () => {
                                                     setOpenDeleteModal(true);
                                                 }}
                                             >
-                                                {loadingDelete ? (
+                                                {deletingId === color.id ? (
                                                     <Spinner className="h-5 w-5" />
                                                 ) : (
                                                     <Trash2 className="h-5 w-5" />
@@ -203,36 +236,38 @@ const ColorsDataTable = () => {
 
             {/* Pagination */}
             {pagination && (
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-4 flex justify-center">
                     <Pagination>
                         <PaginationContent>
                             <PaginationItem>
                                 <PaginationPrevious
                                     onClick={prevPage}
                                     className={
-                                        pagination.prev_page_url
-                                            ? ''
-                                            : 'pointer-events-none opacity-50'
+                                        !pagination.prev_page_url
+                                            ? 'pointer-events-none opacity-50'
+                                            : ''
                                     }
                                 />
                             </PaginationItem>
+
                             {[...Array(pagination.last_page)].map((_, i) => (
                                 <PaginationItem key={i}>
                                     <PaginationLink
-                                        onClick={() => setPage(i + 1)}
                                         isActive={page === i + 1}
+                                        onClick={() => setPage(i + 1)}
                                     >
                                         {i + 1}
                                     </PaginationLink>
                                 </PaginationItem>
                             ))}
+
                             <PaginationItem>
                                 <PaginationNext
                                     onClick={nextPage}
                                     className={
-                                        pagination.next_page_url
-                                            ? ''
-                                            : 'pointer-events-none opacity-50'
+                                        !pagination.next_page_url
+                                            ? 'pointer-events-none opacity-50'
+                                            : ''
                                     }
                                 />
                             </PaginationItem>
@@ -245,31 +280,31 @@ const ColorsDataTable = () => {
             {openCreateModal && (
                 <CreateEditColorModal
                     open={openCreateModal}
-                    fetchColors={() => fetchColors(page)}
-                    onOpenChange={setOpenCreateModal}
                     type="create"
+                    onOpenChange={setOpenCreateModal}
+                    fetchColors={() => fetchColors(page)}
                 />
             )}
+
             {selectedColor && openEditModal && (
                 <CreateEditColorModal
                     open={openEditModal}
-                    fetchColors={() => fetchColors(page)}
-                    onOpenChange={setOpenEditModal}
-                    selectedColor={selectedColor}
                     type="edit"
+                    selectedColor={selectedColor}
+                    onOpenChange={setOpenEditModal}
+                    fetchColors={() => fetchColors(page)}
                 />
             )}
+
             {selectedColor && openDeleteModal && (
                 <ConfirmModal
                     open={openDeleteModal}
                     onOpenChange={setOpenDeleteModal}
                     title="Delete this color?"
-                    description="Are you sure you want to delete this color? This cannot be undone."
-                    confirmText="Yes, delete it"
+                    description="This action cannot be undone."
+                    confirmText="Yes, delete"
                     cancelText="Cancel"
-                    onConfirm={() =>
-                        selectedColor && handleDelete(selectedColor)
-                    }
+                    onConfirm={handleDelete}
                 />
             )}
         </div>

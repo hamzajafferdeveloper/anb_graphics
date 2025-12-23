@@ -6,7 +6,7 @@ interface CustomizerState {
 }
 
 const initialState: CustomizerState = {
-    selectedSidebar: 'color',
+    selectedSidebar: 'Color',
     selectedSvgPart: '',
 };
 

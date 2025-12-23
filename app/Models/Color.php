@@ -10,5 +10,6 @@ class Color extends Model
         'name',
         'slug',
         'code',
+        'is_protection',
     ];
 }

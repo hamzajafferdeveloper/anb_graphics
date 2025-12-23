@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 
 const Canvas = ({
     className,
-    svgTemplate,
+    svgContainerRef,
+    handleSvgContainerClick,
 }: {
     className?: string;
-    svgTemplate: string;
+    svgContainerRef: React.RefObject<HTMLDivElement | null>;
+    handleSvgContainerClick: (event: React.MouseEvent<HTMLDivElement>) => void;
 }) => {
     const [svgTemplateParentMaxSize, setSvgTemplateParentMaxSize] = useState(
         SVG_TEMPLATE_PARENT_MAX_SIZE,
@@ -44,9 +46,10 @@ const Canvas = ({
                     >
                         {/* SVG content */}
                         <div
-                            dangerouslySetInnerHTML={{ __html: svgTemplate }}
+                            ref={svgContainerRef}
+                            onClick={handleSvgContainerClick}
                             className="h-full w-full cursor-pointer"
-                        />
+                        ></div>
                     </div>
                 </div>
             </div>

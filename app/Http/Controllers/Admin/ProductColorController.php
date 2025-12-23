@@ -171,4 +171,17 @@ class ProductColorController extends Controller
             return back()->with('error', 'Something went wrong');
         }
     }
+
+public function updateIsProtection(string $id)
+{
+
+    $color = Color::findOrFail($id);
+
+    $color->update([
+        'is_protection' => !$color->is_protection,
+    ]);
+
+    return redirect()->back()->with('success', 'Color protection updated!');
+}
+
 }

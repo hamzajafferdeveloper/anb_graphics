@@ -1,3 +1,4 @@
+import { btnSideBarLink } from '@/constant/customizer-icon-bar-data';
 import user from '@/routes/user';
 import { RootState } from '@/stores/store';
 import { SharedData } from '@/types';
@@ -11,6 +12,7 @@ const Sidebar = ({ className }: { className?: string }) => {
     const selectedSidebar = useSelector(
         (state: RootState) => state.customizer.selectedSidebar,
     );
+
     return (
         <div
             className={`flex w-full flex-col gap-3 p-3 lg:flex-row xl:w-1/4 ${className}`}
@@ -30,7 +32,12 @@ const Sidebar = ({ className }: { className?: string }) => {
 
             <div className="h-full w-full flex-1 rounded-2xl border shadow-2xl">
                 <div className="flex items-center justify-center py-4">
-                    {selectedSidebar}
+                    {(() => {
+                        const SidebarComponent = btnSideBarLink.find(
+                            (item) => item.name === selectedSidebar
+                        )?.component;
+                        return SidebarComponent ? <SidebarComponent /> : null;
+                    })()}
                 </div>
             </div>
         </div>
