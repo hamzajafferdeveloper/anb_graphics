@@ -27,24 +27,17 @@ const ColorDisplay = ({
     const { svgContainerRef } = useSvgContainer();
     const { setAndCommit } = useCustomizerHistory<{ parts: TemplatePart[] }>();
 
-    const setPartsCommit = (updater: React.SetStateAction<TemplatePart[]>) => {
-        setAndCommit((prev) => ({
-            ...prev,
-            parts:
-                typeof updater === 'function' ? updater(prev.parts) : updater,
-        }));
-    };
-
     // Paint part: update state + DOM immediately
     const paintPart = (partToPaint: TemplatePart, colorCode: string) => {
         // Update the state
-        setPartsCommit((prevParts) =>
-            prevParts.map((p) =>
+        setAndCommit((prev) => ({
+            ...prev,
+            parts: prev.parts.map((p) =>
                 p.part_id === partToPaint.part_id
                     ? { ...p, color: colorCode }
                     : p,
             ),
-        );
+        }));
 
         // Update the DOM
         if (svgContainerRef?.current) {
@@ -134,7 +127,7 @@ const ColorSideBar = () => {
                 const data = await res.json();
                 setColors(data);
             } catch (err) {
-                console.error('Failed to load colors', err);
+                // TODO: handle error
             }
         };
 

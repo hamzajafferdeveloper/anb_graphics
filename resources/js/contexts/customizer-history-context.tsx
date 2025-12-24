@@ -1,4 +1,48 @@
-import { createContext, useContext, useCallback, useRef, useState, ReactNode } from 'react';
+import {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useRef,
+    useState,
+} from 'react';
+
+function deepEqual(a: any, b: any): boolean {
+    // Handle primitive types and null/undefined
+    if (a === b) return true;
+    if (
+        a === null ||
+        b === null ||
+        typeof a !== 'object' ||
+        typeof b !== 'object'
+    ) {
+        return false;
+    }
+    // Handle arrays
+    if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+            if (!deepEqual(a[i], b[i])) return false;
+        }
+        return true;
+    }
+    // Handle objects
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+
+    if (keysA.length !== keysB.length) return false;
+
+    for (const key of keysA) {
+        if (
+            !Object.prototype.hasOwnProperty.call(b, key) ||
+            !deepEqual(a[key], b[key])
+        ) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 function shallowEqual(objA: any, objB: any) {
     if (Object.is(objA, objB)) return true;
@@ -8,7 +52,7 @@ function shallowEqual(objA: any, objB: any) {
         typeof objB !== 'object' ||
         objB === null
     )
-        return false;
+        return deepEqual(objA.parts, objB.parts);
     const keysA = Object.keys(objA);
     const keysB = Object.keys(objB);
     if (keysA.length !== keysB.length) return false;
@@ -34,22 +78,26 @@ type HistoryState<T> = {
     resetHistory: (state: T) => void;
 };
 
-const CustomizerHistoryContext = createContext<HistoryState<any> | undefined>(undefined);
+const CustomizerHistoryContext = createContext<HistoryState<any> | undefined>(
+    undefined,
+);
 
 export function useCustomizerHistory<T>(): HistoryState<T> {
     const context = useContext(CustomizerHistoryContext);
     if (context === undefined) {
-        throw new Error('useCustomizerHistory must be used within a CustomizerHistoryProvider');
+        throw new Error(
+            'useCustomizerHistory must be used within a CustomizerHistoryProvider',
+        );
     }
     return context as HistoryState<T>;
 }
 
-export function CustomizerHistoryProvider<T>({ 
-    children, 
-    initialValue 
-}: { 
-    children: ReactNode; 
-    initialValue: T 
+export function CustomizerHistoryProvider<T>({
+    children,
+    initialValue,
+}: {
+    children: ReactNode;
+    initialValue: T;
 }) {
     const [present, setPresent] = useState<T>(initialValue);
     const undoStack = useRef<T[]>([]);
@@ -57,10 +105,10 @@ export function CustomizerHistoryProvider<T>({
     const lastCommitted = useRef<T>(initialValue);
 
     const setLive = useCallback((updater: T | ((prev: T) => T)) => {
-        setPresent(prev => 
+        setPresent((prev) =>
             typeof updater === 'function'
                 ? (updater as (p: T) => T)(prev)
-                : updater
+                : updater,
         );
     }, []);
 
@@ -74,14 +122,16 @@ export function CustomizerHistoryProvider<T>({
     }, [present]);
 
     const setAndCommit = useCallback((updater: T | ((prev: T) => T)) => {
-        setPresent(prev => {
+        setPresent((prev) => {
             const next =
                 typeof updater === 'function'
                     ? (updater as (p: T) => T)(prev)
                     : updater;
-            if (!shallowEqual(lastCommitted.current, next)) {
-                undoStack.current.push(lastCommitted.current);
-                redoStack.current = [];
+
+            // Only push to undo stack if there's an actual change
+            if (!shallowEqual(prev, next)) {
+                undoStack.current.push(JSON.parse(JSON.stringify(prev))); // Deep clone
+                redoStack.current = []; // Clear redo stack on new action
                 lastCommitted.current = next;
             }
             return next;
@@ -89,24 +139,31 @@ export function CustomizerHistoryProvider<T>({
     }, []);
 
     const undo = useCallback(() => {
-        setPresent(curr => {
-            if (undoStack.current.length === 0) return curr;
-            const prev = undoStack.current.pop()!;
-            redoStack.current.push(curr);
-            lastCommitted.current = prev;
-            return prev;
-        });
-    }, []);
+        if (undoStack.current.length === 0) return;
 
+        const previousState = undoStack.current.pop()!;
+        const currentState = present;
+
+        // Only update if there's a change
+        if (!shallowEqual(previousState, currentState)) {
+            redoStack.current.push(JSON.parse(JSON.stringify(currentState))); // Deep clone
+            setPresent(previousState);
+            lastCommitted.current = previousState;
+        }
+    }, [present]);
     const redo = useCallback(() => {
-        setPresent(curr => {
-            if (redoStack.current.length === 0) return curr;
-            const next = redoStack.current.pop()!;
-            undoStack.current.push(curr);
-            lastCommitted.current = next;
-            return next;
-        });
-    }, []);
+        if (redoStack.current.length === 0) return;
+
+        const nextState = redoStack.current.pop()!;
+        const currentState = present;
+
+        // Only update if there's a change
+        if (!shallowEqual(nextState, currentState)) {
+            undoStack.current.push(JSON.parse(JSON.stringify(currentState))); // Deep clone
+            setPresent(nextState);
+            lastCommitted.current = nextState;
+        }
+    }, [present]);
 
     const canUndo = undoStack.current.length > 0;
     const canRedo = redoStack.current.length > 0;

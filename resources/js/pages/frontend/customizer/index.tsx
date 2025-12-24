@@ -6,21 +6,16 @@ import {
     SvgContainerProvider,
     useSvgContainer,
 } from '@/contexts/svg-container-context';
-import { handleClickonSvgContainer } from '@/lib/customizer/customizer';
+import { handleClickonSvgContainer, handlePaintPart } from '@/lib/customizer/customizer';
 import { setParts } from '@/stores/customizer/customizerSlice';
 import { AppDispatch } from '@/stores/store';
-import { TemplatePart } from '@/types/data';
+import { CustomizerHistoryState } from '@/types/customizer/customizer';
 import { CustomizerPageProps } from '@/types/page-props';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Toaster } from 'sonner';
 import Canvas from './canvas';
 import Sidebar from './sidebar/sidebar';
-
-type EditorState = {
-    parts: TemplatePart[];
-    // uploadedItems: CanvasItem[];
-};
 
 // Wrapper component to provide the history context
 const CustomizerWithHistory = ({ template, product }: CustomizerPageProps) => {
@@ -46,9 +41,8 @@ const CustomizerComponent = ({
     const dispatch = useDispatch<AppDispatch>();
     const { svgContainerRef } = useSvgContainer();
 
-    const { present, canUndo, canRedo } = useCustomizerHistory<EditorState>();
-
-    const [actionPerformed, setActionPerformed] = useState<boolean>(false);
+    const { present, undo, redo } =
+        useCustomizerHistory<CustomizerHistoryState>();
 
     useEffect(() => {
         if (!template) return;
@@ -70,10 +64,62 @@ const CustomizerComponent = ({
         handleClickonSvgContainer(event, parts, dispatch, svgContainerRef);
     };
 
+    // Keyboard shortcuts for undo / redo
     useEffect(() => {
-        const hasActions = canUndo || canRedo;
-        setActionPerformed(hasActions);
-    }, [canUndo, canRedo]);
+        const onKey = (e: KeyboardEvent) => {
+            const isMac = navigator.platform.toUpperCase().includes('MAC');
+            const mod = isMac ? e.metaKey : e.ctrlKey;
+
+            if (!mod) return;
+
+            // Undo: Ctrl/Cmd+Z
+            if (e.key.toLowerCase() === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                undo();
+                return;
+            }
+            // Redo: Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y
+            if (
+                (e.key.toLowerCase() === 'z' && e.shiftKey) ||
+                e.key.toLowerCase() === 'y'
+            ) {
+                e.preventDefault();
+                redo();
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [undo, redo]);
+
+    // Update Redux and SVG when present.parts changes
+    useEffect(() => {
+        if (!present.parts) return;
+
+        // Update Redux
+        dispatch(setParts(present.parts));
+
+        // Update SVG
+        if (svgContainerRef.current) {
+            present.parts.forEach((part) => {
+                if (part.color && svgContainerRef.current) {
+                    // @ts-ignore
+                    handlePaintPart(
+                        part,
+                        part.color,
+                        svgContainerRef.current,
+                        present.parts,
+                    );
+                }
+            });
+        }
+    }, [present.parts, dispatch, svgContainerRef]);
+    // Initial setup
+    useEffect(() => {
+        if (!template) return;
+        if (svgContainerRef.current) {
+            svgContainerRef.current.innerHTML = template.template;
+        }
+    }, [template, svgContainerRef]);
 
     return (
         <section className="flex h-screen flex-col xl:flex-row">

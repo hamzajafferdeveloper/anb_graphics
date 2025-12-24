@@ -23,8 +23,6 @@ export const handlePaintPart = (
             ? allParts.filter((p) => p.name === part.name)
             : [part];
 
-    console.log(svgContainer);
-
     partsToUpdate.forEach((partToUpdate) => {
         const partIds = Array.isArray(partToUpdate.part_id)
             ? partToUpdate.part_id

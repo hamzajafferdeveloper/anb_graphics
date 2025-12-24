@@ -1,5 +1,6 @@
 import { SVG_TEMPLATE_PARENT_MAX_SIZE } from '@/lib/customizer/variable';
 import { useEffect, useState } from 'react';
+import ZoomUndoRedo from './canvas/canvas-action-icon';
 
 const Canvas = ({
     className,
@@ -25,7 +26,7 @@ const Canvas = ({
     return (
         <section className={`w-full p-3 lg:h-full ${className}`}>
             {/* Outer canvas container */}
-            <div className="lg:aspect-none relative aspect-[1/1] w-full overflow-hidden rounded-2xl border shadow-2xl lg:h-[calc(100vh-30px)]">
+            <div className="lg:aspect-none relative flex aspect-[1/1] w-full flex-col overflow-hidden rounded-2xl border p-2 shadow-2xl lg:h-[calc(100vh-30px)] lg:flex-row">
                 {/* Background image with opacity */}
                 <div
                     className="absolute inset-0 bg-center opacity-20"
@@ -52,6 +53,7 @@ const Canvas = ({
                         ></div>
                     </div>
                 </div>
+                <ZoomUndoRedo />
             </div>
         </section>
     );
