@@ -1,14 +1,18 @@
 import {
     CustomizerHistoryProvider,
     useCustomizerHistory,
-} from '@/contexts/CustomizerHistoryContext';
+} from '@/contexts/customizer-history-context';
+import {
+    SvgContainerProvider,
+    useSvgContainer,
+} from '@/contexts/svg-container-context';
 import { handleClickonSvgContainer } from '@/lib/customizer/customizer';
 import { setParts } from '@/stores/customizer/customizerSlice';
-import { AppDispatch, RootState } from '@/stores/store';
+import { AppDispatch } from '@/stores/store';
 import { TemplatePart } from '@/types/data';
 import { CustomizerPageProps } from '@/types/page-props';
-import { ReactNode, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { ReactNode, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Toaster } from 'sonner';
 import Canvas from './canvas';
 import Sidebar from './sidebar/sidebar';
@@ -27,7 +31,9 @@ const CustomizerWithHistory = ({ template, product }: CustomizerPageProps) => {
                 // uploadedItems: [],
             }}
         >
-            <CustomizerComponent template={template} product={product} />
+            <SvgContainerProvider>
+                <CustomizerComponent template={template} product={product} />
+            </SvgContainerProvider>
         </CustomizerHistoryProvider>
     );
 };
@@ -38,24 +44,10 @@ const CustomizerComponent = ({
     product,
 }: CustomizerPageProps): ReactNode => {
     const dispatch = useDispatch<AppDispatch>();
+    const { svgContainerRef } = useSvgContainer();
 
-    const templateParts = useSelector(
-        (state: RootState) => state.customizer.parts,
-    );
+    const { present, canUndo, canRedo } = useCustomizerHistory<EditorState>();
 
-    const {
-        present,
-        setLive,
-        setAndCommit,
-        undo,
-        redo,
-        canUndo,
-        canRedo,
-        resetHistory,
-        commit,
-    } = useCustomizerHistory<EditorState>();
-
-    const svgContainerRef = useRef<HTMLDivElement | null>(null);
     const [actionPerformed, setActionPerformed] = useState<boolean>(false);
 
     useEffect(() => {
@@ -66,7 +58,7 @@ const CustomizerComponent = ({
         }
 
         dispatch(setParts(template.parts));
-    }, [template, dispatch]);
+    }, [template, dispatch, svgContainerRef]);
 
     // Convenient derived getters/setters that operate on the combined state
     const parts = present.parts;

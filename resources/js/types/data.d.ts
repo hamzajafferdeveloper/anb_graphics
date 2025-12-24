@@ -88,6 +88,8 @@ export interface TemplatePart {
     id: number;
     part_id: string;
     template_id: number;
+    is_group: number;
+    name: string;
     type: string;
     color: string;
     created_at: string;

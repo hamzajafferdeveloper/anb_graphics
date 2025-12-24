@@ -1,4 +1,5 @@
-import { useCustomizerHistory } from '@/contexts/CustomizerHistoryContext';
+import { useCustomizerHistory } from '@/contexts/customizer-history-context';
+import { useSvgContainer } from '@/contexts/svg-container-context';
 import { handlePaintPart } from '@/lib/customizer/customizer';
 import { RootState } from '@/stores/store';
 import { ProductColor, TemplatePart } from '@/types/data';
@@ -23,9 +24,7 @@ const ColorDisplay = ({
     part: BackendPart;
     allParts: BackendPart[];
 }) => {
-    const svgContainerRef = useSelector(
-        (state: RootState) => state.customizer.svgContainerRef,
-    );
+    const { svgContainerRef } = useSvgContainer();
     const { setAndCommit } = useCustomizerHistory<{ parts: TemplatePart[] }>();
 
     const setPartsCommit = (updater: React.SetStateAction<TemplatePart[]>) => {
@@ -48,9 +47,14 @@ const ColorDisplay = ({
         );
 
         // Update the DOM
-        if (svgContainerRef) {
+        if (svgContainerRef?.current) {
             // @ts-ignore
-            handlePaintPart(partToPaint, colorCode, svgContainerRef, allParts);
+            handlePaintPart(
+                partToPaint,
+                colorCode,
+                svgContainerRef.current,
+                allParts,
+            );
         }
     };
 
