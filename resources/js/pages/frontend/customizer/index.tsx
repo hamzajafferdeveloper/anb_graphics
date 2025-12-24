@@ -56,7 +56,7 @@ const CustomizerComponent = ({
 
     // Convenient derived getters/setters that operate on the combined state
     const parts = present.parts;
-    // const uploadedItems = present.uploadedItems;
+    const uploadedItems = present.uploadedItems;
 
     const handleSvgContainerClick = (
         event: React.MouseEvent<HTMLDivElement>,
@@ -113,6 +113,7 @@ const CustomizerComponent = ({
             });
         }
     }, [present.parts, dispatch, svgContainerRef]);
+
     // Initial setup
     useEffect(() => {
         if (!template) return;

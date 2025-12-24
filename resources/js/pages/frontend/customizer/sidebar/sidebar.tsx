@@ -18,7 +18,7 @@ const Sidebar = ({ className }: { className?: string }) => {
             className={`flex w-full flex-col gap-3 p-3 lg:flex-row xl:w-1/4 ${className}`}
         >
             <div className="flex items-stretch gap-2 lg:h-[calc(100vh-30px)] lg:flex-col">
-                <div className="h-12 w-12 cursor-pointer rounded-xl border p-2 shadow-2xl">
+                <div className="h-10 w-10 cursor-pointer rounded-xl border p-2 shadow-2xl md:h-12 md:w-12">
                     <Link href={user.products()}>
                         <img
                             src={`/storage/${site_favicon}`}
@@ -34,7 +34,7 @@ const Sidebar = ({ className }: { className?: string }) => {
                 <div className="flex items-center justify-center py-4">
                     {(() => {
                         const SidebarComponent = btnSideBarLink.find(
-                            (item) => item.name === selectedSidebar
+                            (item) => item.name === selectedSidebar,
                         )?.component;
                         return SidebarComponent ? <SidebarComponent /> : null;
                     })()}

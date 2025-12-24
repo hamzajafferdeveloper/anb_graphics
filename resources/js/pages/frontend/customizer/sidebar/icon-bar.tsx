@@ -26,7 +26,7 @@ const IconBar = () => {
                             <TooltipTrigger asChild>
                                 <Button
                                     variant={isActive ? 'default' : 'ghost'}
-                                    className={`relative !h-10 !w-10 cursor-pointer overflow-hidden rounded-md p-2 transition-all duration-300 ${
+                                    className={`relative !h-8 !w-8 cursor-pointer overflow-hidden rounded-md p-2 transition-all duration-300 md:!h-10 md:!w-10 ${
                                         isActive
                                             ? `border border-white/30 bg-primary shadow-[0_8px_32px_rgba(255,255,255,0.18)] backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-0 before:rounded-md before:bg-gradient-to-br before:from-white/40 before:via-white/10 before:to-transparent before:opacity-60`
                                             : 'hover:bg-white/10'
@@ -37,7 +37,7 @@ const IconBar = () => {
                                     }
                                 >
                                     <btn.icon
-                                        className={`${
+                                        className={` ${
                                             isActive
                                                 ? 'text-white'
                                                 : 'text-muted-foreground'

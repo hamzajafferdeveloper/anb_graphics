@@ -1,4 +1,5 @@
 import { TemplatePart } from '../data';
+import { CanvasItem } from './uploaded-items';
 
 export interface CustomizerIconBarData {
     name: string;
@@ -8,5 +9,5 @@ export interface CustomizerIconBarData {
 
 export interface CustomizerHistoryState {
     parts: TemplatePart[];
-    // uploadedItems: CanvasItem[];
+    uploadedItems: CanvasItem[];
 }

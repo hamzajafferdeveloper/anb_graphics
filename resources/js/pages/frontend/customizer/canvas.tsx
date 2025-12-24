@@ -1,6 +1,6 @@
 import { SVG_TEMPLATE_PARENT_MAX_SIZE } from '@/lib/customizer/variable';
 import { useEffect, useState } from 'react';
-import ZoomUndoRedo from './canvas/canvas-action-icon';
+import ZoomUndoRedo from './canvas/zoom-undo-redo-icons';
 
 const Canvas = ({
     className,
