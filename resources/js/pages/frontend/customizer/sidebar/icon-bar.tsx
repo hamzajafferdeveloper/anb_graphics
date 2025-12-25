@@ -26,22 +26,43 @@ const IconBar = () => {
     }
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setUploadedFile(e.target.files?.[0] ?? null);
-        if (!uploadedFile) return;
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-        dispatch(
-            addImage({
-                src: URL.createObjectURL(uploadedFile),
-                x: 100,
-                y: 100,
-                width: 300,
-                height: 200,
-                originalWidth: 1920,
-                originalHeight: 1080,
-                opacity: 1,
-            }),
-        );
+        // Create object URL for the uploaded file
+        const fileUrl = URL.createObjectURL(file);
+
+        // Create an image to get its actual size
+        const img = new Image();
+        img.src = fileUrl;
+        img.onload = () => {
+            const naturalWidth = img.naturalWidth;
+            const naturalHeight = img.naturalHeight;
+
+            // Dispatch the action with actual image dimensions
+            dispatch(
+                addImage({
+                    src: fileUrl,
+                    x: 100,
+                    y: 100,
+                    width: naturalWidth,
+                    height: naturalHeight,
+                    originalWidth: naturalWidth,
+                    originalHeight: naturalHeight,
+                    opacity: 1,
+                }),
+            );
+
+            // Clean up object URL if needed
+            // URL.revokeObjectURL(fileUrl); // optional
+        };
+
+        // Clear the file input to allow selecting the same file again
+        if (e.target) {
+            e.target.value = '';
+        }
     }
+
     return (
         <div>
             <div className="flex h-fit w-full items-center gap-1 rounded-xl border p-1 shadow-2xl lg:h-full lg:w-auto lg:flex-col">

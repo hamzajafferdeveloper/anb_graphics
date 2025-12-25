@@ -137,6 +137,16 @@ const canvasSlice = createSlice({
             item.zIndex = getNextZIndex(state.items);
         },
 
+        /* ---------------- SET ITEMS (for history sync) ---------------- */
+        setItems(state: any, //@ts-ignore
+            action: PayloadAction<CanvasItem[]>) {
+            state.items = action.payload;
+            // If selected item no longer exists, clear selection
+            if (!state.items.find((i: any) => i.id === state.selectedItemId)) {
+                state.selectedItemId = null;
+            }
+        },
+
         /* ---------------- DELETE ---------------- */
         removeItem(
             state: any,
@@ -170,6 +180,7 @@ export const {
     bringToFront,
     removeItem,
     clearCanvas,
+    setItems,
 } = canvasSlice.actions;
 
 export default canvasSlice.reducer;

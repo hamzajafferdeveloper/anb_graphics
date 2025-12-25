@@ -23,7 +23,7 @@ const CustomizerWithHistory = ({ template, product }: CustomizerPageProps) => {
         <CustomizerHistoryProvider
             initialValue={{
                 parts: template.parts,
-                // uploadedItems: [],
+                uploadedItems: [],
             }}
         >
             <SvgContainerProvider>
@@ -61,7 +61,7 @@ const CustomizerComponent = ({
     const handleSvgContainerClick = (
         event: React.MouseEvent<HTMLDivElement>,
     ) => {
-        handleClickonSvgContainer(event, parts, dispatch, svgContainerRef);
+        handleClickonSvgContainer(event, parts, dispatch);
     };
 
     // Keyboard shortcuts for undo / redo
@@ -107,12 +107,19 @@ const CustomizerComponent = ({
                         part,
                         part.color,
                         svgContainerRef.current,
-                        present.parts,
                     );
                 }
             });
         }
     }, [present.parts, dispatch, svgContainerRef]);
+
+    // Sync uploadedItems from history into Redux so undo/redo affects canvas items
+    useEffect(() => {
+        if (!present.uploadedItems) return;
+
+        // Lazy import to avoid circular issues
+        dispatch({ type: 'canvas/setItems', payload: present.uploadedItems });
+    }, [present.uploadedItems, dispatch]);
 
     // Initial setup
     useEffect(() => {
