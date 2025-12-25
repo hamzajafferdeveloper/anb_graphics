@@ -13,7 +13,7 @@ const OverlayUI = () => {
         <div className="pointer-events-none absolute inset-0 z-20">
             {items.map((item: CanvasItem) => (
                 <div key={item.id} >
-                    <DisplayItem item={item} />
+                    <DisplayItem item={item} showContent={false} showControls={true} />
                 </div>
             ))}
         </div>

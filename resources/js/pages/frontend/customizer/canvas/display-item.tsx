@@ -1,19 +1,34 @@
-import { RootState } from '@/stores/store';
-import { CanvasImageElement, CanvasTextElement } from '@/types/customizer/uploaded-items';
-import { useSelector, useDispatch } from 'react-redux';
-import { useState, useRef, useEffect } from 'react';
-import { moveItem, selectItem, resizeItem, updateItem, removeItem } from '@/stores/customizer/canvasItemSlice';
 import { useCustomizerHistory } from '@/contexts/customizer-history-context';
+import { useSvgContainer } from '@/contexts/svg-container-context';
+import {
+    moveItem,
+    removeItem,
+    resizeItem,
+    selectItem,
+    updateItem,
+} from '@/stores/customizer/canvasItemSlice';
+import { RootState } from '@/stores/store';
 import { CustomizerHistoryState } from '@/types/customizer/customizer';
+import {
+    CanvasImageElement,
+    CanvasTextElement,
+} from '@/types/customizer/uploaded-items';
 import { Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const MIN_SIZE = 20;
 
 const DisplayItem = ({
     item,
+    showContent = true,
+    showControls = true,
 }: {
     item: CanvasImageElement | CanvasTextElement;
+    showContent?: boolean;
+    showControls?: boolean;
 }) => {
+    const { svgContainerRef } = useSvgContainer();
     const dispatch = useDispatch();
     const selectedItemId = useSelector(
         (state: RootState) => state.canvasItem?.selectedItemId || '',
@@ -25,8 +40,23 @@ const DisplayItem = ({
 
     // Local live state (no animation — direct update for smoother UX)
     const [position, setPosition] = useState({ x: item.x, y: item.y });
-    const [size, setSize] = useState({ width: item.width, height: item.height });
+    const [size, setSize] = useState({
+        width: item.width,
+        height: item.height,
+    });
     const [rotation, setRotation] = useState(item.rotation || 0);
+
+    const [svgMaskUrl, setSvgMaskUrl] = useState<string | null>(null);
+    const [svgOverlayBox, setSvgOverlayBox] = useState<{
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+        bottom: number;
+        right: number;
+        x: number;
+        y: number;
+    } | null>(null);
 
     // Refs for dragging/resizing/rotating
     const draggingRef = useRef(false);
@@ -92,9 +122,14 @@ const DisplayItem = ({
         el.setPointerCapture(e.pointerId);
         draggingRef.current = true;
 
-        const parentRect = (el.parentElement as HTMLElement).getBoundingClientRect();
+        const parentRect = (
+            el.parentElement as HTMLElement
+        ).getBoundingClientRect();
         dragStartRef.current = { left: position.x, top: position.y };
-        dragOffsetRef.current = { x: e.clientX - parentRect.left - position.x, y: e.clientY - parentRect.top - position.y };
+        dragOffsetRef.current = {
+            x: e.clientX - parentRect.left - position.x,
+            y: e.clientY - parentRect.top - position.y,
+        };
 
         dragTargetRef.current = { dx: 0, dy: 0 };
         startDragRAF();
@@ -103,7 +138,10 @@ const DisplayItem = ({
             if (!draggingRef.current) return;
             const nx = ev.clientX - parentRect.left - dragOffsetRef.current.x;
             const ny = ev.clientY - parentRect.top - dragOffsetRef.current.y;
-            dragTargetRef.current = { dx: nx - dragStartRef.current.left, dy: ny - dragStartRef.current.top };
+            dragTargetRef.current = {
+                dx: nx - dragStartRef.current.left,
+                dy: ny - dragStartRef.current.top,
+            };
         };
 
         const onUp = (ev: PointerEvent) => {
@@ -116,8 +154,12 @@ const DisplayItem = ({
             stopDragRAF();
 
             // Apply final position and clear transform
-            const finalX = Math.round(dragStartRef.current.left + dragTargetRef.current.dx);
-            const finalY = Math.round(dragStartRef.current.top + dragTargetRef.current.dy);
+            const finalX = Math.round(
+                dragStartRef.current.left + dragTargetRef.current.dx,
+            );
+            const finalY = Math.round(
+                dragStartRef.current.top + dragTargetRef.current.dy,
+            );
             setPosition({ x: finalX, y: finalY });
             el.style.transform = `rotate(${rotation}deg)`; // reset translate
 
@@ -128,7 +170,10 @@ const DisplayItem = ({
             const updatedItems = allItems.map((it: any) =>
                 it.id === item.id ? { ...it, x: finalX, y: finalY } : it,
             );
-            setAndCommit((prev: any) => ({ ...(prev || {}), uploadedItems: updatedItems }));
+            setAndCommit((prev: any) => ({
+                ...(prev || {}),
+                uploadedItems: updatedItems,
+            }));
 
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
@@ -178,9 +223,10 @@ const DisplayItem = ({
 
         // Aspect ratio for images
         const isImage = item.type === 'image';
-        const aspect = isImage && item.originalWidth && item.originalHeight
-            ? item.originalWidth / item.originalHeight
-            : startW / startH;
+        const aspect =
+            isImage && item.originalWidth && item.originalHeight
+                ? item.originalWidth / item.originalHeight
+                : startW / startH;
 
         // Ensure element transform baseline is rotation-only to avoid jumps when changing size
         el.style.transform = `rotate(${rotation}deg)`;
@@ -217,13 +263,24 @@ const DisplayItem = ({
             const final = { ...resizeTargetRef.current };
             setSize(final);
             sizeRef.current = final;
-            dispatch(resizeItem({ id: item.id, width: final.width, height: final.height }));
+            dispatch(
+                resizeItem({
+                    id: item.id,
+                    width: final.width,
+                    height: final.height,
+                }),
+            );
 
             // Commit to history
             const updatedItems = allItems.map((it: any) =>
-                it.id === item.id ? { ...it, width: final.width, height: final.height } : it,
+                it.id === item.id
+                    ? { ...it, width: final.width, height: final.height }
+                    : it,
             );
-            setAndCommit((prev: any) => ({ ...(prev || {}), uploadedItems: updatedItems }));
+            setAndCommit((prev: any) => ({
+                ...(prev || {}),
+                uploadedItems: updatedItems,
+            }));
 
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
@@ -283,7 +340,10 @@ const DisplayItem = ({
 
         const onMove = (ev: PointerEvent) => {
             if (!rotatingRef.current) return;
-            const ang = Math.atan2(ev.clientY - rotateCenterRef.current.y, ev.clientX - rotateCenterRef.current.x);
+            const ang = Math.atan2(
+                ev.clientY - rotateCenterRef.current.y,
+                ev.clientX - rotateCenterRef.current.x,
+            );
             const deg = ((ang - startAngle) * 180) / Math.PI;
             rotateTargetRef.current = Math.round((startRotation + deg) % 360);
         };
@@ -301,13 +361,18 @@ const DisplayItem = ({
             const finalRot = rotateTargetRef.current;
             setRotation(finalRot);
             el.style.transform = `rotate(${finalRot}deg)`; // clear any translate
-            dispatch(updateItem({ id: item.id, changes: { rotation: finalRot } }));
+            dispatch(
+                updateItem({ id: item.id, changes: { rotation: finalRot } }),
+            );
 
             // Commit to history
             const updatedItems = allItems.map((it: any) =>
                 it.id === item.id ? { ...it, rotation: finalRot } : it,
             );
-            setAndCommit((prev: any) => ({ ...(prev || {}), uploadedItems: updatedItems }));
+            setAndCommit((prev: any) => ({
+                ...(prev || {}),
+                uploadedItems: updatedItems,
+            }));
 
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
@@ -324,7 +389,10 @@ const DisplayItem = ({
 
         // Commit to history
         const updatedItems = allItems.filter((it: any) => it.id !== item.id);
-        setAndCommit((prev: any) => ({ ...(prev || {}), uploadedItems: updatedItems }));
+        setAndCommit((prev: any) => ({
+            ...(prev || {}),
+            uploadedItems: updatedItems,
+        }));
     };
 
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -332,12 +400,51 @@ const DisplayItem = ({
         dispatch(selectItem(item.id));
     };
 
+    useEffect(() => {
+        const updateOverlayBox = () => {
+            const svgContainer = document.getElementById('svg-container');
+            if (!svgContainer) return;
+            const svgEl = svgContainer.querySelector('svg');
+            if (!svgEl) return;
+
+            const rect = svgEl.getBoundingClientRect();
+            const parentRect = svgContainer.getBoundingClientRect();
+
+            setSvgOverlayBox({
+                left: rect.left - parentRect.left,
+                top: rect.top - parentRect.top + 1,
+                width: rect.width,
+                height: rect.height,
+                bottom: 942,
+                right: 1878,
+                x: 556,
+                y: 90,
+            });
+        };
+        setTimeout(updateOverlayBox, 200);
+    }, [svgContainerRef.current?.innerHTML]);
+
+    useEffect(() => {
+        const svgContainer = document.getElementById('svg-container');
+        if (!svgContainer) return;
+        const svgEl = svgContainer.querySelector('svg');
+        if (!svgEl) return;
+
+        const clone = svgEl.cloneNode(true) as SVGSVGElement;
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(clone);
+        setSvgMaskUrl(
+            `url('data:image/svg+xml;utf8,${encodeURIComponent(svgString)}')`,
+        );
+    }, [svgContainerRef.current?.innerHTML]);
+
+
     return (
         <div
             ref={wrapperRef}
-            className={`pointer-events-auto absolute ${
-                isSelected ? 'border-dashed border-2 p-2 rounded-lg border-primary' : ''
-            }`}
+            className={`${
+                showControls ? 'pointer-events-auto' : 'pointer-events-none'
+            } absolute ${showControls && isSelected ? 'rounded-lg border-2 border-dashed border-primary p-2' : ''}` }
             style={{
                 left: `${position.x}px`,
                 top: `${position.y}px`,
@@ -348,10 +455,10 @@ const DisplayItem = ({
                 cursor: isSelected ? 'grab' : 'default',
                 touchAction: 'none', // needed for pointer events
             }}
-            onClick={handleClick}
-            onPointerDown={onPointerDown}
+            onClick={showControls ? handleClick : undefined}
+            onPointerDown={showControls ? onPointerDown : undefined}
         >
-            {isSelected && (
+            {showControls && isSelected && (
                 <>
                     {/* Rotate handle (top center) */}
                     <div
@@ -422,7 +529,7 @@ const DisplayItem = ({
                 </>
             )}
 
-            {item.type === 'image' ? (
+            {showContent && (item.type === 'image' ? (
                 <img
                     src={item.src}
                     alt="Uploaded content"
@@ -441,14 +548,34 @@ const DisplayItem = ({
                         height: '100%',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
+                        justifyContent: (item as any).textAlign === 'left' ? 'flex-start' : (item as any).textAlign === 'right' ? 'flex-end' : 'center',
                         pointerEvents: 'none',
                         userSelect: 'none',
+                        overflow: 'hidden',
                     }}
                 >
-                    {item.text}
+                    <div
+                        style={{
+                            width: '100%',
+                            padding: 4,
+                            boxSizing: 'border-box',
+                            fontSize: `${(item as any).fontSize || 16}px`,
+                            fontFamily: (item as any).fontFamily || 'Inter, sans-serif',
+                            fontWeight: (item as any).fontWeight || 'normal',
+                            fontStyle: (item as any).fontStyle || 'normal',
+                            color: (item as any).color || '#000',
+                            lineHeight: (item as any).lineHeight || 1.2,
+                            letterSpacing: `${(item as any).letterSpacing || 0}px`,
+                            textDecoration: (item as any).underline ? 'underline' : 'none',
+                            textAlign: (item as any).textAlign || 'center',
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                        }}
+                    >
+                        {(item as any).text}
+                    </div>
                 </div>
-            )}
+            ))}
         </div>
     );
 };
