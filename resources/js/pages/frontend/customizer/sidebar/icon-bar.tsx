@@ -39,22 +39,42 @@ const IconBar = () => {
             const naturalWidth = img.naturalWidth;
             const naturalHeight = img.naturalHeight;
 
-            // Dispatch the action with actual image dimensions
+            // Maximum dimension
+            const maxSize = 200;
+            let width = naturalWidth;
+            let height = naturalHeight;
+
+            // Scale down if larger than maxSize while preserving aspect ratio
+            if (naturalWidth > maxSize || naturalHeight > maxSize) {
+                const ratio = naturalWidth / naturalHeight;
+
+                if (ratio > 1) {
+                    // width is larger
+                    width = maxSize;
+                    height = maxSize / ratio;
+                } else {
+                    // height is larger or square
+                    height = maxSize;
+                    width = maxSize * ratio;
+                }
+            }
+
+            // Dispatch the action with scaled dimensions
             dispatch(
                 addImage({
                     src: fileUrl,
                     x: 100,
                     y: 100,
-                    width: naturalWidth,
-                    height: naturalHeight,
+                    width,
+                    height,
                     originalWidth: naturalWidth,
                     originalHeight: naturalHeight,
                     opacity: 1,
                 }),
             );
 
-            // Clean up object URL if needed
-            // URL.revokeObjectURL(fileUrl); // optional
+            // Optional: revoke object URL
+            // URL.revokeObjectURL(fileUrl);
         };
 
         // Clear the file input to allow selecting the same file again
