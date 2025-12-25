@@ -3,7 +3,7 @@ import { useSvgContainer } from '@/contexts/svg-container-context';
 import { handlePaintPart } from '@/lib/customizer/customizer';
 import { RootState } from '@/stores/store';
 import { ProductColor, TemplatePart } from '@/types/data';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 export type BackendPart = {
@@ -28,28 +28,44 @@ const ColorDisplay = ({
     const { setAndCommit } = useCustomizerHistory<{ parts: TemplatePart[] }>();
 
     // Paint part: update state + DOM immediately
-    const paintPart = (partToPaint: TemplatePart, colorCode: string) => {
-        // Update the state
-        setAndCommit((prev) => ({
-            ...prev,
-            parts: prev.parts.map((p) =>
-                p.part_id === partToPaint.part_id
-                    ? { ...p, color: colorCode }
-                    : p,
-            ),
-        }));
+    const paintPart = useCallback(
+        (partToPaint: TemplatePart, colorCode: string) => {
+            const partsToUpdate =
+                partToPaint.is_group === 1
+                    ? allParts.filter(
+                          (p) =>
+                              p.is_group === 1 && p.name === partToPaint.name,
+                      )
+                    : [partToPaint];
 
-        // Update the DOM
-        if (svgContainerRef?.current) {
-            // @ts-ignore
-            handlePaintPart(
-                partToPaint,
-                colorCode,
-                svgContainerRef.current,
-                allParts,
-            );
-        }
-    };
+            // Update the DOM
+            partsToUpdate.forEach((part) => {
+                if (svgContainerRef?.current) {
+                    handlePaintPart(
+                        part as TemplatePart,
+                        colorCode,
+                        svgContainerRef.current,
+                    );
+                }
+            });
+
+            // Update the state
+            setAndCommit((prev) => ({
+                ...prev,
+                parts: prev.parts.map((p) =>
+                    // For grouped parts, update all parts with the same name
+                    (partToPaint.is_group === 1 &&
+                        p.is_group === 1 &&
+                        p.name === partToPaint.name) ||
+                    // For non-grouped parts, update the exact match
+                    p.part_id === partToPaint.part_id
+                        ? { ...p, color: colorCode }
+                        : p,
+                ),
+            }));
+        },
+        [svgContainerRef, setAndCommit, allParts],
+    );
 
     return (
         <div className="flex flex-wrap gap-2">
@@ -59,8 +75,7 @@ const ColorDisplay = ({
                     title={color.name}
                     onClick={(e) => {
                         e.stopPropagation();
-                        // @ts-ignore
-                        paintPart(part, color.code);
+                        paintPart(part as TemplatePart, color.code);
                     }}
                     className="h-5 w-5 cursor-pointer rounded-md transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2"
                     style={{
