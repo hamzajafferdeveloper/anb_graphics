@@ -1,5 +1,4 @@
 import { useCustomizerHistory } from '@/contexts/customizer-history-context';
-import { useSvgContainer } from '@/contexts/svg-container-context';
 import {
     moveItem,
     removeItem,
@@ -13,9 +12,10 @@ import {
     CanvasImageElement,
     CanvasTextElement,
 } from '@/types/customizer/uploaded-items';
-import { Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import DisplayItemController from './display-item-control';
+import { setTranslateRotate } from './display-item-utils';
 
 const MIN_SIZE = 20;
 
@@ -28,7 +28,6 @@ const DisplayItem = ({
     showContent?: boolean;
     showControls?: boolean;
 }) => {
-    const { svgContainerRef } = useSvgContainer();
     const dispatch = useDispatch();
     const selectedItemId = useSelector(
         (state: RootState) => state.canvasItem?.selectedItemId || '',
@@ -45,18 +44,6 @@ const DisplayItem = ({
         height: item.height,
     });
     const [rotation, setRotation] = useState(item.rotation || 0);
-
-    const [svgMaskUrl, setSvgMaskUrl] = useState<string | null>(null);
-    const [svgOverlayBox, setSvgOverlayBox] = useState<{
-        left: number;
-        top: number;
-        width: number;
-        height: number;
-        bottom: number;
-        right: number;
-        x: number;
-        y: number;
-    } | null>(null);
 
     // Refs for dragging/resizing/rotating
     const draggingRef = useRef(false);
@@ -89,11 +76,12 @@ const DisplayItem = ({
     const dragStartRef = useRef({ left: 0, top: 0 });
 
     const applyDragTransform = () => {
-        const el = wrapperRef.current;
-        if (!el) return;
-        const dx = dragTargetRef.current.dx;
-        const dy = dragTargetRef.current.dy;
-        el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`;
+        setTranslateRotate(
+            wrapperRef.current,
+            dragTargetRef.current.dx,
+            dragTargetRef.current.dy,
+            rotation,
+        );
     };
 
     const startDragRAF = () => {
@@ -115,7 +103,10 @@ const DisplayItem = ({
         const tgt = e.target as HTMLElement;
         if (tgt.closest('[data-canvas-control]')) return;
 
-        if (!isSelected) return;
+        if (!isSelected) {
+            dispatch(selectItem(item.id));
+            return; // select first, don't start drag yet
+        }
         e.stopPropagation();
         const el = wrapperRef.current;
         if (!el) return;
@@ -188,10 +179,7 @@ const DisplayItem = ({
     const resizeTargetRef = useRef({ width: size.width, height: size.height });
 
     const applyResizeStyles = () => {
-        const el = wrapperRef.current;
-        if (!el) return;
-        el.style.width = `${resizeTargetRef.current.width}px`;
-        el.style.height = `${resizeTargetRef.current.height}px`;
+        setSize(resizeTargetRef.current);
     };
 
     const startResizeRAF = () => {
@@ -295,12 +283,13 @@ const DisplayItem = ({
     const rotateCenterRef = useRef({ x: 0, y: 0 });
 
     const applyRotateTransform = () => {
-        const el = wrapperRef.current;
-        if (!el) return;
         // Maintain any current drag translate while rotating
-        const dx = dragTargetRef.current.dx || 0;
-        const dy = dragTargetRef.current.dy || 0;
-        el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotateTargetRef.current}deg)`;
+        setTranslateRotate(
+            wrapperRef.current,
+            dragTargetRef.current.dx || 0,
+            dragTargetRef.current.dy || 0,
+            rotateTargetRef.current,
+        );
     };
 
     const startRotateRAF = () => {
@@ -396,55 +385,16 @@ const DisplayItem = ({
     };
 
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation(); // prevent container click
+        e.stopPropagation();
         dispatch(selectItem(item.id));
     };
-
-    useEffect(() => {
-        const updateOverlayBox = () => {
-            const svgContainer = document.getElementById('svg-container');
-            if (!svgContainer) return;
-            const svgEl = svgContainer.querySelector('svg');
-            if (!svgEl) return;
-
-            const rect = svgEl.getBoundingClientRect();
-            const parentRect = svgContainer.getBoundingClientRect();
-
-            setSvgOverlayBox({
-                left: rect.left - parentRect.left,
-                top: rect.top - parentRect.top + 1,
-                width: rect.width,
-                height: rect.height,
-                bottom: 942,
-                right: 1878,
-                x: 556,
-                y: 90,
-            });
-        };
-        setTimeout(updateOverlayBox, 200);
-    }, [svgContainerRef.current?.innerHTML]);
-
-    useEffect(() => {
-        const svgContainer = document.getElementById('svg-container');
-        if (!svgContainer) return;
-        const svgEl = svgContainer.querySelector('svg');
-        if (!svgEl) return;
-
-        const clone = svgEl.cloneNode(true) as SVGSVGElement;
-        const serializer = new XMLSerializer();
-        const svgString = serializer.serializeToString(clone);
-        setSvgMaskUrl(
-            `url('data:image/svg+xml;utf8,${encodeURIComponent(svgString)}')`,
-        );
-    }, [svgContainerRef.current?.innerHTML]);
-
 
     return (
         <div
             ref={wrapperRef}
             className={`${
-                showControls ? 'pointer-events-auto' : 'pointer-events-none'
-            } absolute ${showControls && isSelected ? 'rounded-lg border-2 border-dashed border-primary p-2' : ''}` }
+                showControls || showContent ? 'pointer-events-auto' : 'pointer-events-none'
+            } absolute ${showControls && isSelected ? 'rounded-lg border-2 border-dashed border-primary p-2' : ''}`}
             style={{
                 left: `${position.x}px`,
                 top: `${position.y}px`,
@@ -455,127 +405,75 @@ const DisplayItem = ({
                 cursor: isSelected ? 'grab' : 'default',
                 touchAction: 'none', // needed for pointer events
             }}
-            onClick={showControls ? handleClick : undefined}
+            onClick={showControls ? handleClick : showContent ? handleClick : undefined}
             onPointerDown={showControls ? onPointerDown : undefined}
         >
             {showControls && isSelected && (
-                <>
-                    {/* Rotate handle (top center) */}
-                    <div
-                        data-canvas-control
-                        onPointerDown={onRotatePointerDown}
-                        style={{
-                            position: 'absolute',
-                            top: '-16px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: 12,
-                            height: 12,
-                            background: '#fff',
-                            border: '1px solid #ccc',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'grab',
-                            zIndex: 50,
-                        }}
-                    />
-
-                    {/* Resize handle (bottom-right) */}
-                    <div
-                        data-canvas-control
-                        onPointerDown={onResizePointerDown}
-                        style={{
-                            position: 'absolute',
-                            right: -6,
-                            bottom: -6,
-                            width: 12,
-                            height: 12,
-                            background: '#fff',
-                            border: '1px solid #ccc',
-                            cursor: 'nwse-resize',
-                            zIndex: 50,
-                        }}
-                    />
-
-                    {/* Delete button (top-right) */}
-                    <button
-                        data-canvas-control
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={onDelete}
-                        style={{
-                            position: 'absolute',
-                            right: -10,
-                            top: -10,
-                            width: 24,
-                            height: 24,
-                            borderRadius: 6,
-                            background: '#fff',
-                            border: '1px solid #e74c3c',
-                            color: '#e74c3c',
-                            fontWeight: 700,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            zIndex: 50,
-                        }}
-                        title="Delete"
-                        aria-label="Delete item"
-                    >
-                        <Trash2 size={14} />
-                    </button>
-                </>
+                <DisplayItemController
+                    onRotatePointerDown={onRotatePointerDown}
+                    onResizePointerDown={onResizePointerDown}
+                    onDelete={onDelete}
+                />
             )}
 
-            {showContent && (item.type === 'image' ? (
-                <img
-                    src={item.src}
-                    alt="Uploaded content"
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        pointerEvents: 'none',
-                        userSelect: 'none',
-                    }}
-                />
-            ) : (
-                <div
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: (item as any).textAlign === 'left' ? 'flex-start' : (item as any).textAlign === 'right' ? 'flex-end' : 'center',
-                        pointerEvents: 'none',
-                        userSelect: 'none',
-                        overflow: 'hidden',
-                    }}
-                >
+            {showContent &&
+                (item.type === 'image' ? (
+                    <img
+                        src={item.src}
+                        alt="Uploaded content"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            pointerEvents: 'none',
+                            userSelect: 'none',
+                        }}
+                    />
+                ) : (
                     <div
                         style={{
                             width: '100%',
-                            padding: 4,
-                            boxSizing: 'border-box',
-                            fontSize: `${(item as any).fontSize || 16}px`,
-                            fontFamily: (item as any).fontFamily || 'Inter, sans-serif',
-                            fontWeight: (item as any).fontWeight || 'normal',
-                            fontStyle: (item as any).fontStyle || 'normal',
-                            color: (item as any).color || '#000',
-                            lineHeight: (item as any).lineHeight || 1.2,
-                            letterSpacing: `${(item as any).letterSpacing || 0}px`,
-                            textDecoration: (item as any).underline ? 'underline' : 'none',
-                            textAlign: (item as any).textAlign || 'center',
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent:
+                                (item as any).textAlign === 'left'
+                                    ? 'flex-start'
+                                    : (item as any).textAlign === 'right'
+                                      ? 'flex-end'
+                                      : 'center',
+                            pointerEvents: 'none',
+                            userSelect: 'none',
+                            overflow: 'hidden',
                         }}
                     >
-                        {(item as any).text}
+                        <div
+                            style={{
+                                width: '100%',
+                                padding: 4,
+                                boxSizing: 'border-box',
+                                fontSize: `${(item as any).fontSize || 16}px`,
+                                fontFamily:
+                                    (item as any).fontFamily ||
+                                    'Inter, sans-serif',
+                                fontWeight:
+                                    (item as any).fontWeight || 'normal',
+                                fontStyle: (item as any).fontStyle || 'normal',
+                                color: (item as any).color || '#000',
+                                lineHeight: (item as any).lineHeight || 1.2,
+                                letterSpacing: `${(item as any).letterSpacing || 0}px`,
+                                textDecoration: (item as any).underline
+                                    ? 'underline'
+                                    : 'none',
+                                textAlign: (item as any).textAlign || 'center',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word',
+                            }}
+                        >
+                            {(item as any).text}
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
         </div>
     );
 };

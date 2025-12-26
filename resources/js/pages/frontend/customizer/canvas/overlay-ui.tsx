@@ -1,23 +1,6 @@
-import { RootState } from '@/stores/store';
-import { CanvasItem } from '@/types/customizer/uploaded-items';
-import { useSelector } from 'react-redux';
-import DisplayItem from './display-item';
+// Deprecated: OverlayUI used to render control instances for all items and caused duplicate visuals in some layouts.
+// The canvas now renders content + a dedicated controls overlay; keep this file as a noop to avoid accidental usage.
 
-const OverlayUI = () => {
-    const items = useSelector(
-        (state: RootState) => state.canvasItem?.items || [],
-    );
-
-
-    return (
-        <div className="pointer-events-none absolute inset-0 z-20">
-            {items.map((item: CanvasItem) => (
-                <div key={item.id} >
-                    <DisplayItem item={item} showContent={false} showControls={true} />
-                </div>
-            ))}
-        </div>
-    );
-};
+const OverlayUI = () => null;
 
 export default OverlayUI;
