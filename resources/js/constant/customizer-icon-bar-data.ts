@@ -10,11 +10,6 @@ export const btnSideBarLink = [
         component: ColorSideBar,
     },
     {
-        name: 'Layer',
-        icon: Layers,
-        component: LayerSideBar,
-    },
-    {
         name: 'Text',
         icon: Text,
         component: TextSideBar
