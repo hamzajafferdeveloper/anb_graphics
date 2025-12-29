@@ -8,9 +8,9 @@ import { Eye } from 'lucide-react';
 interface ProductCardProps {
     product: any;
     currency?: string;
-    tagLabel?: string; // e.g., "Assigned" or "Purchased"
-    tagColor?: string; // tailwind color, e.g., "bg-blue-500"
-    showActions?: boolean; // show buttons like View/Get Support
+    tagLabel?: string;
+    tagColor?: string;
+    showActions?: boolean;
     purchaseDate?: string;
 }
 

@@ -1,4 +1,5 @@
 import { SVG_TEMPLATE_PARENT_MAX_SIZE } from '@/lib/customizer/variable';
+import { setSvgTemplateMaxSizeOfParent } from '@/stores/customizer/customizerSlice';
 import { RootState } from '@/stores/store';
 import { CanvasItem } from '@/types/customizer/uploaded-items';
 import { useEffect, useState } from 'react';
@@ -15,6 +16,7 @@ const Canvas = ({
     svgContainerRef: React.RefObject<HTMLDivElement | null>;
     handleSvgContainerClick: (event: React.MouseEvent<HTMLDivElement>) => void;
 }) => {
+    const dispatch = useDispatch();
     const [svgTemplateParentMaxSize, setSvgTemplateParentMaxSize] = useState(
         SVG_TEMPLATE_PARENT_MAX_SIZE,
     );
@@ -26,6 +28,10 @@ const Canvas = ({
                 : window.innerHeight,
         );
     }, []);
+
+    useEffect(() => {
+        dispatch(setSvgTemplateMaxSizeOfParent(svgTemplateParentMaxSize));
+    }, [svgTemplateParentMaxSize]);
 
     // Items and selection from Redux
     const items = useSelector(

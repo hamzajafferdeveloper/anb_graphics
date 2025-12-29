@@ -31,12 +31,20 @@ const customizerSlice = createSlice({
         setParts(state: any, action: PayloadAction<TemplatePart[]>) {
             state.parts = action.payload;
         },
+        // @ts-ignore
+        setSvgTemplateMaxSizeOfParent(state: any, action: PayloadAction<number>) {
+            state.svgTemplateParentMaxSize = action.payload;
+        },
     },
 });
 
 // Export setParts
-export const { setSelectedSidebar, setSelectedSvgPart, setParts } =
-    customizerSlice.actions;
+export const {
+    setSelectedSidebar,
+    setSelectedSvgPart,
+    setParts,
+    setSvgTemplateMaxSizeOfParent,
+} = customizerSlice.actions;
 
 // Export reducer
 export default customizerSlice.reducer;

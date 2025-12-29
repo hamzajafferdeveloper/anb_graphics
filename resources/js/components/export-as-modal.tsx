@@ -8,6 +8,9 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useSvgContainer } from '@/contexts/svg-container-context';
+import { RootState } from '@/stores/store';
+import { CanvasItem } from '@/types/customizer/uploaded-items';
+import { useSelector } from 'react-redux';
 import { ExportCanvas } from '../pages/frontend/customizer/export/canvas-export';
 import { Button } from './ui/button';
 
@@ -19,6 +22,14 @@ export function ExportAsModal({
     setOpenExportAsModal: (open: boolean) => void;
 }) {
     const { svgContainerRef } = useSvgContainer();
+
+    const items = useSelector(
+        (state: RootState) => state.canvasItem?.items || [],
+    ) as CanvasItem[];
+
+    const SvgTemaplteParentMaxSize = useSelector(
+        (state: RootState) => state.customizer?.svgTemplateParentMaxSize || 0,
+    );
 
     return (
         <Dialog open={open} onOpenChange={setOpenExportAsModal}>
@@ -38,6 +49,8 @@ export function ExportAsModal({
                                 ExportCanvas({
                                     svgContainerRef,
                                     format: 'svg',
+                                    items,
+                                    SvgTemaplteParentMaxSize
                                 });
                             }}
                         >
@@ -50,6 +63,8 @@ export function ExportAsModal({
                                 ExportCanvas({
                                     svgContainerRef,
                                     format: 'png',
+                                    items,
+                                    SvgTemaplteParentMaxSize
                                 });
                             }}
                         >
@@ -62,6 +77,8 @@ export function ExportAsModal({
                                 ExportCanvas({
                                     svgContainerRef,
                                     format: 'jpg',
+                                    items,
+                                    SvgTemaplteParentMaxSize
                                 });
                             }}
                         >
@@ -74,6 +91,8 @@ export function ExportAsModal({
                                 ExportCanvas({
                                     svgContainerRef,
                                     format: 'pdf',
+                                    items,
+                                    SvgTemaplteParentMaxSize
                                 });
                             }}
                         >
