@@ -114,23 +114,24 @@ const createImageNode = async (item: any, scaleX: number, scaleY: number) => {
 /* ================= TEXT NODE ================= */
 const createTextNode = (item: any, scaleX: number, scaleY: number) => {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    // Positions/sizes here are in SVG viewBox units (mapped from DOM pixels using scaleX/scaleY)
-    text.setAttribute('x', String(item.x * scaleX));
-    text.setAttribute('y', String(item.y * scaleY + item.fontSize * scaleY));
-    text.setAttribute('fill', item.color);
-    text.setAttribute('font-size', String(item.fontSize * scaleY));
-    text.setAttribute('font-family', item.fontFamily);
+    // Map DOM pixel coordinates into SVG viewBox units; use the top y as the hanging baseline origin
+    const x = String(item.x * scaleX);
+    const y = String(item.y * scaleY); // rely on 'hanging' baseline, don't add font-size offset here
+    const fontSize = (item.fontSize ?? 16) * scaleY;
+
+    text.setAttribute('x', x);
+    text.setAttribute('y', y);
+    text.setAttribute('fill', item.color || '#000');
+    // Use px unit so rasterizers pick correct size even if viewBox units differ
+    text.setAttribute('font-size', `${fontSize}px`);
+    text.setAttribute('font-family', item.fontFamily || 'Arial, sans-serif');
     text.setAttribute('text-anchor', getTextAnchor(item.textAlign));
-    text.setAttribute('dominant-baseline', 'hanging');
 
     if (item.letterSpacing)
-        text.setAttribute(
-            'letter-spacing',
-            String(item.letterSpacing * scaleX),
-        );
+        text.setAttribute('letter-spacing', String(item.letterSpacing * scaleX));
     if (item.underline) text.setAttribute('text-decoration', 'underline');
 
-    text.textContent = item.text;
+    text.textContent = item.text || '';
     return text;
 };
 
