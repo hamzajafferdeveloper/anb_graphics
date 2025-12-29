@@ -29,28 +29,30 @@ class ProductController extends Controller
                 if ($q) {
                     $query->where('name', 'like', "%{$q}%");
                 }
-
                 if ($brand && $brand !== 'all') {
                     $query->where('product_brand_id', $brand);
                 }
             });
 
-        $paginated = $base->with(['product.images', 'product.brand'])
+        $paginated = $base->with(['product.images', 'product.brand', 'product.template', 'product.files'])
             ->orderByDesc('created_at')
             ->paginate($perPage)
             ->appends($request->except('page', '_token'));
 
         $items = $paginated->getCollection()->map(function ($up) {
+            $product = $up->product;
             return [
                 'id' => $up->id,
-                'product' => $up->product ? [
-                    'id' => $up->product->id,
-                    'name' => $up->product->name,
-                    'slug' => $up->product->slug,
-                    'price' => $up->product->price,
-                    'sale_price' => $up->product->sale_price,
-                    'brand' => $up->product->brand ? ['id' => $up->product->brand->id, 'name' => $up->product->brand->name] : null,
-                    'images' => $up->product->images->map(fn($img) => ['id' => $img->id, 'path' => $img->path, 'is_primary' => $img->is_primary])->values(),
+                'product' => $product ? [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'price' => $product->price,
+                    'sale_price' => $product->sale_price,
+                    'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
+                    'images' => $product->images->map(fn($img) => ['id' => $img->id, 'path' => $img->path, 'is_primary' => $img->is_primary])->values(),
+                    'template' => $product->template ? ['id' => $product->template->id, 'path' => $product->template->path] : null,
+                    'productImageFile' => $product->files->map(fn($file) => ['id' => $file->id, 'path' => $file->path, 'extension' => $file->extention])->values(),
                 ] : null,
                 'created_at' => $up->created_at ? $up->created_at->toDateTimeString() : null,
             ];
@@ -65,9 +67,9 @@ class ProductController extends Controller
         ];
 
         if ($isAdminUser) {
-            $assignedQuery = UserProductAssignment::with(['assignable.images', 'assignable.brand'])
+            $assignedQuery = UserProductAssignment::with(['assignable.images', 'assignable.brand', 'assignable.template', 'assignable.files'])
                 ->where('user_id', $user->id)
-                ->where('assignable_type', Product::class) // Only get product assignments
+                ->where('assignable_type', Product::class)
                 ->whereHasMorph('assignable', [Product::class], function ($query) use ($q, $brand) {
                     if ($q) {
                         $query->where('name', 'like', "%{$q}%");
@@ -76,8 +78,10 @@ class ProductController extends Controller
                         $query->where('product_brand_id', $brand);
                     }
                 });
+
             $assignedPaginated = $assignedQuery->orderByDesc('created_at')
                 ->paginate($perPage);
+
             $assignedProducts = $assignedPaginated->getCollection()->map(function ($assignment) {
                 $product = $assignment->assignable;
                 return [
@@ -88,10 +92,10 @@ class ProductController extends Controller
                         'slug' => $product->slug,
                         'price' => $product->price,
                         'sale_price' => $product->sale_price,
-                        'brand' => $product->brand ?
-                            ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
-                        'images' => $product->images->map(fn($img) =>
-                            ['id' => $img->id, 'path' => $img->path, 'is_primary' => $img->is_primary])->values(),
+                        'brand' => $product->brand ? ['id' => $product->brand->id, 'name' => $product->brand->name] : null,
+                        'images' => $product->images->map(fn($img) => ['id' => $img->id, 'path' => $img->path, 'is_primary' => $img->is_primary])->values(),
+                        'template' => $product->template ? ['id' => $product->template->id, 'path' => $product->template->path] : null,
+                        'productImageFile' => $product->files->map(fn($file) => ['id' => $file->id, 'path' => $file->path, 'extension' => $file->extention])->values(),
                     ] : null,
                     'created_at' => $assignment->created_at ? $assignment->created_at->toDateTimeString() : null,
                 ];
@@ -113,9 +117,9 @@ class ProductController extends Controller
 
         $assignedBrandIds = $isAdminUser
             ? DB::table('user_product_assignments')
-                ->join('products', function($join) {
+                ->join('products', function ($join) {
                     $join->where('user_product_assignments.assignable_type', 'App\\Models\\Product')
-                         ->whereColumn('user_product_assignments.assignable_id', 'products.id');
+                        ->whereColumn('user_product_assignments.assignable_id', 'products.id');
                 })
                 ->where('user_product_assignments.user_id', $user->id)
                 ->pluck('products.product_brand_id')
@@ -150,4 +154,5 @@ class ProductController extends Controller
             'is_admin_user' => $isAdminUser,
         ]);
     }
+
 }

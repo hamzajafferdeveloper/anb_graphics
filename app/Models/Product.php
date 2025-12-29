@@ -65,4 +65,8 @@ class Product extends Model
     {
         return $this->hasMany(SubOrder::class, 'product_id');
     }
+
+    public function files(){
+        return $this->hasMany(ProductImageFile::class);
+    }
 }

@@ -85,7 +85,6 @@ const UserProduct = () => {
         const t = setTimeout(() => fetch(1), 300);
         return () => clearTimeout(t);
     }, [query, brand, perPage]);
-
     return (
         <UserLayout breadcrumbs={breadcrumbs}>
             <div className="p-4">

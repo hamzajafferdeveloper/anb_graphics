@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import customizer from '@/routes/user/customizer';
 import { Link } from '@inertiajs/react';
-import { Eye } from 'lucide-react';
+import { Download, Eye, SquareDashedMousePointer } from 'lucide-react';
+import { useState } from 'react';
+import { DownloadFileModal } from './download-file-modal';
 
 interface ProductCardProps {
     product: any;
@@ -27,6 +29,9 @@ const ProductCard = ({
             ? product.images.find((img: any) => img.is_primary)?.path ||
               product.images[0].path
             : null;
+
+    const [ShowDownloadFileModal, setShowDownloadFileModal] =
+        useState<boolean>(false);
 
     return (
         <Card className="overflow-hidden shadow-lg transition-shadow duration-200 hover:shadow-2xl">
@@ -78,11 +83,35 @@ const ProductCard = ({
                                         <Eye />
                                     </Link>
                                 </Button>
-                                <Button variant="outline" size="sm">
-                                    <Link href={customizer.index(product.slug)}>
-                                        Customize
-                                    </Link>
-                                </Button>
+                                {product.template && (
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        asChild
+                                    >
+                                        <Link
+                                            href={customizer.index(
+                                                product.slug,
+                                            )}
+                                        >
+                                            <SquareDashedMousePointer
+                                                size={16}
+                                            />
+                                        </Link>
+                                    </Button>
+                                )}
+                                {product.productImageFile &&
+                                    product.productImageFile.length > 0 && (
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => {
+                                                setShowDownloadFileModal(true);
+                                            }}
+                                        >
+                                            <Download size={16} />
+                                        </Button>
+                                    )}
                             </div>
                         )}
                     </div>
@@ -101,6 +130,13 @@ const ProductCard = ({
                         </div>
                     )}
                 </div>
+                {ShowDownloadFileModal && (
+                    <DownloadFileModal
+                        open={ShowDownloadFileModal}
+                        setOpenChange={setShowDownloadFileModal}
+                        product={product}
+                    />
+                )}
             </CardContent>
         </Card>
     );
