@@ -2,6 +2,7 @@ import { CanvasItem } from '@/types/customizer/uploaded-items';
 
 type ExportFormat = 'svg' | 'png' | 'jpg' | 'pdf';
 
+/* ================= EXPORT CANVAS WITH CLIPPING ================= */
 export const ExportCanvas = async ({
     svgContainerRef,
     format = 'svg',
@@ -22,7 +23,6 @@ export const ExportCanvas = async ({
     const containerWidth = containerRect.width;
     const containerHeight = containerRect.height;
 
-    // Export size (preserve aspect ratio). If max size provided, treat it as maximum dimension.
     let exportWidth: number;
     let exportHeight: number;
     if (SvgTemplateParentMaxSize && SvgTemplateParentMaxSize > 0) {
@@ -35,7 +35,6 @@ export const ExportCanvas = async ({
         exportHeight = Math.round(containerHeight);
     }
 
-    // Determine the SVG's viewBox dimensions so we place overlay items in the correct coordinate system.
     const originalViewBox = svgEl.getAttribute('viewBox');
     let vbWidth = containerWidth;
     let vbHeight = containerHeight;
@@ -47,7 +46,6 @@ export const ExportCanvas = async ({
         }
     }
 
-    // Clone SVG
     const clonedSvg = svgEl.cloneNode(true) as SVGSVGElement;
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     clonedSvg.removeAttribute('width');
@@ -62,36 +60,76 @@ export const ExportCanvas = async ({
         );
     }
 
+    // ====== Create mask from template content ======
+    const mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+    const maskId = `mask-${Date.now()}`;
+    mask.setAttribute('id', maskId);
+
+    // Clone template content for the mask
+    const templateContent = clonedSvg.querySelector('g') || clonedSvg;
+    const contentClone = templateContent.cloneNode(true) as SVGGElement;
+
+    // Make sure the mask content is visible (white fill for mask)
+    const setFillWhite = (el: SVGElement) => {
+        if (
+            el.tagName.toLowerCase() === 'path' ||
+            el.tagName.toLowerCase() === 'rect' ||
+            el.tagName.toLowerCase() === 'circle' ||
+            el.tagName.toLowerCase() === 'polygon' ||
+            el.tagName.toLowerCase() === 'ellipse'
+        ) {
+            el.setAttribute('fill', '#fff');
+        }
+        el.childNodes.forEach((child) => {
+            if (child instanceof SVGElement) setFillWhite(child);
+        });
+    };
+    setFillWhite(contentClone);
+
+    mask.appendChild(contentClone);
+
+    // Add mask to <defs>
+    let defs = clonedSvg.querySelector('defs');
+    if (!defs) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        clonedSvg.insertBefore(defs, clonedSvg.firstChild);
+    }
+    defs.appendChild(mask);
+
     // ====== Add uploaded items ======
     const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
     for (const item of [...items].sort(
         (a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0),
     )) {
+        let node: SVGElement;
         if (item.type === 'image') {
-            overlay.appendChild(
-                await createImageNode(
-                    item,
-                    containerWidth,
-                    containerHeight,
-                    vbWidth,
-                    vbHeight,
-                ),
+            node = await createImageNode(
+                item,
+                containerWidth,
+                containerHeight,
+                vbWidth,
+                vbHeight,
             );
         } else if (item.type === 'text') {
-            overlay.appendChild(
-                createTextNode(
-                    item,
-                    containerWidth,
-                    containerHeight,
-                    vbWidth,
-                    vbHeight,
-                ),
+            node = createTextNode(
+                item,
+                containerWidth,
+                containerHeight,
+                vbWidth,
+                vbHeight,
             );
+        } else {
+            continue;
         }
+
+        // Apply mask individually
+        node.setAttribute('mask', `url(#${maskId})`);
+        overlay.appendChild(node);
     }
+
     clonedSvg.appendChild(overlay);
 
-    // Wait for webfonts to load
     if (
         typeof document !== 'undefined' &&
         (document as any).fonts &&
@@ -142,7 +180,7 @@ const createTextNode = (
 ) => {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 
-    const LEFT_OFFSET=150;
+    const LEFT_OFFSET = 150;
 
     const fontSize = (item.fontSize ?? 16) * (vbHeight / containerHeight);
 
