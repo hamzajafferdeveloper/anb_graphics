@@ -27,7 +27,7 @@ export function ExportAsModal({
         (state: RootState) => state.canvasItem?.items || [],
     ) as CanvasItem[];
 
-    const SvgTemaplteParentMaxSize = useSelector(
+    const SvgTemplateParentMaxSize = useSelector(
         (state: RootState) => state.customizer?.svgTemplateParentMaxSize || 0,
     );
 
@@ -50,7 +50,7 @@ export function ExportAsModal({
                                     svgContainerRef,
                                     format: 'svg',
                                     items,
-                                    SvgTemaplteParentMaxSize
+                                    SvgTemplateParentMaxSize
                                 });
                             }}
                         >
@@ -64,7 +64,7 @@ export function ExportAsModal({
                                     svgContainerRef,
                                     format: 'png',
                                     items,
-                                    SvgTemaplteParentMaxSize
+                                    SvgTemplateParentMaxSize
                                 });
                             }}
                         >
@@ -78,7 +78,7 @@ export function ExportAsModal({
                                     svgContainerRef,
                                     format: 'jpg',
                                     items,
-                                    SvgTemaplteParentMaxSize
+                                    SvgTemplateParentMaxSize
                                 });
                             }}
                         >
@@ -92,7 +92,7 @@ export function ExportAsModal({
                                     svgContainerRef,
                                     format: 'pdf',
                                     items,
-                                    SvgTemaplteParentMaxSize
+                                    SvgTemplateParentMaxSize
                                 });
                             }}
                         >
