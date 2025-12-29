@@ -1,10 +1,10 @@
 import { SVG_TEMPLATE_PARENT_MAX_SIZE } from '@/lib/customizer/variable';
-import { useEffect, useState } from 'react';
-import ZoomUndoRedo from './canvas/zoom-undo-redo-icons';
-import { useSelector } from 'react-redux';
 import { RootState } from '@/stores/store';
-import DisplayItem from './canvas/display-item';
 import { CanvasItem } from '@/types/customizer/uploaded-items';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import DisplayItem from './canvas/display-item';
+import ZoomUndoRedo from './canvas/zoom-undo-redo-icons';
 
 const Canvas = ({
     className,
@@ -28,12 +28,21 @@ const Canvas = ({
     }, []);
 
     // Items and selection from Redux
-    const items = useSelector((state: RootState) => state.canvasItem?.items || []) as CanvasItem[];
-    const selectedItemId = useSelector((state: RootState) => state.canvasItem?.selectedItemId || null);
+    const items = useSelector(
+        (state: RootState) => state.canvasItem?.items || [],
+    ) as CanvasItem[];
+    const selectedItemId = useSelector(
+        (state: RootState) => state.canvasItem?.selectedItemId || null,
+    );
 
     // Mask URL and overlay bounding box used to clip content and position controller overlay
     const [svgMaskUrl, setSvgMaskUrl] = useState<string | null>(null);
-    const [svgOverlayBox, setSvgOverlayBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+    const [svgOverlayBox, setSvgOverlayBox] = useState<{
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+    } | null>(null);
 
     // Compute mask URL (serialize SVG) when template changes
     useEffect(() => {
@@ -44,10 +53,14 @@ const Canvas = ({
             if (!svgEl) return;
 
             try {
-                const clone = (svgEl as SVGSVGElement).cloneNode(true) as SVGSVGElement;
+                const clone = (svgEl as SVGSVGElement).cloneNode(
+                    true,
+                ) as SVGSVGElement;
                 const serializer = new XMLSerializer();
                 const svgString = serializer.serializeToString(clone);
-                setSvgMaskUrl(`url('data:image/svg+xml;utf8,${encodeURIComponent(svgString)}')`);
+                setSvgMaskUrl(
+                    `url('data:image/svg+xml;utf8,${encodeURIComponent(svgString)}')`,
+                );
             } catch (err) {
                 setSvgMaskUrl(null);
             }
@@ -140,31 +153,44 @@ const Canvas = ({
                             >
                                 {items.map((item: CanvasItem) => (
                                     // Render DisplayItem directly; it positions itself relative to the masked container
-                                    <DisplayItem key={item.id} item={item} showContent={true} showControls={false} />
+                                    <DisplayItem
+                                        key={item.id}
+                                        item={item}
+                                        showContent={true}
+                                        showControls={false}
+                                    />
                                 ))}
                             </div>
                         )}
 
                         {/* Controls layer: selection borders and handles placed above template so they can overflow */}
-                        {svgOverlayBox && selectedItemId && (() => {
-                            const item = items.find((i) => i.id === selectedItemId);
-                            if (!item) return null;
-                            return (
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        left: svgOverlayBox.left ?? 0,
-                                        top: svgOverlayBox.top ?? 0,
-                                        width: svgOverlayBox.width ?? 0,
-                                        height: svgOverlayBox.height ?? 0,
-                                        pointerEvents: 'none',
-                                        zIndex: 9999,
-                                    }}
-                                >
-                                    <DisplayItem item={item} showContent={false} showControls={true} />
-                                </div>
-                            );
-                        })()}
+                        {svgOverlayBox &&
+                            selectedItemId &&
+                            (() => {
+                                const item = items.find(
+                                    (i) => i.id === selectedItemId,
+                                );
+                                if (!item) return null;
+                                return (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            left: svgOverlayBox.left ?? 0,
+                                            top: svgOverlayBox.top ?? 0,
+                                            width: svgOverlayBox.width ?? 0,
+                                            height: svgOverlayBox.height ?? 0,
+                                            pointerEvents: 'none',
+                                            zIndex: 9999,
+                                        }}
+                                    >
+                                        <DisplayItem
+                                            item={item}
+                                            showContent={false}
+                                            showControls={true}
+                                        />
+                                    </div>
+                                );
+                            })()}
                     </div>
                 </div>
 

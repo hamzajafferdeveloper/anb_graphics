@@ -74,12 +74,8 @@ const IconBar = () => {
                     opacity: 1,
                 }),
             );
-
-            // Optional: revoke object URL
-            // URL.revokeObjectURL(fileUrl);
         };
 
-        // Clear the file input to allow selecting the same file again
         if (e.target) {
             e.target.value = '';
         }

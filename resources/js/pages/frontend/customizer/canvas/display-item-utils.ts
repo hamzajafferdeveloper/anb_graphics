@@ -1,5 +1,3 @@
-// Lightweight DOM helpers used by DisplayItem for smooth rAF-batched visual updates
-
 export function setTranslateRotate(el: HTMLElement | null, dx: number, dy: number, rotation: number) {
     if (!el) return;
     el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`;

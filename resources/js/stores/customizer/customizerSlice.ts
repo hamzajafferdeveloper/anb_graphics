@@ -5,12 +5,14 @@ interface CustomizerState {
     selectedSidebar: string;
     selectedSvgPart: string;
     parts: TemplatePart[];
+    svgTemplateParentMaxSize?: number;
 }
 
 const initialState: CustomizerState = {
     selectedSidebar: 'Color',
     selectedSvgPart: '',
     parts: [],
+    svgTemplateParentMaxSize: undefined,
 };
 
 const customizerSlice = createSlice({
