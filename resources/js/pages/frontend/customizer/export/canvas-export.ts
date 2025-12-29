@@ -47,21 +47,12 @@ export const ExportCanvas = async ({
         }
     }
 
-    // Compute scale factors from DOM pixels -> SVG viewBox units (used to position overlay items)
-    const viewScaleX = vbWidth / containerWidth;
-    const viewScaleY = vbHeight / containerHeight;
-
     // Clone SVG
     const clonedSvg = svgEl.cloneNode(true) as SVGSVGElement;
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    // Do NOT set explicit width/height on the exported SVG. Rely on viewBox + preserveAspectRatio.
-    // Remove any width/height attributes coming from the source to avoid fixed dimensions in the downloaded SVG.
     clonedSvg.removeAttribute('width');
     clonedSvg.removeAttribute('height');
-    // Ensure the viewBox scaling preserves aspect ratio when rasterizing
     clonedSvg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
-
-    // Keep the original viewBox if present; otherwise fall back to container size so coordinates match the template
     if (originalViewBox) {
         clonedSvg.setAttribute('viewBox', originalViewBox);
     } else {
@@ -71,67 +62,125 @@ export const ExportCanvas = async ({
         );
     }
 
-    // ====== Scale the template content ======
-    const templateGroup = clonedSvg.querySelector('g') || clonedSvg;
-
-    // Keep any existing transforms on template group — removing them can break layout
-    // (we position overlay items in viewBox coordinates instead)
-
-    // Instead of scaling with transform, keep items and template in same coordinates
-    // All scaling will happen in the exported canvas (via viewBox & width/height)
-
     // ====== Add uploaded items ======
     const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     for (const item of [...items].sort(
         (a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0),
     )) {
         if (item.type === 'image') {
-            overlay.appendChild(await createImageNode(item, viewScaleX, viewScaleY));
+            overlay.appendChild(
+                await createImageNode(
+                    item,
+                    containerWidth,
+                    containerHeight,
+                    vbWidth,
+                    vbHeight,
+                ),
+            );
         } else if (item.type === 'text') {
-            overlay.appendChild(createTextNode(item, viewScaleX, viewScaleY));
+            overlay.appendChild(
+                createTextNode(
+                    item,
+                    containerWidth,
+                    containerHeight,
+                    vbWidth,
+                    vbHeight,
+                ),
+            );
         }
     }
-
     clonedSvg.appendChild(overlay);
+
+    // Wait for webfonts to load
+    if (
+        typeof document !== 'undefined' &&
+        (document as any).fonts &&
+        (document as any).fonts.ready
+    ) {
+        try {
+            await (document as any).fonts.ready;
+        } catch {}
+    }
 
     exportSvg(clonedSvg, format, exportWidth, exportHeight);
 };
 
 /* ================= IMAGE NODE ================= */
-const createImageNode = async (item: any, scaleX: number, scaleY: number) => {
+const createImageNode = async (
+    item: any,
+    containerWidth: number,
+    containerHeight: number,
+    vbWidth: number,
+    vbHeight: number,
+) => {
     const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    // Positions/sizes here are in SVG viewBox units (mapped from DOM pixels using scaleX/scaleY)
-    img.setAttribute('x', String(item.x * scaleX));
-    img.setAttribute('y', String(item.y * scaleY));
-    img.setAttribute('width', String(item.width * scaleX));
-    img.setAttribute('height', String(item.height * scaleY));
+
+    // Scale DOM pixels -> viewBox units
+    const x = (item.x / containerWidth) * vbWidth;
+    const y = (item.y / containerHeight) * vbHeight;
+    const width = (item.width / containerWidth) * vbWidth;
+    const height = (item.height / containerHeight) * vbHeight;
+
+    img.setAttribute('x', String(x));
+    img.setAttribute('y', String(y));
+    img.setAttribute('width', String(width));
+    img.setAttribute('height', String(height));
     img.setAttribute('opacity', String(item.opacity ?? 1));
+
     const base64 = await toBase64(item.src);
     img.setAttribute('href', base64);
     return img;
 };
 
 /* ================= TEXT NODE ================= */
-const createTextNode = (item: any, scaleX: number, scaleY: number) => {
+const createTextNode = (
+    item: any,
+    containerWidth: number,
+    containerHeight: number,
+    vbWidth: number,
+    vbHeight: number,
+) => {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    // Map DOM pixel coordinates into SVG viewBox units; use the top y as the hanging baseline origin
-    const x = String(item.x * scaleX);
-    const y = String(item.y * scaleY); // rely on 'hanging' baseline, don't add font-size offset here
-    const fontSize = (item.fontSize ?? 16) * scaleY;
 
-    text.setAttribute('x', x);
-    text.setAttribute('y', y);
-    text.setAttribute('fill', item.color || '#000');
-    // Use px unit so rasterizers pick correct size even if viewBox units differ
+    const LEFT_OFFSET=150;
+
+    const fontSize = (item.fontSize ?? 16) * (vbHeight / containerHeight);
+
     text.setAttribute('font-size', `${fontSize}px`);
     text.setAttribute('font-family', item.fontFamily || 'Arial, sans-serif');
-    text.setAttribute('text-anchor', getTextAnchor(item.textAlign));
-
+    text.setAttribute('fill', item.color || '#000');
     if (item.letterSpacing)
-        text.setAttribute('letter-spacing', String(item.letterSpacing * scaleX));
+        text.setAttribute(
+            'letter-spacing',
+            String(item.letterSpacing * (vbWidth / containerWidth)),
+        );
     if (item.underline) text.setAttribute('text-decoration', 'underline');
 
     text.textContent = item.text || '';
+
+    // Add temporarily to DOM to measure its width
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.style.position = 'absolute';
+    svg.style.visibility = 'hidden';
+    svg.appendChild(text);
+    document.body.appendChild(svg);
+
+    const bbox = text.getBBox(); // get width of the text
+
+    // Map DOM pixels -> SVG viewBox coordinates
+    let x = (item.x / containerWidth) * vbWidth;
+    const y = (item.y / containerHeight) * vbHeight;
+
+    // Add static left spacing (half of text width)
+    x += bbox.width / 2 + LEFT_OFFSET;
+
+    text.setAttribute('x', String(x));
+    text.setAttribute('y', String(y));
+    text.setAttribute('dominant-baseline', 'hanging');
+    text.setAttribute('text-anchor', getTextAnchor(item.textAlign ?? 'start'));
+
+    document.body.removeChild(svg);
+
     return text;
 };
 
@@ -151,7 +200,6 @@ const exportSvg = (
     const serializer = new XMLSerializer();
 
     if (format === 'svg') {
-        // For raw SVG downloads we want no fixed width/height so it remains scalable (use viewBox only)
         const tmp = svg.cloneNode(true) as SVGSVGElement;
         tmp.removeAttribute('width');
         tmp.removeAttribute('height');
@@ -165,12 +213,10 @@ const exportSvg = (
         return;
     }
 
-    // For raster exports, serialize an SVG that has explicit pixel width/height so the rasterizer renders at the correct size
     const rasterSvg = svg.cloneNode(true) as SVGSVGElement;
     rasterSvg.setAttribute('width', String(width));
     rasterSvg.setAttribute('height', String(height));
     rasterSvg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
-    // ensure there's a viewBox (should already exist but be defensive)
     if (!rasterSvg.getAttribute('viewBox')) {
         rasterSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     }
@@ -195,7 +241,6 @@ const exportSvg = (
             ctx.fillRect(0, 0, width, height);
         }
 
-        // Draw the rasterized SVG scaled to the target canvas dimensions
         ctx.drawImage(img, 0, 0, width, height);
 
         if (format === 'png' || format === 'jpg') {
@@ -212,9 +257,7 @@ const exportSvg = (
         URL.revokeObjectURL(svgUrl);
     };
 
-    img.onerror = () => {
-        URL.revokeObjectURL(svgUrl);
-    };
+    img.onerror = () => URL.revokeObjectURL(svgUrl);
 
     img.src = svgUrl;
 };
