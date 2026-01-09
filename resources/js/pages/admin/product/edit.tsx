@@ -641,7 +641,7 @@ const CreateProduct = ({
                                             />
                                         </div>
 
-                                        <MaterialColors
+                                        {/* <MaterialColors
                                             material={material}
                                             setMaterial={setMaterial}
                                             pickerColor={pickerColor}
@@ -652,7 +652,7 @@ const CreateProduct = ({
                                             setColors={setColors}
                                             removeColor={removeColor}
                                             errors={errors}
-                                        />
+                                        /> */}
 
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="keywords">

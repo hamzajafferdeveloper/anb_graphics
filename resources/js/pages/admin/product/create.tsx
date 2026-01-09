@@ -619,7 +619,7 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                             />
                                         </div>
 
-                                        <MaterialColors
+                                        {/* <MaterialColors
                                             material={material}
                                             setMaterial={setMaterial}
                                             pickerColor={pickerColor}
@@ -630,7 +630,7 @@ const CreateProduct = ({ categories, types, brands, all_colors }: Props) => {
                                             setColors={setColors}
                                             removeColor={removeColor}
                                             errors={errors}
-                                        />
+                                        /> */}
 
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="keywords">
