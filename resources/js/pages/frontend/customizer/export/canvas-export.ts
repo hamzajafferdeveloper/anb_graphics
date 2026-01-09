@@ -71,9 +71,14 @@ export const ExportCanvas = async ({
     const maskClone = templateContent.cloneNode(true) as SVGGElement;
 
     // Force white for mask visibility
+    // Force white for mask visibility
     const forceWhite = (el: SVGElement) => {
         el.setAttribute('fill', '#fff');
         el.setAttribute('stroke', '#fff');
+        el.setAttribute('opacity', '1');
+        el.removeAttribute('fill-opacity');
+        el.removeAttribute('stroke-opacity');
+
         el.childNodes.forEach((c) => {
             if (c instanceof SVGElement) forceWhite(c);
         });
@@ -87,14 +92,19 @@ export const ExportCanvas = async ({
     if ((document as any).fonts?.ready) {
         try {
             await (document as any).fonts.ready;
-        } catch {}
+        } catch { }
     }
 
-    // ================= Overlay =================
-    const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    // ================= CREATE LAYERS =================
+    // Layer 1: Template
+    const templateLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const templateClone = templateContent.cloneNode(true) as SVGGElement;
+    templateLayer.appendChild(templateClone);
 
+    // Layer 2: Uploaded Items
+    const itemsLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     for (const item of [...items].sort(
-        (a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0),
+        (a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0)
     )) {
         let node: SVGElement | null = null;
 
@@ -104,7 +114,7 @@ export const ExportCanvas = async ({
                 containerWidth,
                 containerHeight,
                 vbWidth,
-                vbHeight,
+                vbHeight
             );
         } else if (item.type === 'text') {
             node = createTextNode(
@@ -112,18 +122,20 @@ export const ExportCanvas = async ({
                 containerWidth,
                 containerHeight,
                 vbWidth,
-                vbHeight,
+                vbHeight
             );
         }
 
         if (!node) continue;
 
-        // 🔥 APPLY MASK PER ITEM (YOUR REQUIREMENT)
+        // 🔥 APPLY MASK PER ITEM
         node.setAttribute('mask', `url(#${maskId})`);
-        overlay.appendChild(node);
+        itemsLayer.appendChild(node);
     }
 
-    clonedSvg.appendChild(overlay);
+    // Append layers in correct order
+    clonedSvg.appendChild(templateLayer); // TEMPLATE BELOW
+    clonedSvg.appendChild(itemsLayer);    // UPLOADED ITEMS ABOVE
 
     // ================= Export =================
     exportSvg(clonedSvg, format, exportWidth, exportHeight);
