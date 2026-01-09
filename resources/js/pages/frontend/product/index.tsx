@@ -140,7 +140,7 @@ const ProductIndexPage = ({
                             </SelectContent>
                         </Select>
 
-                        <Select value={brand} onValueChange={setBrand}>
+                        {/* <Select value={brand} onValueChange={setBrand}>
                             <SelectTrigger className="w-full sm:w-40">
                                 <SelectValue placeholder="Brand" />
                             </SelectTrigger>
@@ -155,7 +155,7 @@ const ProductIndexPage = ({
                                     </SelectItem>
                                 ))}
                             </SelectContent>
-                        </Select>
+                        </Select> */}
 
                         <Select value={type} onValueChange={setType}>
                             <SelectTrigger className="w-full sm:w-40">
@@ -199,7 +199,7 @@ const ProductIndexPage = ({
                                     {/* Image */}
                                     <div className="relative aspect-[1/1] w-full overflow-hidden rounded-t sm:aspect-[3/3]">
                                         {product.images &&
-                                        product.images.length > 0 ? (
+                                            product.images.length > 0 ? (
                                             <img
                                                 src={`/storage/${product.images.find((i) => i.is_primary)?.path ?? product.images[0].path}`}
                                                 alt={product.name}
@@ -229,21 +229,21 @@ const ProductIndexPage = ({
                                                         const saleStart =
                                                             product.sale_start_at
                                                                 ? new Date(
-                                                                      product.sale_start_at,
-                                                                  )
+                                                                    product.sale_start_at,
+                                                                )
                                                                 : null;
                                                         const saleEnd =
                                                             product.sale_end_at
                                                                 ? new Date(
-                                                                      product.sale_end_at,
-                                                                  )
+                                                                    product.sale_end_at,
+                                                                )
                                                                 : null;
 
                                                         const isSaleActive =
                                                             product.sale_price &&
                                                             (!saleStart ||
                                                                 now >=
-                                                                    saleStart) &&
+                                                                saleStart) &&
                                                             (!saleEnd ||
                                                                 now <= saleEnd);
 
@@ -305,7 +305,7 @@ const ProductIndexPage = ({
                                                             if (
                                                                 res?.meta
                                                                     ?.requestStatus ===
-                                                                    'rejected' ||
+                                                                'rejected' ||
                                                                 res?.type?.endsWith(
                                                                     '/rejected',
                                                                 )
