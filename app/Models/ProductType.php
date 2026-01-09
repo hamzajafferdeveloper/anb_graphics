@@ -16,4 +16,8 @@ class ProductType extends Model
         return $this->morphMany(UserProductAssignment::class, 'assignable');
     }
 
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

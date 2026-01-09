@@ -124,6 +124,10 @@ class ProductTypeController extends Controller
         try {
             $type = ProductType::findOrFail($id);
 
+            if($type->products()->exists()) {
+                return back()->with('error', 'Type has products, cannot delete!');
+            }
+
             $type->delete();
 
             return back()->with('success', 'Type deleted!');

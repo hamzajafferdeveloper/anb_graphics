@@ -161,6 +161,10 @@ class ProductCategoryController extends Controller
         try {
             $category = ProductCategory::findOrFail($id);
 
+            if ($category->products()->exists()) {
+                return back()->with('error', 'Category has products, cannot delete!');
+            } 
+
             // Delete associated image if exists
             FileHelper::delete($category->image);
 

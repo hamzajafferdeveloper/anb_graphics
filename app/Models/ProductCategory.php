@@ -9,7 +9,7 @@ class ProductCategory extends Model
     protected $fillable = [
         'name',
         'slug',
-        'image'
+        'image',
     ];
 
     public function userAssignments()
@@ -17,4 +17,8 @@ class ProductCategory extends Model
         return $this->morphMany(UserProductAssignment::class, 'assignable');
     }
 
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

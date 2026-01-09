@@ -160,9 +160,9 @@ class ProductColorController extends Controller
     public function destroy(string $id)
     {
         try {
-            $type = Color::findOrFail($id);
+            $color = Color::findOrFail($id);
 
-            $type->delete();
+            $color->delete();
 
             return back()->with('success', 'Color deleted!');
         } catch (\Throwable $e) {

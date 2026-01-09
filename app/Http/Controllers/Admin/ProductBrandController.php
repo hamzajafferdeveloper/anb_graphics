@@ -161,6 +161,10 @@ class ProductBrandController extends Controller
         try {
             $brand = ProductBrand::findOrFail($id);
 
+            if ($brand->products()->exists()) {
+                return back()->with('error', 'Brand has products, cannot delete!');
+            }
+
             // Delete associated image if exists
             FileHelper::delete($brand->image);
 
