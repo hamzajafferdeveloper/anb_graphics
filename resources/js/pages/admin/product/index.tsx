@@ -314,6 +314,7 @@ const ProductIndex = ({
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead>ID</TableHead>
                                     <TableHead>Image</TableHead>
                                     <TableHead
                                         className="cursor-pointer"
@@ -364,6 +365,7 @@ const ProductIndex = ({
                                 )}
                                 {products.data.map((product) => (
                                     <TableRow key={product.id}>
+                                        <TableCell>{product.id}</TableCell>
                                         <TableCell>
                                             {product.images.length > 0 && (
                                                 <Link
@@ -374,16 +376,15 @@ const ProductIndex = ({
                                                     }
                                                 >
                                                     <img
-                                                        src={`/storage/${
-                                                            product.images.find(
-                                                                (
-                                                                    img: ProductImage,
-                                                                ) =>
-                                                                    img.is_primary,
-                                                            )?.path ??
+                                                        src={`/storage/${product.images.find(
+                                                            (
+                                                                img: ProductImage,
+                                                            ) =>
+                                                                img.is_primary,
+                                                        )?.path ??
                                                             product.images[0]
                                                                 .path
-                                                        }`}
+                                                            }`}
                                                         alt={product.name}
                                                         className="h-12 w-12 rounded object-cover"
                                                     />
@@ -417,22 +418,22 @@ const ProductIndex = ({
                                                     <Badge
                                                         variant={
                                                             product.status ===
-                                                            'published'
+                                                                'published'
                                                                 ? 'default'
                                                                 : product.status ===
                                                                     'unpublished'
-                                                                  ? 'outline'
-                                                                  : 'destructive'
+                                                                    ? 'outline'
+                                                                    : 'destructive'
                                                         }
                                                         className="flex cursor-pointer items-center gap-1"
                                                     >
                                                         {loadingStatusChange ? (
                                                             <Spinner className="h-4 w-4" />
                                                         ) : product.status ===
-                                                          'published' ? (
+                                                            'published' ? (
                                                             <LockKeyholeOpen className="h-4 w-4" />
                                                         ) : product.status ===
-                                                          'unpublished' ? (
+                                                            'unpublished' ? (
                                                             <LockKeyhole className="h-4 w-4" />
                                                         ) : (
                                                             <Hourglass className="h-4 w-4" />
@@ -468,8 +469,8 @@ const ProductIndex = ({
                                                                 s.slice(1)}
                                                             {loadingSlug ===
                                                                 product.slug && (
-                                                                <span className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700"></span>
-                                                            )}
+                                                                    <span className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700"></span>
+                                                                )}
                                                         </DropdownMenuItem>
                                                     ))}
                                                 </DropdownMenuContent>

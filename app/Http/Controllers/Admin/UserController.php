@@ -59,15 +59,6 @@ class UserController extends Controller
             return response()->json(['error' => 'Something went wrong'], 500);
         }
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -104,22 +95,6 @@ class UserController extends Controller
             Log::error($e->getMessage());
             return back()->with('error', 'Something went wrong');
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -179,43 +154,6 @@ class UserController extends Controller
         }
     }
 
-    // public function assignProduct(string $id)
-    // {
-    //     try {
-    //         $categories = ProductCategory::all();
-    //         $types = ProductType::all();
-    //         $user = User::findOrFail($id);
-
-    //         if (!$user) {
-    //             return redirect()->back()->with('error', 'User not found');
-    //         }
-
-    //         // Get search query and page number from request
-    //         $search = request()->query('search', '');
-    //         $perPage = 12; // number of products per page
-
-    //         // Fetch products with optional search and paginate
-    //         $products = Product::with(['images', 'brand', 'category', 'type'])
-    //             ->when($search, function ($query, $search) {
-    //                 $query->where('name', 'like', "%{$search}%");
-    //             })
-    //             ->orderBy('name')
-    //             ->paginate($perPage)
-    //             ->withQueryString(); // keep search query in pagination links
-
-    //         return Inertia::render('admin/user/assign-product', [
-    //             'user' => $user,
-    //             'categories' => $categories,
-    //             'types' => $types,
-    //             'products' => $products,
-    //         ]);
-    //     } catch (\Throwable $e) {
-    //         Log::error('Error getting user: ' . $e->getMessage());
-    //         return back()->with('error', 'Something went wrong');
-    //     }
-    // }
-
-
     public function assignProduct(string $id)
     {
         try {
@@ -223,14 +161,14 @@ class UserController extends Controller
 
             $categories = ProductCategory::all();
             $types = ProductType::all();
-
+            
             $search = request()->query('search', '');
             $perPage = 12;
 
             $products = Product::with(['images', 'brand', 'category', 'type'])
                 ->when(
                     $search,
-                    fn($q) => $q->where('name', 'like', "%{$search}%")
+                    fn($q) => $q->where('name', 'like', "%{$search}%")->orWhere('id', 'like', "%{$search}%")
                 )
                 ->orderBy('name')
                 ->paginate($perPage)
