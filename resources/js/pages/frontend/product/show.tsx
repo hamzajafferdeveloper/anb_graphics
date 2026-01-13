@@ -181,12 +181,12 @@ const ProductDetail = ({
                                     {product.category.name}
                                 </span>
                             </p>
-                            <p>
+                            {/* <p>
                                 Brand:{' '}
                                 <span className="text-gray-700">
                                     {product.brand.name}
                                 </span>
-                            </p>
+                            </p> */}
                             <p>
                                 Type:{' '}
                                 <span className="text-gray-700">
