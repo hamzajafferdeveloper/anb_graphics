@@ -22,6 +22,13 @@ export const createImageNode = async (
     img.setAttribute('height', String(height));
     img.setAttribute('opacity', String(item.opacity ?? 1));
 
+    // Rotation
+    if (item.rotation) {
+        const cx = x + width / 2;
+        const cy = y + height / 2;
+        img.setAttribute('transform', `rotate(${item.rotation}, ${cx}, ${cy})`);
+    }
+
     const base64 = await toBase64(item.src);
     img.setAttribute('href', base64);
     return img;
@@ -37,7 +44,10 @@ export const createTextNode = (
 ) => {
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 
-    const fontSize = (item.fontSize ?? 16) * (vbHeight / containerHeight);
+    const scaleY = vbHeight / containerHeight;
+    const scaleX = vbWidth / containerWidth;
+
+    const fontSize = (item.fontSize ?? 16) * scaleY;
 
     text.setAttribute('font-size', `${fontSize}px`);
     text.setAttribute('font-family', item.fontFamily || 'Arial, sans-serif');
@@ -45,32 +55,58 @@ export const createTextNode = (
     if (item.letterSpacing)
         text.setAttribute(
             'letter-spacing',
-            String(item.letterSpacing * (vbWidth / containerWidth)),
+            String(item.letterSpacing * scaleX),
         );
     if (item.underline) text.setAttribute('text-decoration', 'underline');
+
+    // Outline / Stroke
+    if (item.stroke) {
+        text.setAttribute('stroke', item.stroke);
+        text.setAttribute('stroke-width', String((item.strokeWidth || 0) * scaleX));
+        text.setAttribute('paint-order', 'stroke fill'); // Ensure stroke doesn't eat fill
+    }
+    if (item.fontStyle === 'italic') {
+        text.setAttribute('font-style', 'italic');
+    }
 
     text.textContent = item.text || '';
 
     // Map DOM pixels -> SVG viewBox coordinates
-    const x = (item.x / containerWidth) * vbWidth;
-    const y = (item.y / containerHeight) * vbHeight;
+    const boxX = (item.x / containerWidth) * vbWidth;
+    const boxY = (item.y / containerHeight) * vbHeight;
+    const boxW = (item.width / containerWidth) * vbWidth;
+    const boxH = (item.height / containerHeight) * vbHeight;
 
-    text.setAttribute('x', String(x));
-    text.setAttribute('y', String(y));
+    // Horizontal Alignment
+    let textX = boxX;
+    const align = item.textAlign ?? 'center'; // Default to center if undefined (check DisplayItem logic)
 
-    // Horizontal alignment
-    text.setAttribute('text-anchor', getTextAnchor(item.textAlign ?? 'start'));
+    if (align === 'center') {
+        textX = boxX + boxW / 2;
+        text.setAttribute('text-anchor', 'middle');
+    } else if (align === 'right') {
+        textX = boxX + boxW;
+        text.setAttribute('text-anchor', 'end');
+    } else {
+        text.setAttribute('text-anchor', 'start');
+    }
+    
+    // Vertical Alignment (DisplayItem uses alignItems: center)
+    // We use dominant-baseline: middle and set y to center of box
+    const textY = boxY + boxH / 2;
+    text.setAttribute('dominant-baseline', 'middle');
 
-    // Vertical alignment
-    text.setAttribute('dominant-baseline', 'hanging'); // top-aligned
+    text.setAttribute('x', String(textX));
+    text.setAttribute('y', String(textY));
+
+    // Rotation
+    if (item.rotation) {
+        const cx = boxX + boxW / 2;
+        const cy = boxY + boxH / 2;
+        text.setAttribute('transform', `rotate(${item.rotation}, ${cx}, ${cy})`);
+    }
 
     return text;
-};
-
-export const getTextAnchor = (align: string) => {
-    if (align === 'center') return 'middle';
-    if (align === 'right') return 'end';
-    return 'start';
 };
 
 /* ================= EXPORT ================= */

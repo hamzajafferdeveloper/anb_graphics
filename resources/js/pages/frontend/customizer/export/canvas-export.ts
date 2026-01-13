@@ -79,6 +79,25 @@ export const ExportCanvas = async ({
         el.removeAttribute('fill-opacity');
         el.removeAttribute('stroke-opacity');
 
+        // Overwrite inline styles if they exist
+        if (el.style) {
+            el.style.fill = '#fff';
+            el.style.stroke = '#fff';
+            el.style.opacity = '1';
+            el.style.fillOpacity = '1';
+            el.style.strokeOpacity = '1';
+        }
+
+        // Handle gradient stops (convert to white)
+        if (el.tagName.toLowerCase() === 'stop') {
+            el.setAttribute('stop-color', '#fff');
+            el.setAttribute('stop-opacity', '1');
+            if (el.style) {
+                el.style.stopColor = '#fff';
+                el.style.stopOpacity = '1';
+            }
+        }
+
         el.childNodes.forEach((c) => {
             if (c instanceof SVGElement) forceWhite(c);
         });
