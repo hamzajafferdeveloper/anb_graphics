@@ -161,14 +161,15 @@ const ProductDetail = ({
                         <div className="flex items-center gap-3">
                             <p className="font-semibold">Colors:</p>
                             <div className="flex gap-3">
-                                {product.colors.map((color, index) => (
-                                    <div
-                                        key={index}
-                                        className="h-6 w-6 cursor-pointer rounded-full border shadow-sm transition-transform hover:scale-110"
-                                        style={{ backgroundColor: color }}
-                                        title={color}
-                                    />
-                                ))}
+                                {product.colors &&
+                                    product.colors.map((color, index) => (
+                                        <div
+                                            key={index}
+                                            className="h-6 w-6 cursor-pointer rounded-full border shadow-sm transition-transform hover:scale-110"
+                                            style={{ backgroundColor: color }}
+                                            title={color}
+                                        />
+                                    ))}
                             </div>
                         </div>
 
