@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\FileHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
+use App\Models\User;
 use App\Models\UserProductAssignment;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\User;
-use App\Helpers\FileHelper;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\UploadedFile;
-use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -42,12 +41,25 @@ class UserController extends Controller
             $query = User::query();
 
             if ($request->filled('search')) {
-                $query->where('name', 'like', '%' . $request->input('search') . '%')
-                    ->orWhere('email', 'like', '%' . $request->input('search') . '%');
+                $query->where('name', 'like', '%'.$request->input('search').'%')
+                    ->orWhere('email', 'like', '%'.$request->input('search').'%');
             }
 
             $perPage = 12;
             $users = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+            $users->getCollection()->transform(function ($user) {
+                $buyedProduct = \App\Models\SubOrder::where('user_id', $user->id)->count();
+                $assignedProduct = \App\Models\UserProductAssignment::where('user_id', $user->id)
+                    ->where('assignable_type', \App\Models\Product::class)
+                    ->count();
+
+                $user->buyed_product = $buyedProduct;
+                $user->assigned_product = $assignedProduct;
+                $user->total_product = $buyedProduct + $assignedProduct;
+
+                return $user;
+            });
 
             return response()->json([
                 'users' => $users->items(),
@@ -55,10 +67,12 @@ class UserController extends Controller
                 'last_page' => $users->lastPage(),
             ], 200);
         } catch (\Throwable $e) {
-            Log::error('Error getting users: ' . $e->getMessage());
+            Log::error('Error getting users: '.$e->getMessage());
+
             return response()->json(['error' => 'Something went wrong'], 500);
         }
     }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -93,6 +107,7 @@ class UserController extends Controller
                 throw $e;
             }
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
@@ -107,7 +122,7 @@ class UserController extends Controller
 
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $id],
+                'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$id],
                 'password' => ['nullable', 'string', 'min:8'],
                 'profile_pic' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg,gif,svg'],
             ]);
@@ -122,7 +137,7 @@ class UserController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'profile_pic' => $validated['profile_pic'] ?? $user->profile_pic,
-                'password' => !empty($validated['password']) ? $validated['password'] : $user->password,
+                'password' => ! empty($validated['password']) ? $validated['password'] : $user->password,
             ]);
 
             return back()->with('success', 'User updated!');
@@ -131,6 +146,7 @@ class UserController extends Controller
                 throw $e;
             }
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
@@ -149,7 +165,8 @@ class UserController extends Controller
 
             return back()->with('success', 'User deleted!');
         } catch (\Throwable $e) {
-            Log::error('Error deleting user: ' . $e->getMessage());
+            Log::error('Error deleting user: '.$e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
@@ -161,14 +178,14 @@ class UserController extends Controller
 
             $categories = ProductCategory::all();
             $types = ProductType::all();
-            
+
             $search = request()->query('search', '');
             $perPage = 12;
 
             $products = Product::with(['images', 'brand', 'category', 'type'])
                 ->when(
                     $search,
-                    fn($q) => $q->where('name', 'like', "%{$search}%")->orWhere('id', 'like', "%{$search}%")
+                    fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('id', 'like', "%{$search}%")
                 )
                 ->orderBy('name')
                 ->paginate($perPage)
@@ -201,83 +218,10 @@ class UserController extends Controller
             ]);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
-
-    // public function assignProductPost(Request $request, string $id)
-    // {
-    //     try {
-    //         $user = User::findOrFail($id);
-
-    //         $data = $request->validate([
-    //             'categories' => ['array'],
-    //             'categories.*' => ['string'],
-
-    //             'types' => ['array'],
-    //             'types.*' => ['string'],
-
-    //             'products' => ['array'],
-    //             'products.*' => ['integer'],
-    //         ]);
-
-    //         DB::transaction(function () use ($data, $user) {
-
-    //             /* ---------------------------------
-    //              | Assign Categories
-    //              |---------------------------------*/
-    //             if (!empty($data['categories'])) {
-    //                 $categories = ProductCategory::whereIn('slug', $data['categories'])->get();
-
-    //                 foreach ($categories as $category) {
-    //                     UserProductAssignment::firstOrCreate([
-    //                         'user_id' => $user->id,
-    //                         'assignable_type' => ProductCategory::class,
-    //                         'assignable_id' => $category->id,
-    //                     ]);
-    //                 }
-    //             }
-
-    //             /* ---------------------------------
-    //              | Assign Types
-    //              |---------------------------------*/
-    //             if (!empty($data['types'])) {
-    //                 $types = ProductType::whereIn('slug', $data['types'])->get();
-
-    //                 foreach ($types as $type) {
-    //                     UserProductAssignment::firstOrCreate([
-    //                         'user_id' => $user->id,
-    //                         'assignable_type' => ProductType::class,
-    //                         'assignable_id' => $type->id,
-    //                     ]);
-    //                 }
-    //             }
-
-    //             /* ---------------------------------
-    //              | Assign Products
-    //              |---------------------------------*/
-    //             if (!empty($data['products'])) {
-    //                 $products = Product::whereIn('id', $data['products'])->get();
-
-    //                 foreach ($products as $product) {
-    //                     UserProductAssignment::firstOrCreate([
-    //                         'user_id' => $user->id,
-    //                         'assignable_type' => Product::class,
-    //                         'assignable_id' => $product->id,
-    //                     ]);
-    //                 }
-    //             }
-    //         });
-
-    //         return redirect()
-    //             ->back()
-    //             ->with('success', 'Products assigned successfully.');
-    //     } catch (\Throwable $e) {
-    //         Log::error('Error assigning products: ' . $e->getMessage());
-    //         return back()->with('error', 'Something went wrong');
-    //     }
-    // }
-
 
     public function assignProductPost(Request $request, string $id)
     {
@@ -327,12 +271,12 @@ class UserController extends Controller
             'type' => ProductType::class,
         ];
 
-        if (!isset($modelMap[$type])) {
+        if (! isset($modelMap[$type])) {
             return;
         }
 
         $modelClass = $modelMap[$type];
-        
+
         // Remove unchecked
         UserProductAssignment::where('user_id', $userId)
             ->where('assignable_type', $modelClass)
@@ -341,8 +285,10 @@ class UserController extends Controller
 
         // Add new
         foreach ($ids as $id) {
-            if (empty($id)) continue;
-            
+            if (empty($id)) {
+                continue;
+            }
+
             UserProductAssignment::firstOrCreate([
                 'user_id' => $userId,
                 'assignable_type' => $modelClass,
@@ -352,5 +298,4 @@ class UserController extends Controller
             ]);
         }
     }
-
 }

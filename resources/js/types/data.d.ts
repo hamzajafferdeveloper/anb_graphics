@@ -114,6 +114,8 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    buyed_product: number;
+    assigned_product: number;
     profile_pic?: string | null;
     email_verified_at?: string | null;
     created_at: string;

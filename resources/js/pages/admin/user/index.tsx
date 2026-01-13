@@ -114,6 +114,8 @@ export default function UserIndex() {
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Profile</TableHead>
+                                <TableHead>Buyed Product</TableHead>
+                                <TableHead>Assigned Product</TableHead>
                                 <TableHead>Created</TableHead>
                                 <TableHead>Updated</TableHead>
                                 <TableHead className="text-right">
@@ -163,6 +165,12 @@ export default function UserIndex() {
                                             ) : (
                                                 '—'
                                             )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {user.buyed_product ?? 0}
+                                        </TableCell>
+                                        <TableCell>
+                                            {user.assigned_product ?? 0}
                                         </TableCell>
                                         <TableCell>
                                             {new Date(
