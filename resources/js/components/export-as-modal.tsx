@@ -50,7 +50,7 @@ export function ExportAsModal({
                                     svgContainerRef,
                                     format: 'svg',
                                     items,
-                                    SvgTemplateParentMaxSize
+                                    SvgTemplateParentMaxSize,
                                 });
                             }}
                         >
@@ -64,7 +64,7 @@ export function ExportAsModal({
                                     svgContainerRef,
                                     format: 'png',
                                     items,
-                                    SvgTemplateParentMaxSize
+                                    SvgTemplateParentMaxSize,
                                 });
                             }}
                         >
@@ -78,13 +78,13 @@ export function ExportAsModal({
                                     svgContainerRef,
                                     format: 'jpg',
                                     items,
-                                    SvgTemplateParentMaxSize
+                                    SvgTemplateParentMaxSize,
                                 });
                             }}
                         >
                             JPG
                         </Button>
-                        <Button
+                        {/* <Button
                             variant="outline"
                             type="button"
                             onClick={() => {
@@ -97,7 +97,7 @@ export function ExportAsModal({
                             }}
                         >
                             PDF
-                        </Button>
+                        </Button> */}
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
