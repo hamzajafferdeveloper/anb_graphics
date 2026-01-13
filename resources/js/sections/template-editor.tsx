@@ -583,6 +583,7 @@ const TemplateEditor = ({
                                                     checked={
                                                         part.protection || false
                                                     }
+                                                    className="bg-primary"
                                                     onCheckedChange={(
                                                         checked,
                                                     ) =>
@@ -615,6 +616,7 @@ const TemplateEditor = ({
                                                         part.is_group ||
                                                         false
                                                     }
+                                                    className="bg-primary"
                                                     onCheckedChange={(
                                                         checked,
                                                     ) =>
