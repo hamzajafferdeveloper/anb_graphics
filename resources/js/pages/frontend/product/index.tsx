@@ -199,7 +199,7 @@ const ProductIndexPage = ({
                                     {/* Image */}
                                     <div className="relative aspect-[1/1] w-full overflow-hidden rounded-t sm:aspect-[3/3]">
                                         {product.images &&
-                                            product.images.length > 0 ? (
+                                        product.images.length > 0 ? (
                                             <img
                                                 src={`/storage/${product.images.find((i) => i.is_primary)?.path ?? product.images[0].path}`}
                                                 alt={product.name}
@@ -220,30 +220,30 @@ const ProductIndexPage = ({
 
                                         <div className="mt-2 flex w-full items-center justify-between text-sm text-muted-foreground">
                                             <div>
-                                                <div>
+                                                {/* <div>
                                                     {product.brand?.name ?? ''}
-                                                </div>
+                                                </div> */}
                                                 <div className="font-medium">
                                                     {(() => {
                                                         const now = new Date();
                                                         const saleStart =
                                                             product.sale_start_at
                                                                 ? new Date(
-                                                                    product.sale_start_at,
-                                                                )
+                                                                      product.sale_start_at,
+                                                                  )
                                                                 : null;
                                                         const saleEnd =
                                                             product.sale_end_at
                                                                 ? new Date(
-                                                                    product.sale_end_at,
-                                                                )
+                                                                      product.sale_end_at,
+                                                                  )
                                                                 : null;
 
                                                         const isSaleActive =
                                                             product.sale_price &&
                                                             (!saleStart ||
                                                                 now >=
-                                                                saleStart) &&
+                                                                    saleStart) &&
                                                             (!saleEnd ||
                                                                 now <= saleEnd);
 
@@ -305,7 +305,7 @@ const ProductIndexPage = ({
                                                             if (
                                                                 res?.meta
                                                                     ?.requestStatus ===
-                                                                'rejected' ||
+                                                                    'rejected' ||
                                                                 res?.type?.endsWith(
                                                                     '/rejected',
                                                                 )
