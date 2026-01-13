@@ -19,6 +19,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import FrontendLayout from '@/layouts/frontend-layout';
 import { index, show } from '@/routes/products';
+import customizer from '@/routes/user/customizer';
 
 import { addToCart } from '@/stores/cartSlice';
 import { SharedData } from '@/types';
@@ -29,7 +30,7 @@ import {
     ProductType,
 } from '@/types/data';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Eye, ShoppingCart } from 'lucide-react';
+import { Eye, ShoppingCart, SquareDashedMousePointer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
@@ -220,55 +221,61 @@ const ProductIndexPage = ({
 
                                         <div className="mt-2 flex w-full items-center justify-between text-sm text-muted-foreground">
                                             <div>
-                                                {/* <div>
-                                                    {product.brand?.name ?? ''}
-                                                </div> */}
-                                                <div className="font-medium">
-                                                    {(() => {
-                                                        const now = new Date();
-                                                        const saleStart =
-                                                            product.sale_start_at
-                                                                ? new Date(
-                                                                      product.sale_start_at,
-                                                                  )
-                                                                : null;
-                                                        const saleEnd =
-                                                            product.sale_end_at
-                                                                ? new Date(
-                                                                      product.sale_end_at,
-                                                                  )
-                                                                : null;
+                                                {product.price &&
+                                                product.price > 0 ? (
+                                                    <div className="font-medium">
+                                                        {(() => {
+                                                            const now =
+                                                                new Date();
+                                                            const saleStart =
+                                                                product.sale_start_at
+                                                                    ? new Date(
+                                                                          product.sale_start_at,
+                                                                      )
+                                                                    : null;
+                                                            const saleEnd =
+                                                                product.sale_end_at
+                                                                    ? new Date(
+                                                                          product.sale_end_at,
+                                                                      )
+                                                                    : null;
 
-                                                        const isSaleActive =
-                                                            product.sale_price &&
-                                                            (!saleStart ||
-                                                                now >=
-                                                                    saleStart) &&
-                                                            (!saleEnd ||
-                                                                now <= saleEnd);
+                                                            const isSaleActive =
+                                                                product.sale_price &&
+                                                                (!saleStart ||
+                                                                    now >=
+                                                                        saleStart) &&
+                                                                (!saleEnd ||
+                                                                    now <=
+                                                                        saleEnd);
 
-                                                        return (
-                                                            <>
-                                                                {
-                                                                    site_currency_symbol
-                                                                }
-                                                                {isSaleActive
-                                                                    ? product.sale_price
-                                                                    : product.price}
-                                                                {isSaleActive && (
-                                                                    <span className="ml-2 text-xs text-gray-400 line-through">
-                                                                        {
-                                                                            site_currency_symbol
-                                                                        }
-                                                                        {
-                                                                            product.price
-                                                                        }
-                                                                    </span>
-                                                                )}
-                                                            </>
-                                                        );
-                                                    })()}
-                                                </div>
+                                                            return (
+                                                                <>
+                                                                    {
+                                                                        site_currency_symbol
+                                                                    }
+                                                                    {isSaleActive
+                                                                        ? product.sale_price
+                                                                        : product.price}
+                                                                    {isSaleActive && (
+                                                                        <span className="ml-2 text-xs text-gray-400 line-through">
+                                                                            {
+                                                                                site_currency_symbol
+                                                                            }
+                                                                            {
+                                                                                product.price
+                                                                            }
+                                                                        </span>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-foreground">
+                                                        Free
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="flex justify-end gap-2">
                                                 <Button asChild size="icon">
@@ -281,63 +288,86 @@ const ProductIndexPage = ({
                                                     </Link>
                                                 </Button>
 
-                                                {product.canBuy && (
+                                                {product.price &&
+                                                product.price > 0 ? (
+                                                    product.canBuy && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            onClick={async () => {
+                                                                if (
+                                                                    !auth?.user
+                                                                ) {
+                                                                    toast.error(
+                                                                        'Please login to add items to cart',
+                                                                    );
+                                                                    router.visit(
+                                                                        '/login',
+                                                                    );
+                                                                    return;
+                                                                }
+
+                                                                const res: any =
+                                                                    await dispatch(
+                                                                        addToCart(
+                                                                            product.id as number,
+                                                                        ),
+                                                                    );
+                                                                if (
+                                                                    res?.meta
+                                                                        ?.requestStatus ===
+                                                                        'rejected' ||
+                                                                    res?.type?.endsWith(
+                                                                        '/rejected',
+                                                                    )
+                                                                ) {
+                                                                    const message =
+                                                                        res
+                                                                            ?.error
+                                                                            ?.message ||
+                                                                        res
+                                                                            ?.payload
+                                                                            ?.message ||
+                                                                        'Failed to add to cart';
+                                                                    toast.error(
+                                                                        message,
+                                                                    );
+                                                                    return;
+                                                                }
+
+                                                                if (
+                                                                    res?.payload
+                                                                        ?.already
+                                                                ) {
+                                                                    toast(
+                                                                        'Product already in cart',
+                                                                    );
+                                                                    return;
+                                                                }
+
+                                                                toast.success(
+                                                                    'Added to cart',
+                                                                );
+                                                            }}
+                                                        >
+                                                            <ShoppingCart />
+                                                        </Button>
+                                                    )
+                                                ) : (
                                                     <Button
                                                         variant="outline"
                                                         size="icon"
-                                                        onClick={async () => {
-                                                            if (!auth?.user) {
-                                                                toast.error(
-                                                                    'Please login to add items to cart',
-                                                                );
-                                                                router.visit(
-                                                                    '/login',
-                                                                );
-                                                                return;
-                                                            }
-
-                                                            const res: any =
-                                                                await dispatch(
-                                                                    addToCart(
-                                                                        product.id as number,
-                                                                    ),
-                                                                );
-                                                            if (
-                                                                res?.meta
-                                                                    ?.requestStatus ===
-                                                                    'rejected' ||
-                                                                res?.type?.endsWith(
-                                                                    '/rejected',
-                                                                )
-                                                            ) {
-                                                                const message =
-                                                                    res?.error
-                                                                        ?.message ||
-                                                                    res?.payload
-                                                                        ?.message ||
-                                                                    'Failed to add to cart';
-                                                                toast.error(
-                                                                    message,
-                                                                );
-                                                                return;
-                                                            }
-
-                                                            if (
-                                                                res?.payload
-                                                                    ?.already
-                                                            ) {
-                                                                toast(
-                                                                    'Product already in cart',
-                                                                );
-                                                                return;
-                                                            }
-
-                                                            toast.success(
-                                                                'Added to cart',
-                                                            );
-                                                        }}
+                                                        asChild
                                                     >
-                                                        <ShoppingCart />
+                                                        <Link
+                                                            href={customizer.index(
+                                                                product.slug,
+                                                            )}
+                                                        >
+                                                            <SquareDashedMousePointer
+                                                                size={16}
+                                                            />
+                                                        </Link>
                                                     </Button>
                                                 )}
                                             </div>

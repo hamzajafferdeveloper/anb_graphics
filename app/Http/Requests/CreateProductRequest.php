@@ -28,7 +28,7 @@ class CreateProductRequest extends FormRequest
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
 
-            'price' => 'required|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0|lte:price',
             'sale_start_at' => 'nullable|date',
             'sale_end_at' => 'nullable|date|after_or_equal:sale_start_at',

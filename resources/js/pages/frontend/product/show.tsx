@@ -7,7 +7,7 @@ import { addToCart } from '@/stores/cartSlice';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Product, ProductImage } from '@/types/data';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, SquareDashedMousePointer } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
@@ -196,7 +196,6 @@ const ProductDetail = ({
                         </div>
 
                         {/* CTA */}
-
                         {auth && auth.roles.includes('admin') ? (
                             <Link
                                 href={user.customizer.index(product.slug).url}
@@ -207,22 +206,41 @@ const ProductDetail = ({
                                     Customize
                                 </Button>
                             </Link>
-                        ) : canBuy ? (
-                            <Button
-                                onClick={add}
-                                className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg"
-                            >
-                                <ShoppingCart className="h-5 w-5" />
-                                Add to Cart
-                            </Button>
                         ) : (
-                            <Button
-                                disabled
-                                className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg"
-                            >
-                                <ShoppingCart className="h-5 w-5" />
-                                Already Purchased
-                            </Button>
+                            <>
+                                {product.price && product.price > 0 ? (
+                                    canBuy ? (
+                                        <Button
+                                            onClick={add}
+                                            className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg"
+                                        >
+                                            <ShoppingCart className="h-5 w-5" />
+                                            Add to Cart
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            disabled
+                                            className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg"
+                                        >
+                                            <ShoppingCart className="h-5 w-5" />
+                                            Already Purchased
+                                        </Button>
+                                    )
+                                ) : (
+                                    <Link
+                                        href={
+                                            user.customizer.index(product.slug)
+                                                .url
+                                        }
+                                        className="!w-full cursor-pointer"
+                                    >
+                                        <Button className="mt-4 flex w-full items-center gap-2 text-base shadow-md hover:shadow-lg">
+                                            <SquareDashedMousePointer className="h-5 w-5" />
+                                            Customize
+                                        </Button>
+                                    </Link>
+                                )}
+                            </>
                         )}
                     </div>
                 </section>
