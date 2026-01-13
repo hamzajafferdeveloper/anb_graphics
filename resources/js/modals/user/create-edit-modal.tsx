@@ -91,21 +91,22 @@ const CreateEditUserModal = ({
                                     <InputError message={errors.email} />
                                 </div>
 
-                                <div className="grid space-y-2">
-                                    <Label htmlFor="password">
-                                        Password{' '}
-                                        {type === 'edit'
-                                            ? '(leave blank to keep current)'
-                                            : ''}
-                                    </Label>
-                                    <Input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        placeholder="Minimum 8 characters"
-                                    />
-                                    <InputError message={errors.password} />
-                                </div>
+                                {type === 'edit' ? (
+                                    <></>
+                                ) : (
+                                    <div className="grid space-y-2">
+                                        <Label htmlFor="password">
+                                            Password
+                                        </Label>
+                                        <Input
+                                            id="password"
+                                            name="password"
+                                            type="password"
+                                            placeholder="Minimum 8 characters"
+                                        />
+                                        <InputError message={errors.password} />
+                                    </div>
+                                )}
 
                                 <div className="grid space-y-2">
                                     <Label htmlFor="profile_pic">

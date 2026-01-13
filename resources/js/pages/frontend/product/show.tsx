@@ -2,10 +2,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import FrontendLayout from '@/layouts/frontend-layout';
 import products from '@/routes/products';
+import user from '@/routes/user';
 import { addToCart } from '@/stores/cartSlice';
 import { BreadcrumbItem, SharedData } from '@/types';
 import { Product, ProductImage } from '@/types/data';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -64,7 +65,6 @@ const ProductDetail = ({
 
     const nonPrimaryImages = images.filter((img) => !img.is_primary);
     const { site_currency_symbol } = usePage<SharedData>().props.appSettings;
-
     return (
         <FrontendLayout breadcrumbs={breadcrumbs}>
             <Head title={product.name} />
@@ -197,7 +197,17 @@ const ProductDetail = ({
 
                         {/* CTA */}
 
-                        {canBuy ? (
+                        {auth && auth.roles.includes('admin') ? (
+                            <Link
+                                href={user.customizer.index(product.slug).url}
+                                className="!w-full cursor-pointer"
+                            >
+                                <Button className="mt-4 flex w-full items-center gap-2 text-base shadow-md hover:shadow-lg">
+                                    <ShoppingCart className="h-5 w-5" />
+                                    Customize
+                                </Button>
+                            </Link>
+                        ) : canBuy ? (
                             <Button
                                 onClick={add}
                                 className="mt-4 flex items-center gap-2 text-base shadow-md hover:shadow-lg"
