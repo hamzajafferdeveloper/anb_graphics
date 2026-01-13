@@ -162,6 +162,57 @@ const canvasSlice = createSlice({
             }
         },
 
+        /* ---------------- REORDER LAYERS ---------------- */
+        moveLayer(
+            state: any,
+            // @ts-ignore
+            action: PayloadAction<{
+                id: string;
+                direction: 'up' | 'down' | 'front' | 'back';
+            }>,
+        ) {
+            const index = state.items.findIndex(
+                (i: any) => i.id === action.payload.id,
+            );
+            if (index === -1) return;
+
+            const item = state.items[index];
+            const newItems = [...state.items];
+
+            if (action.payload.direction === 'back') {
+                // Move to start (bottom)
+                newItems.splice(index, 1);
+                newItems.unshift(item);
+            } else if (action.payload.direction === 'front') {
+                // Move to end (top)
+                newItems.splice(index, 1);
+                newItems.push(item);
+            } else if (action.payload.direction === 'down') {
+                // Swap with previous (move backward visually)
+                if (index > 0) {
+                    [newItems[index], newItems[index - 1]] = [
+                        newItems[index - 1],
+                        newItems[index],
+                    ];
+                }
+            } else if (action.payload.direction === 'up') {
+                // Swap with next (move forward visually)
+                if (index < newItems.length - 1) {
+                    [newItems[index], newItems[index + 1]] = [
+                        newItems[index + 1],
+                        newItems[index],
+                    ];
+                }
+            }
+            
+            // Re-assign zIndex to match array order (optional but good for consistency)
+            newItems.forEach((it, idx) => {
+                it.zIndex = idx + 1;
+            });
+
+            state.items = newItems;
+        },
+
         /* ---------------- CLEAR CANVAS ---------------- */
         clearCanvas(state: any) {
             state.items = [];
@@ -179,6 +230,7 @@ export const {
     resizeItem,
     bringToFront,
     removeItem,
+    moveLayer,
     clearCanvas,
     setItems,
 } = canvasSlice.actions;

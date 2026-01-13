@@ -14,4 +14,9 @@ export const btnSideBarLink = [
         icon: Text,
         component: TextSideBar
     },
+    {
+        name: 'Layer',
+        icon: Layers,
+        component: LayerSideBar
+    },
 ];
