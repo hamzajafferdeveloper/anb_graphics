@@ -321,6 +321,10 @@ const BrandIndex = () => {
                                                         </Button>
                                                     </div>
                                                 </CardTitle>
+                                                <p className="text-xs text-foreground">
+                                                    No of Products:{' '}
+                                                    {brand.products_count ?? 0}
+                                                </p>
                                             </CardHeader>
                                         </Card>
                                     ))}

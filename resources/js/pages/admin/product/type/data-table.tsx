@@ -124,6 +124,7 @@ const ProductTypeDataTable = () => {
                             <TableHead>ID</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Slug</TableHead>
+                            <TableHead>No of Products</TableHead>
                             <TableHead>Created</TableHead>
                             <TableHead>Updated</TableHead>
                             <TableHead className="text-right">
@@ -157,6 +158,9 @@ const ProductTypeDataTable = () => {
                                     <TableCell>{item.id}</TableCell>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell>{item.slug}</TableCell>
+                                    <TableCell>
+                                        {item.products_count ?? 0}
+                                    </TableCell>
                                     <TableCell>
                                         {new Date(
                                             item.created_at,

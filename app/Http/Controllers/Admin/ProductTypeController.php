@@ -7,8 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class ProductTypeController extends Controller
 {
@@ -35,18 +35,19 @@ class ProductTypeController extends Controller
             $query = ProductType::query();
 
             if ($request->filled('search')) {
-                $query->where('name', 'like', '%' . $request->input('search') . '%');
+                $query->where('name', 'like', '%'.$request->input('search').'%');
             }
 
             // Pagination
             $perPage = 10; // change as needed
-            $types = $query->orderBy('name')->paginate($perPage);
+            $types = $query->withCount('products')->orderBy('name')->paginate($perPage);
 
             return response()->json([
                 'typesPagination' => $types,
             ], 200);
         } catch (\Throwable $e) {
-            Log::error('Error getting types: ' . $e->getMessage());
+            Log::error('Error getting types: '.$e->getMessage());
+
             return response()->json(['error' => 'Something went wrong'], 500);
         }
     }
@@ -77,6 +78,7 @@ class ProductTypeController extends Controller
             }
 
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
@@ -94,7 +96,7 @@ class ProductTypeController extends Controller
                 'name' => ['required', 'string', 'max:255'],
             ]);
 
-            if (!request('name') || $type->name !== $validated['name']) {
+            if (! request('name') || $type->name !== $validated['name']) {
                 // Name has changed, regenerate slug
                 $slug = SlugHelper::generate($validated['name'], 'product_types', 'slug');
             }
@@ -112,6 +114,7 @@ class ProductTypeController extends Controller
             }
 
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
@@ -124,7 +127,7 @@ class ProductTypeController extends Controller
         try {
             $type = ProductType::findOrFail($id);
 
-            if($type->products()->exists()) {
+            if ($type->products()->exists()) {
                 return back()->with('error', 'Type has products, cannot delete!');
             }
 
@@ -134,6 +137,7 @@ class ProductTypeController extends Controller
         } catch (\Throwable $e) {
 
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }

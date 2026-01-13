@@ -8,8 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class ProductCategoryController extends Controller
 {
@@ -39,12 +39,12 @@ class ProductCategoryController extends Controller
             $query = ProductCategory::query();
 
             if ($request->filled('search')) {
-                $query->where('name', 'like', '%' . $request->input('search') . '%');
+                $query->where('name', 'like', '%'.$request->input('search').'%');
             }
 
             // Pagination
             $perPage = 10; // change as needed
-            $categories = $query->orderBy('name')->paginate($perPage);
+            $categories = $query->withCount('products')->orderBy('name')->paginate($perPage);
 
             return response()->json([
                 'categories' => $categories->items(),
@@ -52,7 +52,8 @@ class ProductCategoryController extends Controller
                 'last_page' => $categories->lastPage(),
             ], 200);
         } catch (\Throwable $e) {
-            Log::error('Error getting categories: ' . $e->getMessage());
+            Log::error('Error getting categories: '.$e->getMessage());
+
             return response()->json(['error' => 'Something went wrong'], 500);
         }
     }
@@ -95,6 +96,7 @@ class ProductCategoryController extends Controller
             }
 
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
@@ -126,7 +128,7 @@ class ProductCategoryController extends Controller
                 $validated['image'] = FileHelper::store($request->file('image'), 'categories');
             }
 
-            if (!request('name') || $category->name !== $validated['name']) {
+            if (! request('name') || $category->name !== $validated['name']) {
                 // Name has changed, regenerate slug
                 $slug = SlugHelper::generate($validated['name'], 'product_brands', 'slug');
             } else {
@@ -149,6 +151,7 @@ class ProductCategoryController extends Controller
             }
 
             Log::error($e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }
@@ -163,7 +166,7 @@ class ProductCategoryController extends Controller
 
             if ($category->products()->exists()) {
                 return back()->with('error', 'Category has products, cannot delete!');
-            } 
+            }
 
             // Delete associated image if exists
             FileHelper::delete($category->image);
@@ -173,7 +176,8 @@ class ProductCategoryController extends Controller
             return back()->with('success', 'Category deleted!');
 
         } catch (\Throwable $e) {
-            Log::error('Error deleting category: ' . $e->getMessage());
+            Log::error('Error deleting category: '.$e->getMessage());
+
             return back()->with('error', 'Something went wrong');
         }
     }

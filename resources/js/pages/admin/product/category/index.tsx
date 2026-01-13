@@ -328,6 +328,11 @@ const CategoryIndex = () => {
                                                         </Button>
                                                     </div>
                                                 </CardTitle>
+                                                <p className="text-xs text-foreground">
+                                                    No of Products:{' '}
+                                                    {category.products_count ??
+                                                        0}
+                                                </p>
                                             </CardHeader>
                                         </Card>
                                     ))}

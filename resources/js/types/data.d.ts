@@ -3,6 +3,7 @@ export interface ProductCategory {
     name: string;
     slug: string;
     image?: string;
+    products_count: number;
     created_at: string;
     updated_at: string;
 }
@@ -20,6 +21,7 @@ export interface ProductType {
     id: number;
     name: string;
     slug: string;
+    products_count: number;
     created_at: string;
     updated_at: string;
 }
