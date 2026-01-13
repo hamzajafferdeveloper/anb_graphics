@@ -3,7 +3,8 @@ import { useSvgContainer } from '@/contexts/svg-container-context';
 import { handlePaintPart } from '@/lib/customizer/customizer';
 import { RootState } from '@/stores/store';
 import { ProductColor, TemplatePart } from '@/types/data';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Pipette } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 export type BackendPart = {
@@ -27,7 +28,8 @@ const ColorDisplay = ({
     const { svgContainerRef } = useSvgContainer();
     const { setAndCommit } = useCustomizerHistory<{ parts: TemplatePart[] }>();
 
-    // Paint part: update state + DOM immediately
+    const colorInputRef = useRef<HTMLInputElement | null>(null);
+
     const paintPart = useCallback(
         (partToPaint: TemplatePart, colorCode: string) => {
             const partsToUpdate =
@@ -38,7 +40,6 @@ const ColorDisplay = ({
                       )
                     : [partToPaint];
 
-            // Update the DOM
             partsToUpdate.forEach((part) => {
                 if (svgContainerRef?.current) {
                     handlePaintPart(
@@ -49,15 +50,12 @@ const ColorDisplay = ({
                 }
             });
 
-            // Update the state
             setAndCommit((prev) => ({
                 ...prev,
                 parts: prev.parts.map((p) =>
-                    // For grouped parts, update all parts with the same name
                     (partToPaint.is_group === 1 &&
                         p.is_group === 1 &&
                         p.name === partToPaint.name) ||
-                    // For non-grouped parts, update the exact match
                     p.part_id === partToPaint.part_id
                         ? { ...p, color: colorCode }
                         : p,
@@ -69,6 +67,7 @@ const ColorDisplay = ({
 
     return (
         <div className="flex flex-wrap gap-2">
+            {/* Preset colors */}
             {colors.map((color) => (
                 <div
                     key={color.id}
@@ -84,6 +83,31 @@ const ColorDisplay = ({
                     }}
                 />
             ))}
+
+            {/* Custom color picker */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    colorInputRef.current?.click();
+                }}
+                className="flex h-5 w-5 cursor-pointer items-center justify-center rounded-md transition-all hover:ring-2 hover:ring-primary hover:ring-offset-2"
+                style={{
+                    border: '1px solid rgba(0,0,0,0.1)',
+                }}
+                title="Custom color"
+            >
+                <Pipette size={14} />
+            </div>
+
+            {/* Hidden input */}
+            <input
+                ref={colorInputRef}
+                type="color"
+                className="hidden"
+                onChange={(e) =>
+                    paintPart(part as TemplatePart, e.target.value)
+                }
+            />
         </div>
     );
 };
