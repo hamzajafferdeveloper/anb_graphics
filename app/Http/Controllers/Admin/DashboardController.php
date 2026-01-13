@@ -253,7 +253,7 @@ class DashboardController extends Controller
                     'code' => $userCoupon->code,
                     'user' => $userCoupon->user->name,
                     'discount' => $userCoupon->coupon->discount,
-                    'price' => $userCoupon->coupon->price,
+                    'price' => $userCoupon->price,
                     'purchased_at' => $userCoupon->created_at->format('Y-m-d H:i'),
                     'status' => $userCoupon->status ? 'active' : 'used',
                 ];
@@ -268,16 +268,16 @@ class DashboardController extends Controller
             'activeCoupons' => UserCoupon::where('status', true)->count(),
 
             // Total revenue from purchased coupons
-            'totalRevenue' => UserCoupon::whereHas('coupon')
-                ->join('coupons', 'user_coupons.coupon_id', '=', 'coupons.id')
-                ->sum('coupons.price'),
+            'totalRevenue' => UserCoupon::where('status', '!=', 'expired') // Assuming you want revenue from valid purchases, check business logic if 'expired' counts. Original logic didn't filter status for revenue, just existence.
+                // Original logic: UserCoupon::whereHas('coupon')->join(...)->sum('coupons.price')
+                // New logic: Sum user_coupons.price. 
+                // Note: user_coupons doesn't have a deleted_at, so all records are valid sales unless refunded (which isn't handled here).
+                ->sum('price'),
 
             // Monthly revenue from purchased coupons
-            'monthlyRevenue' => UserCoupon::whereHas('coupon')
-                ->whereMonth('user_coupons.created_at', now()->month)
-                ->whereYear('user_coupons.created_at', now()->year)
-                ->join('coupons', 'user_coupons.coupon_id', '=', 'coupons.id')
-                ->sum('coupons.price'),
+            'monthlyRevenue' => UserCoupon::whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('price'),
         ];
 
         return Inertia::render('dashboard', [

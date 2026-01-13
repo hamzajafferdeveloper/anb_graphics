@@ -14,6 +14,7 @@ class UserCoupon extends Model
         'stripe_session_id',
         'used_no',
         'status',
+        'price',
     ];
 
     public function user()

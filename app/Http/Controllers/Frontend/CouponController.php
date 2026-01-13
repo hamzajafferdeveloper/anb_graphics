@@ -129,6 +129,7 @@ class CouponController extends Controller
                 'code' => $coupon->coupon,
                 'limit' => $coupon->limit,
                 'stripe_session_id' => $sessionId,
+                'price' => $coupon->price,
             ]);
 
             return redirect()->route('couponPricePage')
