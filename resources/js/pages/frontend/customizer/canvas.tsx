@@ -1,8 +1,8 @@
 import { SVG_TEMPLATE_PARENT_MAX_SIZE } from '@/lib/customizer/variable';
-import { setSvgTemplateMaxSizeOfParent } from '@/stores/customizer/customizerSlice';
+import { setPan, setSvgTemplateMaxSizeOfParent } from '@/stores/customizer/customizerSlice';
 import { RootState } from '@/stores/store';
 import { CanvasItem } from '@/types/customizer/uploaded-items';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import DisplayItem from './canvas/display-item';
 import ZoomUndoRedo from './canvas/zoom-undo-redo-icons';
@@ -40,6 +40,61 @@ const Canvas = ({
     const selectedItemId = useSelector(
         (state: RootState) => state.canvasItem?.selectedItemId || null,
     );
+
+    const zoom = useSelector((state: RootState) => state.customizer.zoom);
+    const pan = useSelector((state: RootState) => state.customizer.pan);
+
+    // Pan state refs
+    const isPanningRef = useRef(false);
+    const startPanRef = useRef({ x: 0, y: 0 });
+    const startPanStateRef = useRef({ x: 0, y: 0 });
+
+    const handlePanPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        // Allow panning if clicking on background or ensuring it doesn't conflict
+        // If target is the background div (or close to it)
+        // We want to avoid preventing interactions with the SVG or items if they are clicked directly?
+        // But user wants to drag 'The canvas'. Usually this means the empty space.
+
+        // Only start pan if we are not clicking on an interactive element?
+        // But the background covers the whole area.
+
+        // Let's enable pan on the container, but ensure we don't block propagation if it's a click.
+        // However, standard pattern: Click & Drag on background = Pan.
+
+        // Prevent default to avoid scrolling/selection interactions
+        e.preventDefault();
+        (e.target as Element).setPointerCapture(e.pointerId);
+
+        isPanningRef.current = true;
+        startPanRef.current = { x: e.clientX, y: e.clientY };
+        startPanStateRef.current = { x: pan.x, y: pan.y };
+    };
+
+    const handlePanPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!isPanningRef.current) return;
+        e.preventDefault();
+
+        const dx = e.clientX - startPanRef.current.x;
+        const dy = e.clientY - startPanRef.current.y;
+
+        // Update local or redux state? 
+        // Updating redux on every move might be slow if there are many subscribers, 
+        // but for now let's try direct dispatch for simplicity as there is no complex render tree.
+        // Or we could use local state and dispatch onUp.
+        // But we want to see it move.
+        // Let's throttle or requestAnimationFrame if needed, but react 18 batching might be enough.
+
+        dispatch(setPan({
+            x: startPanStateRef.current.x + dx,
+            y: startPanStateRef.current.y + dy
+        }));
+    };
+
+    const handlePanPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!isPanningRef.current) return;
+        isPanningRef.current = false;
+        (e.target as Element).releasePointerCapture(e.pointerId);
+    };
 
     // Mask URL and overlay bounding box used to clip content and position controller overlay
     const [svgMaskUrl, setSvgMaskUrl] = useState<string | null>(null);
@@ -119,13 +174,20 @@ const Canvas = ({
                     }}
                 />
 
-                <div className="relative z-10 flex h-full w-full items-center justify-center p-4">
+                <div
+                    className="relative z-10 flex h-full w-full items-center justify-center p-4 cursor-grab active:cursor-grabbing"
+                    onPointerDown={handlePanPointerDown}
+                    onPointerMove={handlePanPointerMove}
+                    onPointerUp={handlePanPointerUp}
+                    onPointerLeave={handlePanPointerUp}
+                >
                     <div
-                        className="relative h-full w-full rounded-xl"
+                        className="relative h-full w-full rounded-xl transition-transform duration-200 ease-out"
                         style={{
                             maxWidth: `${svgTemplateParentMaxSize}px`,
                             maxHeight: `${svgTemplateParentMaxSize}px`,
                             height: '100%',
+                            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                         }}
                     >
                         <div

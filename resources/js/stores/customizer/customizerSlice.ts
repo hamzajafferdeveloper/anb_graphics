@@ -6,6 +6,8 @@ interface CustomizerState {
     selectedSvgPart: string;
     parts: TemplatePart[];
     svgTemplateParentMaxSize?: number;
+    zoom: number;
+    pan: { x: number; y: number };
 }
 
 const initialState: CustomizerState = {
@@ -13,6 +15,8 @@ const initialState: CustomizerState = {
     selectedSvgPart: '',
     parts: [],
     svgTemplateParentMaxSize: undefined,
+    zoom: 1,
+    pan: { x: 0, y: 0 },
 };
 
 const customizerSlice = createSlice({
@@ -35,6 +39,14 @@ const customizerSlice = createSlice({
         setSvgTemplateMaxSizeOfParent(state: any, action: PayloadAction<number>) {
             state.svgTemplateParentMaxSize = action.payload;
         },
+        // @ts-ignore
+        setZoom(state: any, action: PayloadAction<number>) {
+            state.zoom = action.payload;
+        },
+        // @ts-ignore
+        setPan(state: any, action: PayloadAction<{ x: number; y: number }>) {
+            state.pan = action.payload;
+        },
     },
 });
 
@@ -44,6 +56,8 @@ export const {
     setSelectedSvgPart,
     setParts,
     setSvgTemplateMaxSizeOfParent,
+    setZoom,
+    setPan,
 } = customizerSlice.actions;
 
 // Export reducer

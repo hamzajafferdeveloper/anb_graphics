@@ -56,6 +56,8 @@ const DisplayItem = ({
 
     const { setAndCommit } = useCustomizerHistory<CustomizerHistoryState>();
 
+    const zoom = useSelector((state: RootState) => state.customizer.zoom);
+
     // Keep local state in sync if props change externally
     useEffect(() => {
         setPosition({ x: item.x, y: item.y });
@@ -118,20 +120,31 @@ const DisplayItem = ({
         ).getBoundingClientRect();
         dragStartRef.current = { left: position.x, top: position.y };
         dragOffsetRef.current = {
-            x: e.clientX - parentRect.left - position.x,
-            y: e.clientY - parentRect.top - position.y,
+            x: e.clientX - parentRect.left - position.x * zoom,
+            y: e.clientY - parentRect.top - position.y * zoom,
         };
+
+        // Note: We need to normalize pointer start relative to the zoomed parent for subsequent moves?
+        // Actually, cleaner logic:
+        // dx_screen = e.clientX - startX_screen
+        // dx_item = dx_screen / zoom
+
+        // Store screen start point
+        const startXScreen = e.clientX;
+        const startYScreen = e.clientY;
 
         dragTargetRef.current = { dx: 0, dy: 0 };
         startDragRAF();
 
         const onMove = (ev: PointerEvent) => {
             if (!draggingRef.current) return;
-            const nx = ev.clientX - parentRect.left - dragOffsetRef.current.x;
-            const ny = ev.clientY - parentRect.top - dragOffsetRef.current.y;
+            const dxScreen = ev.clientX - startXScreen;
+            const dyScreen = ev.clientY - startYScreen;
+
+            // Apply zoom correction
             dragTargetRef.current = {
-                dx: nx - dragStartRef.current.left,
-                dy: ny - dragStartRef.current.top,
+                dx: dxScreen / zoom,
+                dy: dyScreen / zoom,
             };
         };
 
@@ -140,7 +153,7 @@ const DisplayItem = ({
             draggingRef.current = false;
             try {
                 el.releasePointerCapture(e.pointerId);
-            } catch {}
+            } catch { }
 
             stopDragRAF();
 
@@ -243,7 +256,7 @@ const DisplayItem = ({
             resizingRef.current = false;
             try {
                 el.releasePointerCapture(e.pointerId);
-            } catch {}
+            } catch { }
 
             stopResizeRAF();
 
@@ -342,7 +355,7 @@ const DisplayItem = ({
             rotatingRef.current = false;
             try {
                 el.releasePointerCapture(e.pointerId);
-            } catch {}
+            } catch { }
 
             stopRotateRAF();
 
@@ -392,9 +405,8 @@ const DisplayItem = ({
     return (
         <div
             ref={wrapperRef}
-            className={`${
-                showControls || showContent ? 'pointer-events-auto' : 'pointer-events-none'
-            } absolute ${showControls && isSelected ? 'rounded-lg border-2 border-dashed border-primary p-2' : ''}`}
+            className={`${showControls || showContent ? 'pointer-events-auto' : 'pointer-events-none'
+                } absolute ${showControls && isSelected ? 'rounded-lg border-2 border-dashed border-primary p-2' : ''}`}
             style={{
                 left: `${position.x}px`,
                 top: `${position.y}px`,
@@ -440,8 +452,8 @@ const DisplayItem = ({
                                 (item as any).textAlign === 'left'
                                     ? 'flex-start'
                                     : (item as any).textAlign === 'right'
-                                      ? 'flex-end'
-                                      : 'center',
+                                        ? 'flex-end'
+                                        : 'center',
                             pointerEvents: 'none',
                             userSelect: 'none',
                             overflow: 'hidden',
