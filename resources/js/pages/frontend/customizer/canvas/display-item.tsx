@@ -153,7 +153,7 @@ const DisplayItem = ({
             draggingRef.current = false;
             try {
                 el.releasePointerCapture(e.pointerId);
-            } catch { }
+            } catch {}
 
             stopDragRAF();
 
@@ -256,7 +256,7 @@ const DisplayItem = ({
             resizingRef.current = false;
             try {
                 el.releasePointerCapture(e.pointerId);
-            } catch { }
+            } catch {}
 
             stopResizeRAF();
 
@@ -355,7 +355,7 @@ const DisplayItem = ({
             rotatingRef.current = false;
             try {
                 el.releasePointerCapture(e.pointerId);
-            } catch { }
+            } catch {}
 
             stopRotateRAF();
 
@@ -405,8 +405,11 @@ const DisplayItem = ({
     return (
         <div
             ref={wrapperRef}
-            className={`${showControls || showContent ? 'pointer-events-auto' : 'pointer-events-none'
-                } absolute ${showControls && isSelected ? 'rounded-lg border-2 border-dashed border-primary p-2' : ''}`}
+            className={`${
+                showControls || showContent
+                    ? 'pointer-events-auto'
+                    : 'pointer-events-none'
+            } absolute ${showControls && isSelected ? 'rounded-lg border-2 border-dashed border-primary p-2' : ''}`}
             style={{
                 left: `${position.x}px`,
                 top: `${position.y}px`,
@@ -417,7 +420,13 @@ const DisplayItem = ({
                 cursor: isSelected ? 'grab' : 'default',
                 touchAction: 'none', // needed for pointer events
             }}
-            onClick={showControls ? handleClick : showContent ? handleClick : undefined}
+            onClick={
+                showControls
+                    ? handleClick
+                    : showContent
+                      ? handleClick
+                      : undefined
+            }
             onPointerDown={showControls ? onPointerDown : undefined}
         >
             {showControls && isSelected && (
@@ -452,8 +461,8 @@ const DisplayItem = ({
                                 (item as any).textAlign === 'left'
                                     ? 'flex-start'
                                     : (item as any).textAlign === 'right'
-                                        ? 'flex-end'
-                                        : 'center',
+                                      ? 'flex-end'
+                                      : 'center',
                             pointerEvents: 'none',
                             userSelect: 'none',
                             overflow: 'hidden',
@@ -480,6 +489,9 @@ const DisplayItem = ({
                                 textAlign: (item as any).textAlign || 'center',
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-word',
+                                WebkitTextStrokeColor:
+                                    (item as any).stroke || 'transparent',
+                                WebkitTextStrokeWidth: `${(item as any).strokeWidth || 0}px`,
                             }}
                         >
                             {(item as any).text}

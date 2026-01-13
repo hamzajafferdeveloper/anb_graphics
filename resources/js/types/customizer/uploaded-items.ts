@@ -40,6 +40,8 @@ export interface CanvasTextElement extends CanvasElementBase {
     lineHeight?: number;
     letterSpacing?: number;
     underline?: boolean;
+    stroke?: string;
+    strokeWidth?: number;
 }
 
 export type CanvasItem = CanvasImageElement | CanvasTextElement;

@@ -1,15 +1,18 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, store } from '@/stores/store';
+import { useCustomizerHistory } from '@/contexts/customizer-history-context';
 import {
     addText,
-    updateItem,
     removeItem,
     selectItem,
+    updateItem,
 } from '@/stores/customizer/canvasItemSlice';
-import { useCustomizerHistory } from '@/contexts/customizer-history-context';
-import { CanvasTextElement, CanvasItem } from '@/types/customizer/uploaded-items';
-import { Trash2, Plus } from 'lucide-react';
+import { RootState, store } from '@/stores/store';
+import {
+    CanvasItem,
+    CanvasTextElement,
+} from '@/types/customizer/uploaded-items';
+import { Plus, Trash2 } from 'lucide-react';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 const defaultNewText = {
     x: 80,
@@ -28,16 +31,28 @@ const defaultNewText = {
 
 const TextSideBar: React.FC = () => {
     const dispatch = useDispatch();
-    const items = useSelector((s: RootState) => s.canvasItem.items) as CanvasItem[];
-    const selectedItemId = useSelector((s: RootState) => s.canvasItem.selectedItemId) as string | null;
-    const textItems = items.filter((i) => i.type === 'text') as CanvasTextElement[];
-    const selected = items.find((i) => i.id === selectedItemId && i.type === 'text') as CanvasTextElement | undefined;
+    const items = useSelector(
+        (s: RootState) => s.canvasItem.items,
+    ) as CanvasItem[];
+    const selectedItemId = useSelector(
+        (s: RootState) => s.canvasItem.selectedItemId,
+    ) as string | null;
+    const textItems = items.filter(
+        (i) => i.type === 'text',
+    ) as CanvasTextElement[];
+    const selected = items.find(
+        (i) => i.id === selectedItemId && i.type === 'text',
+    ) as CanvasTextElement | undefined;
     const { setAndCommit } = useCustomizerHistory();
 
     const commitItemsToHistory = (newItems?: CanvasItem[]) => {
         // If we weren't passed items, read from store (reliable sync)
-        const itemsNow = newItems ?? (store.getState().canvasItem.items as CanvasItem[]);
-        setAndCommit((prev: any) => ({ ...(prev || {}), uploadedItems: itemsNow }));
+        const itemsNow =
+            newItems ?? (store.getState().canvasItem.items as CanvasItem[]);
+        setAndCommit((prev: any) => ({
+            ...(prev || {}),
+            uploadedItems: itemsNow,
+        }));
     };
 
     const handleAddText = () => {
@@ -46,11 +61,16 @@ const TextSideBar: React.FC = () => {
         setTimeout(() => commitItemsToHistory(), 0);
     };
 
-    const updateSelectedField = (field: keyof CanvasTextElement, value: any) => {
+    const updateSelectedField = (
+        field: keyof CanvasTextElement,
+        value: any,
+    ) => {
         if (!selected) return;
         dispatch(updateItem({ id: selected.id, changes: { [field]: value } }));
 
-        const updated = items.map((it) => (it.id === selected.id ? { ...it, [field]: value } : it));
+        const updated = items.map((it) =>
+            it.id === selected.id ? { ...it, [field]: value } : it,
+        );
         commitItemsToHistory(updated);
     };
 
@@ -65,11 +85,11 @@ const TextSideBar: React.FC = () => {
     };
 
     return (
-        <div className="p-4 w-full">
-            <div className="flex items-center justify-between mb-3">
+        <div className="w-full p-4">
+            <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Text</h3>
                 <button
-                    className="inline-flex items-center gap-2 px-3 py-1 border rounded text-sm bg-white"
+                    className="inline-flex items-center gap-2 rounded border bg-white px-3 py-1 text-sm"
                     onClick={handleAddText}
                     aria-label="Add text"
                 >
@@ -79,26 +99,57 @@ const TextSideBar: React.FC = () => {
 
             <div className="space-y-3">
                 <div>
-                    <div className="text-xs text-muted mb-2">Items</div>
-                    <div className="space-y-2 max-h-40 overflow-auto">
+                    <div className="mb-2 text-xs text-muted">Items</div>
+                    <div className="max-h-40 space-y-2 overflow-auto">
                         {textItems.length === 0 && (
-                            <div className="text-sm text-muted">No text added yet</div>
+                            <div className="text-sm text-muted">
+                                No text added yet
+                            </div>
                         )}
 
                         {textItems.map((t) => (
                             <div
                                 key={t.id}
-                                className={`flex items-center justify-between p-2 rounded border ${selectedItemId === t.id ? 'border-primary bg-primary/5' : 'border-gray-200'}`}
+                                className={`flex items-center justify-between rounded border p-2 ${selectedItemId === t.id ? 'border-primary bg-primary/5' : 'border-gray-200'}`}
                             >
-                                <div onClick={() => handleSelect(t.id)} className="flex-1 cursor-pointer">
-                                    <div className="text-sm font-medium" style={{ fontSize: Math.min(18, t.fontSize) }}>{t.text}</div>
-                                    <div className="text-xs text-muted">{t.fontFamily} • {t.fontSize}px</div>
+                                <div
+                                    onClick={() => handleSelect(t.id)}
+                                    className="flex-1 cursor-pointer"
+                                >
+                                    <div
+                                        className="text-sm font-medium"
+                                        style={{
+                                            fontSize: Math.min(18, t.fontSize),
+                                        }}
+                                    >
+                                        {t.text}
+                                    </div>
+                                    <div className="text-xs text-muted">
+                                        {t.fontFamily} • {t.fontSize}px
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 ml-2">
-                                    <button className="p-1 rounded hover:bg-gray-100" title="Bring to front" onClick={() => { dispatch({ type: 'canvas/bringToFront', payload: t.id }); setTimeout(() => commitItemsToHistory(), 0); }}>
+                                <div className="ml-2 flex items-center gap-2">
+                                    <button
+                                        className="rounded p-1 hover:bg-gray-100"
+                                        title="Bring to front"
+                                        onClick={() => {
+                                            dispatch({
+                                                type: 'canvas/bringToFront',
+                                                payload: t.id,
+                                            });
+                                            setTimeout(
+                                                () => commitItemsToHistory(),
+                                                0,
+                                            );
+                                        }}
+                                    >
                                         ↑
                                     </button>
-                                    <button className="p-1 rounded hover:bg-gray-100" title="Delete" onClick={() => handleDelete(t.id)}>
+                                    <button
+                                        className="rounded p-1 hover:bg-gray-100"
+                                        title="Delete"
+                                        onClick={() => handleDelete(t.id)}
+                                    >
                                         <Trash2 size={14} />
                                     </button>
                                 </div>
@@ -109,13 +160,17 @@ const TextSideBar: React.FC = () => {
 
                 {selected ? (
                     <div>
-                        <div className="text-xs text-muted mb-2">Properties</div>
+                        <div className="mb-2 text-xs text-muted">
+                            Properties
+                        </div>
                         <div className="space-y-2">
                             <label className="block text-xs">Text</label>
                             <textarea
-                                className="w-full p-2 border rounded"
+                                className="w-full rounded border p-2"
                                 value={selected.text}
-                                onChange={(e) => updateSelectedField('text', e.target.value)}
+                                onChange={(e) =>
+                                    updateSelectedField('text', e.target.value)
+                                }
                             />
 
                             <div className="grid grid-cols-2 gap-2">
@@ -123,9 +178,17 @@ const TextSideBar: React.FC = () => {
                                     Font size
                                     <input
                                         type="number"
-                                        className="w-full p-2 border rounded mt-1"
+                                        className="mt-1 w-full rounded border p-2"
                                         value={selected.fontSize}
-                                        onChange={(e) => updateSelectedField('fontSize', Math.max(1, Number(e.target.value) || 1))}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'fontSize',
+                                                Math.max(
+                                                    1,
+                                                    Number(e.target.value) || 1,
+                                                ),
+                                            )
+                                        }
                                     />
                                 </label>
 
@@ -133,9 +196,14 @@ const TextSideBar: React.FC = () => {
                                     Color
                                     <input
                                         type="color"
-                                        className="w-full h-10 p-1 mt-1 rounded"
+                                        className="mt-1 h-10 w-full rounded p-1"
                                         value={selected.color}
-                                        onChange={(e) => updateSelectedField('color', e.target.value)}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'color',
+                                                e.target.value,
+                                            )
+                                        }
                                     />
                                 </label>
                             </div>
@@ -144,23 +212,37 @@ const TextSideBar: React.FC = () => {
                                 <label className="block text-xs">
                                     Font family
                                     <select
-                                        className="w-full p-2 border rounded mt-1"
+                                        className="mt-1 w-full rounded border p-2"
                                         value={selected.fontFamily}
-                                        onChange={(e) => updateSelectedField('fontFamily', e.target.value)}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'fontFamily',
+                                                e.target.value,
+                                            )
+                                        }
                                     >
                                         <option value="Inter">Inter</option>
                                         <option value="Arial">Arial</option>
-                                        <option value="Times New Roman">Times New Roman</option>
-                                        <option value="Courier New">Courier New</option>
+                                        <option value="Times New Roman">
+                                            Times New Roman
+                                        </option>
+                                        <option value="Courier New">
+                                            Courier New
+                                        </option>
                                     </select>
                                 </label>
 
                                 <label className="block text-xs">
                                     Align
                                     <select
-                                        className="w-full p-2 border rounded mt-1"
+                                        className="mt-1 w-full rounded border p-2"
                                         value={selected.textAlign || 'center'}
-                                        onChange={(e) => updateSelectedField('textAlign', e.target.value)}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'textAlign',
+                                                e.target.value,
+                                            )
+                                        }
                                     >
                                         <option value="left">Left</option>
                                         <option value="center">Center</option>
@@ -175,9 +257,17 @@ const TextSideBar: React.FC = () => {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        className="w-full p-2 border rounded mt-1"
+                                        className="mt-1 w-full rounded border p-2"
                                         value={selected.lineHeight || 1}
-                                        onChange={(e) => updateSelectedField('lineHeight', Math.max(0.5, Number(e.target.value) || 1))}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'lineHeight',
+                                                Math.max(
+                                                    0.5,
+                                                    Number(e.target.value) || 1,
+                                                ),
+                                            )
+                                        }
                                     />
                                 </label>
 
@@ -186,39 +276,123 @@ const TextSideBar: React.FC = () => {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        className="w-full p-2 border rounded mt-1"
+                                        className="mt-1 w-full rounded border p-2"
                                         value={selected.letterSpacing || 0}
-                                        onChange={(e) => updateSelectedField('letterSpacing', Number(e.target.value) || 0)}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'letterSpacing',
+                                                Number(e.target.value) || 0,
+                                            )
+                                        }
                                     />
                                 </label>
                             </div>
 
                             <div className="flex items-center gap-3">
                                 <label className="flex items-center gap-2 text-xs">
-                                    <input type="checkbox" checked={!!selected.underline} onChange={(e) => updateSelectedField('underline', e.target.checked)} />
+                                    <input
+                                        type="checkbox"
+                                        checked={!!selected.underline}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'underline',
+                                                e.target.checked,
+                                            )
+                                        }
+                                    />
                                     Underline
+                                </label>
+
+                                <label className="flex items-center gap-2 text-xs">
+                                    <input
+                                        type="checkbox"
+                                        checked={
+                                            selected.fontStyle === 'italic'
+                                        }
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'fontStyle',
+                                                e.target.checked
+                                                    ? 'italic'
+                                                    : 'normal',
+                                            )
+                                        }
+                                    />
+                                    Italic
                                 </label>
 
                                 <label className="flex items-center gap-2 text-xs">
                                     Rotation
                                     <input
                                         type="number"
-                                        className="w-20 p-2 border rounded"
+                                        className="w-20 rounded border p-2"
                                         value={selected.rotation || 0}
-                                        onChange={(e) => updateSelectedField('rotation', Number(e.target.value) || 0)}
+                                        onChange={(e) =>
+                                            updateSelectedField(
+                                                'rotation',
+                                                Number(e.target.value) || 0,
+                                            )
+                                        }
                                     />
                                 </label>
                             </div>
 
+                            <div className="mt-2 border-t pt-2">
+                                <div className="mb-2 text-xs font-semibold">
+                                    Outline
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <label className="block text-xs">
+                                        Color
+                                        <input
+                                            type="color"
+                                            className="mt-1 h-10 w-full rounded p-1"
+                                            value={selected.stroke || '#000000'}
+                                            onChange={(e) =>
+                                                updateSelectedField(
+                                                    'stroke',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                    </label>
+
+                                    <label className="block text-xs">
+                                        Width
+                                        <input
+                                            type="number"
+                                            className="mt-1 w-full rounded border p-2"
+                                            value={selected.strokeWidth || 0}
+                                            onChange={(e) =>
+                                                updateSelectedField(
+                                                    'strokeWidth',
+                                                    Math.max(
+                                                        0,
+                                                        Number(
+                                                            e.target.value,
+                                                        ) || 0,
+                                                    ),
+                                                )
+                                            }
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+
                             <div className="flex justify-end">
-                                <button className="px-3 py-1 bg-red-600 text-white rounded" onClick={() => handleDelete(selected.id)}>
+                                <button
+                                    className="rounded bg-red-600 px-3 py-1 text-white"
+                                    onClick={() => handleDelete(selected.id)}
+                                >
                                     Delete
                                 </button>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="text-sm text-muted">Select a text item to edit its properties</div>
+                    <div className="text-sm text-muted">
+                        Select a text item to edit its properties
+                    </div>
                 )}
             </div>
         </div>
