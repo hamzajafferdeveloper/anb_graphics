@@ -36,7 +36,6 @@ import { format, isBefore, isPast } from 'date-fns';
 import { CalendarIcon, ChevronsUpDownIcon, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import FileUploaderSection from './components/file-uploader-section';
-import MaterialColors from './components/material-colors';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -115,7 +114,9 @@ const CreateProduct = ({
 
     // MATERIAL
     const [material, setMaterial] = useState<'leather' | 'cotton' | 'other'>(
-        data.material.toLowerCase() as 'leather' | 'cotton' | 'other',
+        data.material
+            ? (data.material.toLowerCase() as 'leather' | 'cotton' | 'other')
+            : 'leather',
     );
 
     // COLORS

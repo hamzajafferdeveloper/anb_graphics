@@ -112,8 +112,14 @@ const ProductDetail = ({
                             <>
                                 <div className="flex items-center gap-3">
                                     <span className="text-2xl font-bold text-primary">
-                                        {site_currency_symbol}{' '}
-                                        {product.sale_price}
+                                        {product.price && product.price > 0 ? (
+                                            <>
+                                                {site_currency_symbol}{' '}
+                                                {product.price}
+                                            </>
+                                        ) : (
+                                            'Free'
+                                        )}
                                     </span>
 
                                     <span className="text-sm text-gray-400 line-through">

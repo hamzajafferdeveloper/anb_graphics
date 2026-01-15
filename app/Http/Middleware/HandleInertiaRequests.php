@@ -49,18 +49,18 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'roles' => $request->user()?->getRoleNames() ?? [],
             ],
-            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
-            'appSettings' => [
-                'site_name' => $appSettings->where('key', 'site_name')->first()->value ?? '',
-                'site_currency' => $appSettings->where('key', 'site_currency')->first()->value ?? '',
-                'site_currency_symbol' => $appSettings->where('key', 'site_currency_symbol')->first()->value ?? '',
-                'site_logo' => $appSettings->where('key', 'site_logo')->first()->value ?? '',
-                'site_favicon' => $appSettings->where('key', 'site_favicon')->first()->value ?? '',
-            ]
+            // 'appSettings' => [
+            //     'site_name' => $appSettings->where('key', 'site_name')->first()->value ?? '',
+            //     'site_currency' => $appSettings->where('key', 'site_currency')->first()->value ?? '',
+            //     'site_currency_symbol' => $appSettings->where('key', 'site_currency_symbol')->first()->value ?? '',
+            //     'site_logo' => $appSettings->where('key', 'site_logo')->first()->value ?? '',
+            //     'site_favicon' => $appSettings->where('key', 'site_favicon')->first()->value ?? '',
+            // ]
         ];
     }
 }
